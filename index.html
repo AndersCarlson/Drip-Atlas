@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Drip Atlas — Professional Irrigation Design for DIYers</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --forest:    #253319;
+      --forest-md: #2e4020;
+      --lime:      #c8e670;
+      --teal:      #7dd9d9;
+      --cream:     #f0ead e;   /* main bg */
+      --cream:     #f1ebe2;
+      --cream-dk:  #e6dfd5;
+      --white:     #ffffff;
+      --charcoal:  #1c1c1a;
+      --gray:      #7a7a72;
+      --border:    rgba(37,51,25,.12);
+      --pill:      100px;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--cream);
+      color: var(--charcoal);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      height: 64px;
+      display: flex; align-items: center;
+      padding: 0 40px;
+      gap: 32px;
+    }
+    .nav-logo img { height: 32px; }
+    .nav-links {
+      display: flex; gap: 28px; list-style: none;
+      margin-left: 32px;
+    }
+    .nav-links a {
+      font-size: 14px; font-weight: 500;
+      color: var(--charcoal); text-decoration: none;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--forest); }
+    .nav-right { margin-left: auto; }
+    .btn-signin {
+      border: 1.5px solid var(--border);
+      background: transparent;
+      color: var(--charcoal);
+      font-size: 14px; font-weight: 500;
+      padding: 8px 20px;
+      border-radius: var(--pill);
+      cursor: pointer; text-decoration: none;
+      transition: border-color .2s, background .2s;
+    }
+    .btn-signin:hover { border-color: var(--forest); background: rgba(37,51,25,.04); }
+
+    /* ─── HERO ─── */
+    .hero {
+      padding: 28px 36px 36px;
+      display: flex; gap: 20px; align-items: stretch;
+      min-height: calc(100vh - 64px);
+    }
+
+    /* Left text column */
+    .hero-text-col {
+      flex: 0 0 360px;
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 16px 8px;
+    }
+
+    .hero-text-col h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(30px, 2.8vw, 48px);
+      font-weight: 700;
+      line-height: 1.1;
+      color: var(--forest);
+      margin-bottom: 18px;
+    }
+
+    .hero-text-col p {
+      font-size: 16px;
+      color: var(--gray);
+      line-height: 1.7;
+      margin-bottom: 32px;
+    }
+
+    .btn-primary {
+      display: block;
+      background: var(--forest);
+      color: var(--white);
+      font-size: 15px; font-weight: 600;
+      padding: 15px 28px;
+      border-radius: 8px;
+      text-decoration: none; text-align: center;
+      border: none; cursor: pointer;
+      transition: background .2s, transform .15s;
+      margin-bottom: 14px;
+    }
+    .btn-primary:hover { background: var(--forest-md); transform: translateY(-1px); }
+
+    .btn-text {
+      font-size: 14px; font-weight: 500;
+      color: var(--gray); text-decoration: none;
+      display: inline-flex; align-items: center; gap: 6px;
+      transition: color .2s;
+    }
+    .btn-text:hover { color: var(--forest); }
+
+    /* ── Unified hero visual: photo left + diagram right ── */
+    .hero-visual {
+      flex: 1;
+      border-radius: 20px;
+      overflow: hidden;
+      display: flex;
+      border: 1px solid var(--border);
+      min-height: 500px;
+    }
+
+    /* Photo half */
+    .hv-photo {
+      flex: 0 0 42%;
+      position: relative;
+      overflow: hidden;
+      background: #8aab76;
+    }
+    .hv-photo img {
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: center top;
+      display: block;
+    }
+    /* placeholder for photo */
+    .hv-photo-placeholder {
+      width: 100%; height: 100%;
+      background: linear-gradient(175deg, #b2c9a0 0%, #82a86c 35%, #5f8a50 70%, #3d6635 100%);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 12px;
+    }
+    .hv-photo-placeholder span {
+      background: rgba(255,255,255,.15);
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255,255,255,.25);
+      color: rgba(255,255,255,.85);
+      font-size: 12px; font-weight: 600; letter-spacing: .05em;
+      padding: 7px 16px; border-radius: var(--pill);
+    }
+
+    /* Diagram half */
+    .hv-diagram {
+      flex: 1;
+      background: #2d4820;
+      padding: 28px 24px 20px;
+      display: flex; flex-direction: column;
+      position: relative;
+    }
+
+    /* subtle topo rings on dark green bg */
+    .hv-diagram::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='420'%3E%3Cg fill='none' stroke='rgba(255,255,255,0.04)' stroke-width='1'%3E%3Cellipse cx='250' cy='210' rx='100' ry='70'/%3E%3Cellipse cx='250' cy='210' rx='175' ry='130'/%3E%3Cellipse cx='250' cy='210' rx='250' ry='195'/%3E%3Cellipse cx='250' cy='210' rx='330' ry='260'/%3E%3C/g%3E%3C/svg%3E") no-repeat center;
+      background-size: cover;
+      pointer-events: none;
+    }
+
+    .zone-badges {
+      display: flex; gap: 8px; flex-wrap: wrap;
+      margin-top: auto; padding-top: 16px;
+      position: relative; z-index: 1;
+    }
+    .zbadge {
+      font-size: 12px; font-weight: 600;
+      padding: 6px 14px; border-radius: var(--pill);
+    }
+    .zbadge-teal  { background: rgba(125,217,217,.18); color: #7dd9d9; border: 1px solid rgba(125,217,217,.35); }
+    .zbadge-lime  { background: rgba(180,220,80,.15);  color: #b4dc50; border: 1px solid rgba(180,220,80,.3); }
+    .zbadge-amber { background: rgba(220,170,80,.15);  color: #dcaa50; border: 1px solid rgba(220,170,80,.3); }
+
+    /* ─── SECTION SHARED ─── */
+    section { padding: 80px 40px; }
+
+    .s-label {
+      font-size: 11px; font-weight: 700;
+      letter-spacing: .12em; text-transform: uppercase;
+      color: var(--gray); margin-bottom: 12px;
+      text-align: center;
+    }
+    .s-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(28px, 3vw, 42px);
+      font-weight: 700; line-height: 1.15;
+      color: var(--forest); margin-bottom: 14px;
+      text-align: center;
+    }
+    .s-sub {
+      font-size: 16px; color: var(--gray);
+      max-width: 480px; line-height: 1.7;
+      margin-bottom: 52px;
+      text-align: center; margin-left: auto; margin-right: auto;
+    }
+
+    /* ─── HOW IT WORKS ─── */
+    .hiw { background: var(--white); }
+    .hiw-inner { max-width: 960px; margin: 0 auto; text-align: center; }
+    .hiw-inner .s-sub { margin-left: auto; margin-right: auto; }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      position: relative;
+    }
+    .steps::before {
+      content: '';
+      position: absolute;
+      top: 36px; left: 12.5%; right: 12.5%;
+      height: 1px;
+      background: var(--border);
+      z-index: 0;
+    }
+    .step { text-align: center; padding: 0 20px; position: relative; z-index: 1; }
+    .step-icon-wrap {
+      width: 72px; height: 72px;
+      background: var(--cream);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 28px;
+    }
+    .step h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; color: var(--forest); }
+    .step p  { font-size: 13px; color: var(--gray); line-height: 1.6; }
+
+    /* ─── WHY DIFFERENT ─── */
+    .why { background: var(--cream); }
+    .why-inner { max-width: 960px; margin: 0 auto; }
+    .why-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    .why-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      transition: box-shadow .2s, transform .2s;
+    }
+    .why-card:hover { box-shadow: 0 6px 24px rgba(37,51,25,.08); transform: translateY(-2px); }
+    .why-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 36px; font-weight: 700;
+      color: var(--lime); line-height: 1;
+      margin-bottom: 12px;
+    }
+    .why-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--forest); }
+    .why-card p  { font-size: 14px; color: var(--gray); line-height: 1.65; }
+
+    /* ─── WHAT YOU GET (keep as-is from original) ─── */
+    .wyg { background: var(--white); }
+    .wyg-inner { max-width: 1040px; margin: 0 auto; }
+    .deliverables {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .deliverable-card {
+      background: var(--cream);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      transition: box-shadow .2s, transform .2s;
+    }
+    .deliverable-card:hover { box-shadow: 0 8px 28px rgba(37,51,25,.08); transform: translateY(-3px); }
+    .card-icon {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; margin-bottom: 18px;
+    }
+    .ci-green  { background: rgba(37,51,25,.08); }
+    .ci-teal   { background: rgba(125,217,217,.18); }
+    .ci-lime   { background: rgba(200,230,112,.2); }
+    .deliverable-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 14px; color: var(--forest); }
+    .check-list { list-style: none; }
+    .check-list li {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: 13px; color: var(--gray);
+      padding: 5px 0; line-height: 1.5;
+    }
+    .check-list li::before {
+      content: '✓'; color: var(--forest);
+      font-weight: 700; flex-shrink: 0; margin-top: 1px;
+    }
+
+    /* ─── PRICING ─── */
+    .pricing { background: var(--cream); }
+    .pricing-inner { max-width: 960px; margin: 0 auto; }
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .price-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 28px;
+      position: relative;
+      transition: box-shadow .2s, transform .2s;
+    }
+    .price-card:hover { box-shadow: 0 8px 32px rgba(37,51,25,.1); transform: translateY(-3px); }
+    .price-card.featured { background: var(--forest); border-color: var(--forest); }
+    .featured-tag {
+      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+      background: var(--lime); color: var(--forest);
+      font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+      padding: 4px 14px; border-radius: var(--pill); white-space: nowrap;
+    }
+    .price-tier {
+      font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+      color: var(--gray); margin-bottom: 10px;
+    }
+    .price-card.featured .price-tier { color: rgba(255,255,255,.5); }
+    .price-amt {
+      font-family: 'Playfair Display', serif;
+      font-size: 46px; font-weight: 700; line-height: 1;
+      color: var(--forest); margin-bottom: 8px;
+    }
+    .price-card.featured .price-amt { color: var(--lime); }
+    .price-blurb {
+      font-size: 13px; color: var(--gray);
+      line-height: 1.6; margin-bottom: 24px;
+    }
+    .price-card.featured .price-blurb { color: rgba(255,255,255,.55); }
+    .price-features { list-style: none; margin-bottom: 28px; }
+    .price-features li {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: 13px; color: var(--gray);
+      padding: 6px 0; border-bottom: 1px solid var(--border); line-height: 1.5;
+    }
+    .price-card.featured .price-features li { color: rgba(255,255,255,.75); border-bottom-color: rgba(255,255,255,.1); }
+    .price-features li::before { content: '✓'; color: var(--forest); font-weight: 700; flex-shrink: 0; }
+    .price-card.featured .price-features li::before { color: var(--lime); }
+    .btn-plan {
+      display: block; text-align: center;
+      padding: 13px; border-radius: 8px;
+      font-weight: 600; font-size: 14px;
+      text-decoration: none; cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-plan-outline {
+      border: 1.5px solid var(--forest); color: var(--forest);
+    }
+    .btn-plan-outline:hover { background: var(--forest); color: var(--white); }
+    .btn-plan-solid {
+      background: var(--lime); color: var(--forest); border: 1.5px solid var(--lime);
+    }
+    .btn-plan-solid:hover { background: transparent; color: var(--lime); }
+
+    /* ─── SOCIAL PROOF ─── */
+    .proof { background: var(--white); text-align: center; padding: 80px 40px; }
+    .proof-inner { max-width: 800px; margin: 0 auto; }
+    .proof-quote {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(22px, 2.5vw, 34px);
+      font-weight: 600; line-height: 1.3;
+      color: var(--forest); margin-bottom: 40px;
+    }
+    .proof-photos {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px; margin-top: 40px;
+    }
+    .proof-photo {
+      border-radius: 12px; overflow: hidden;
+      aspect-ratio: 3/4;
+      background: linear-gradient(160deg, #b8ccaa 0%, #8aab76 40%, #6b9059 100%);
+      display: flex; align-items: flex-end;
+      padding: 12px;
+    }
+    .proof-photo span {
+      font-size: 11px; font-weight: 600; color: rgba(255,255,255,.8);
+      background: rgba(0,0,0,.25); padding: 4px 10px; border-radius: var(--pill);
+    }
+
+    /* ─── GUARANTEE ─── */
+    .guarantee {
+      background: var(--forest);
+      padding: 72px 40px;
+      text-align: center;
+    }
+    .guarantee-inner { max-width: 580px; margin: 0 auto; }
+    .guar-seal {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: rgba(200,230,112,.15);
+      border: 1px solid rgba(200,230,112,.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px; margin: 0 auto 24px;
+    }
+    .guarantee h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px; font-weight: 700;
+      color: var(--white); margin-bottom: 14px;
+    }
+    .guarantee p { font-size: 15px; color: rgba(255,255,255,.65); line-height: 1.7; }
+
+    /* ─── ADDRESS CTA ─── */
+    .address-cta { background: var(--cream); padding: 96px 40px; text-align: center; }
+    .address-cta .s-title { text-align: center; }
+    .address-cta .s-sub { margin: 0 auto 36px; text-align: center; }
+    .address-form {
+      display: flex; gap: 12px;
+      max-width: 520px; margin: 0 auto;
+    }
+    .address-input {
+      flex: 1;
+      padding: 14px 20px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 15px; font-family: 'Inter', sans-serif;
+      background: var(--white);
+      color: var(--charcoal);
+      outline: none;
+      transition: border-color .2s;
+    }
+    .address-input:focus { border-color: var(--forest); }
+    .address-input::placeholder { color: var(--gray); }
+    .btn-address {
+      background: var(--forest); color: var(--white);
+      font-size: 15px; font-weight: 600;
+      padding: 14px 28px; border-radius: 8px;
+      border: none; cursor: pointer;
+      transition: background .2s; white-space: nowrap;
+    }
+    .btn-address:hover { background: var(--forest-md); }
+
+    /* ─── FAQ ─── */
+    .faq { background: var(--white); }
+    .faq-inner { max-width: 680px; margin: 0 auto; }
+    .faq-item { border-bottom: 1px solid var(--border); }
+    .faq-q {
+      width: 100%; background: none; border: none;
+      text-align: left; padding: 20px 0;
+      font-size: 15px; font-weight: 600;
+      cursor: pointer; display: flex;
+      justify-content: space-between; align-items: center;
+      gap: 16px; color: var(--charcoal);
+      font-family: 'Inter', sans-serif;
+    }
+    .faq-q:hover { color: var(--forest); }
+    .faq-icon {
+      width: 26px; height: 26px; border-radius: 50%;
+      border: 1.5px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+      color: var(--gray); transition: all .2s;
+    }
+    .faq-item.open .faq-icon { background: var(--forest); border-color: var(--forest); color: var(--white); }
+    .faq-a {
+      font-size: 14px; color: var(--gray);
+      line-height: 1.7; overflow: hidden;
+      max-height: 0; transition: max-height .3s ease, padding .3s;
+    }
+    .faq-item.open .faq-a { max-height: 180px; padding-bottom: 20px; }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: var(--charcoal); color: rgba(255,255,255,.45);
+      padding: 36px 40px;
+      display: flex; align-items: center;
+      justify-content: space-between; flex-wrap: wrap; gap: 16px;
+    }
+    footer img { height: 26px; opacity: .65; }
+    .footer-links { display: flex; gap: 20px; list-style: none; }
+    .footer-links a { color: rgba(255,255,255,.45); font-size: 13px; text-decoration: none; transition: color .2s; }
+    .footer-links a:hover { color: rgba(255,255,255,.8); }
+    .footer-copy { font-size: 13px; }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 1024px) {
+      .hero-text-col { flex: 0 0 300px; }
+      .hv-photo { flex: 0 0 38%; }
+    }
+    @media (max-width: 900px) {
+      .hero { flex-direction: column; padding: 20px; min-height: auto; gap: 16px; }
+      .hero-text-col { flex: none; padding: 8px 0; }
+      .hero-visual { flex-direction: column; min-height: auto; }
+      .hv-photo { flex: 0 0 260px; }
+      .steps { grid-template-columns: repeat(2,1fr); }
+      .steps::before { display: none; }
+      .why-grid, .deliverables, .pricing-grid, .proof-photos { grid-template-columns: 1fr 1fr; }
+      nav { padding: 0 24px; }
+      .nav-links { display: none; }
+      section { padding: 60px 24px; }
+    }
+    @media (max-width: 560px) {
+      .why-grid, .deliverables, .pricing-grid, .proof-photos { grid-template-columns: 1fr; }
+      .steps { grid-template-columns: 1fr; }
+      .address-form { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <img src="file:///Users/andersmacbookpro/Downloads/drip-atlas-assets/Drip Atlas Logo_Forest Green.png" alt="Drip Atlas" />
+  </div>
+  <ul class="nav-links">
+    <li><a href="#how-it-works">Designer</a></li>
+    <li><a href="#wyg">Solutions</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#faq">Learn</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="#pricing" class="btn-signin">Sign in</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+
+  <!-- Left: text column -->
+  <div class="hero-text-col">
+    <h1>Professional irrigation designed for you, installed by you</h1>
+    <p>We design your sprinkler system and ship you a complete, labeled kit. You install it in a weekend—no guesswork, no wasted trips.</p>
+    <a href="design.html" class="btn-primary">Get My Custom Plan</a>
+    <a href="#how-it-works" class="btn-text">See How It Works ↓</a>
+  </div>
+
+  <!-- Right: single unified card — photo left / diagram right -->
+  <div class="hero-visual">
+
+    <!-- Photo half -->
+    <div class="hv-photo">
+      <div class="hv-photo-placeholder">
+        <span>📸 Your yard photo here</span>
+      </div>
+    </div>
+
+    <!-- Diagram half: dark green bg + SVG -->
+    <div class="hv-diagram">
+      <svg viewBox="0 0 480 310" xmlns="http://www.w3.org/2000/svg" style="width:100%;flex:1;display:block;position:relative;z-index:1;">
+
+        <!-- ── Zone 3: top-left (Amber / Shrubs) ── -->
+        <rect x="12" y="12" width="175" height="95" rx="6" fill="rgba(220,165,60,.10)" stroke="#dcaa50" stroke-width="1.5" stroke-dasharray="7,4"/>
+        <text x="100" y="56" text-anchor="middle" fill="#dcaa50" font-size="11" font-family="Inter,sans-serif" font-weight="700" letter-spacing=".08em">ZONE 3</text>
+        <!-- Zone 3 heads with rings -->
+        <circle cx="30"  cy="28"  r="5.5" fill="#dcaa50"/><circle cx="30"  cy="28"  r="12" fill="none" stroke="#dcaa50" stroke-width="1.2" opacity=".4"/>
+        <circle cx="100" cy="28"  r="5.5" fill="#dcaa50"/>
+        <circle cx="175" cy="28"  r="5.5" fill="#dcaa50"/>
+        <circle cx="30"  cy="95"  r="5.5" fill="#dcaa50"/><circle cx="30"  cy="95"  r="12" fill="none" stroke="#dcaa50" stroke-width="1.2" opacity=".4"/>
+        <circle cx="100" cy="95"  r="5.5" fill="#dcaa50"/>
+
+        <!-- ── Zone 2: right column (Lime / Garden) ── -->
+        <rect x="320" y="12" width="148" height="240" rx="6" fill="rgba(180,220,80,.09)" stroke="#b4dc50" stroke-width="1.5" stroke-dasharray="7,4"/>
+        <text x="394" y="130" text-anchor="middle" fill="#b4dc50" font-size="11" font-family="Inter,sans-serif" font-weight="700" letter-spacing=".08em">ZONE 2</text>
+        <!-- Zone 2 heads — 3×3 grid -->
+        <circle cx="337" cy="28"  r="5.5" fill="#b4dc50"/><circle cx="337" cy="28"  r="12" fill="none" stroke="#b4dc50" stroke-width="1.2" opacity=".4"/>
+        <circle cx="394" cy="28"  r="5.5" fill="#b4dc50"/>
+        <circle cx="458" cy="28"  r="5.5" fill="#b4dc50"/><circle cx="458" cy="28"  r="12" fill="none" stroke="#b4dc50" stroke-width="1.2" opacity=".4"/>
+        <circle cx="337" cy="130" r="5.5" fill="#b4dc50"/>
+        <circle cx="394" cy="130" r="5.5" fill="#b4dc50"/>
+        <circle cx="458" cy="130" r="5.5" fill="#b4dc50"/>
+        <circle cx="337" cy="242" r="5.5" fill="#b4dc50"/>
+        <circle cx="394" cy="242" r="5.5" fill="#b4dc50"/>
+        <circle cx="458" cy="242" r="5.5" fill="#b4dc50"/><circle cx="458" cy="242" r="12" fill="none" stroke="#b4dc50" stroke-width="1.2" opacity=".4"/>
+
+        <!-- ── House ── -->
+        <rect x="178" y="82" width="132" height="138" rx="6" fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.2)" stroke-width="1.5"/>
+        <text x="244" y="156" text-anchor="middle" fill="rgba(255,255,255,.4)" font-size="11" font-family="Inter,sans-serif" font-weight="600" letter-spacing=".07em">HOUSE</text>
+
+        <!-- ── Zone 1: bottom-left (Teal / Lawn) ── -->
+        <rect x="12" y="192" width="240" height="106" rx="6" fill="rgba(125,217,217,.10)" stroke="#7dd9d9" stroke-width="1.5" stroke-dasharray="7,4"/>
+        <text x="100" y="248" text-anchor="middle" fill="#7dd9d9" font-size="11" font-family="Inter,sans-serif" font-weight="700" letter-spacing=".08em">ZONE 1</text>
+        <!-- Zone 1 heads — 2 rows -->
+        <circle cx="30"  cy="208" r="5.5" fill="#7dd9d9"/><circle cx="30"  cy="208" r="12" fill="none" stroke="#7dd9d9" stroke-width="1.2" opacity=".4"/>
+        <circle cx="130" cy="208" r="5.5" fill="#7dd9d9"/><circle cx="130" cy="208" r="12" fill="none" stroke="#7dd9d9" stroke-width="1.2" opacity=".4"/>
+        <circle cx="240" cy="208" r="5.5" fill="#7dd9d9"/>
+        <circle cx="30"  cy="288" r="5.5" fill="#7dd9d9"/>
+        <circle cx="130" cy="288" r="5.5" fill="#7dd9d9"/>
+        <circle cx="240" cy="288" r="5.5" fill="#7dd9d9"/>
+        <!-- Pipe run Zone 1 -->
+        <polyline points="30,208 30,288 240,288 240,208 130,208" fill="none" stroke="#7dd9d9" stroke-width="1.5" stroke-dasharray="4,3" opacity=".45"/>
+
+        <!-- ── Manifold ── -->
+        <rect x="258" y="235" width="54" height="22" rx="4" fill="rgba(255,255,255,.1)" stroke="rgba(255,255,255,.25)" stroke-width="1.2"/>
+        <text x="285" y="250" text-anchor="middle" fill="rgba(255,255,255,.55)" font-size="7.5" font-family="Inter,sans-serif" font-weight="700" letter-spacing=".06em">MANIFOLD</text>
+        <line x1="258" y1="246" x2="252" y2="246" stroke="rgba(255,255,255,.2)" stroke-width="1.2"/>
+
+        <!-- ── Distance callout ── -->
+        <line x1="12"  y1="302" x2="252" y2="302" stroke="rgba(255,255,255,.2)" stroke-width="1"/>
+        <line x1="12"  y1="298" x2="12"  y2="306" stroke="rgba(255,255,255,.2)" stroke-width="1"/>
+        <line x1="252" y1="298" x2="252" y2="306" stroke="rgba(255,255,255,.2)" stroke-width="1"/>
+        <text x="132" y="300" text-anchor="middle" fill="rgba(255,255,255,.4)" font-size="9" font-family="Inter,sans-serif">24 ft</text>
+
+      </svg>
+
+      <!-- Zone legend badges inside diagram panel -->
+      <div class="zone-badges">
+        <span class="zbadge zbadge-teal">Zone 1 — Lawn</span>
+        <span class="zbadge zbadge-lime">Zone 2 — Garden</span>
+        <span class="zbadge zbadge-amber">Zone 3 — Shrubs</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="hiw" id="how-it-works">
+  <div class="hiw-inner">
+    <div class="s-label">How It Works</div>
+    <h2 class="s-title" style="text-align:center;margin:0 auto 12px">Four steps to a working system</h2>
+    <p class="s-sub" style="text-align:center">We handle the engineering. You pick up the shovel.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-icon-wrap">📍</div>
+        <h3>Provide your Address</h3>
+        <p>We create a satellite map of your yard automatically.</p>
+      </div>
+      <div class="step">
+        <div class="step-icon-wrap">✏️</div>
+        <h3>Design your landscape</h3>
+        <p>Make changes with our easy design tool—draw your zones, paths, and beds.</p>
+      </div>
+      <div class="step">
+        <div class="step-icon-wrap">📐</div>
+        <h3>Get your irrigation blueprint</h3>
+        <p>We produce a professional plan with zones, heads, pipe routing, and distances.</p>
+      </div>
+      <div class="step">
+        <div class="step-icon-wrap">🏡</div>
+        <h3>Install in a Weekend</h3>
+        <p>Nozzles, heads, drips—all organized by zone. Follow your plan and go.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY DIFFERENT -->
+<section class="why">
+  <div class="why-inner">
+    <div class="s-label">What Makes Us Different</div>
+    <h2 class="s-title">Most DIY systems fail.<br/>Ours don't.</h2>
+    <p class="s-sub">The design is where people go wrong. We eliminate that variable entirely.</p>
+    <div class="why-grid">
+      <div class="why-card">
+        <div class="why-num">No</div>
+        <h3>More Guesswork</h3>
+        <p>Most DIY systems fail because the design is wrong—wrong head spacing, mismatched pressure, or zones that overrun your flow rate. We handle all of that.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-num">Built</div>
+        <h3>For Your Water Pressure</h3>
+        <p>We design around your actual PSI and GPM so every zone fires perfectly. No dead spots, no flooded corners.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-num">100%</div>
+        <h3>Labeled by Zone</h3>
+        <p>Every part in your kit is organized so you always know what goes where. No sorting, no confusion at the hardware store.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-num">$0</div>
+        <h3>Labor Cost</h3>
+        <p>A professional install runs $4,000–$10,000. You get the same engineering quality for a fraction of that—and the satisfaction of doing it yourself.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT YOU GET -->
+<section class="wyg" id="wyg">
+  <div class="wyg-inner">
+    <div class="s-label">What's Included</div>
+    <h2 class="s-title">Everything you need,<br/>nothing you don't</h2>
+    <p class="s-sub">Your plan is engineered for your specific yard, water supply, and conditions—not a generic template.</p>
+    <div class="deliverables">
+      <div class="deliverable-card">
+        <div class="card-icon ci-green">🗺️</div>
+        <h3>Your Custom Irrigation Plan</h3>
+        <ul class="check-list">
+          <li>Zone map tailored to your yard</li>
+          <li>Exact sprinkler head placement</li>
+          <li>Pipe routing layout with distances</li>
+          <li>Watering schedule by zone</li>
+          <li>Manifold location &amp; configuration</li>
+        </ul>
+      </div>
+      <div class="deliverable-card">
+        <div class="card-icon ci-teal">📦</div>
+        <h3>Your Labeled Installation Kit</h3>
+        <ul class="check-list">
+          <li>Sprinkler heads matched to your layout</li>
+          <li>Valves &amp; zone controllers</li>
+          <li>Fittings sorted and labeled by zone</li>
+          <li>Drip components (where needed)</li>
+          <li>Compatible with Hunter, Rain Bird &amp; Orbit</li>
+        </ul>
+      </div>
+      <div class="deliverable-card">
+        <div class="card-icon ci-lime">🛒</div>
+        <h3>Your Pipe Shopping List</h3>
+        <ul class="check-list">
+          <li>Exact quantities—no guessing</li>
+          <li>Simple list for Home Depot or Lowe's</li>
+          <li>Buffer built in for cutting mistakes</li>
+          <li>Pipe type &amp; size specified per zone</li>
+          <li>Estimated total materials cost</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+  <div class="pricing-inner">
+    <div class="s-label">Pricing</div>
+    <h2 class="s-title">Simple, transparent pricing</h2>
+    <p class="s-sub">Pick the plan that fits how you want to work.</p>
+    <div class="pricing-grid">
+
+      <!-- Free -->
+      <div class="price-card">
+        <div class="price-tier">Design Tool</div>
+        <div class="price-amt" style="color:var(--forest)">Free</div>
+        <div class="price-blurb">Start designing your system at no cost—see your yard come to life.</div>
+        <ul class="price-features">
+          <li>DIY design tool</li>
+          <li>Sprinkler design plan</li>
+          <li>Zone map &amp; head placement</li>
+        </ul>
+        <a href="design.html" class="btn-plan btn-plan-outline">Start Designing →</a>
+      </div>
+
+      <!-- $99 -->
+      <div class="price-card">
+        <div class="price-tier">Irrigation Plan</div>
+        <div class="price-amt" style="color:var(--forest)">$99</div>
+        <div class="price-blurb">A professional-grade plan with everything you need to source and install yourself.</div>
+        <ul class="price-features">
+          <li>Custom irrigation design plan</li>
+          <li>Zone map &amp; head placement</li>
+          <li>Full materials list</li>
+          <li>Parts swap options</li>
+          <li>Pipe shopping guide</li>
+          <li>Watering schedule</li>
+        </ul>
+        <a href="design.html" class="btn-plan btn-plan-outline">Get My Plan →</a>
+      </div>
+
+      <!-- $949 -->
+      <div class="price-card featured">
+        <div class="featured-tag">Most Popular</div>
+        <div class="price-tier">Complete Kit</div>
+        <div class="price-amt">$949</div>
+        <div class="price-blurb">Everything in Irrigation Plan, plus a full labeled kit shipped to your door with hands-on support.</div>
+        <ul class="price-features">
+          <li>Everything in Irrigation Plan</li>
+          <li>Full kit shipped to your door</li>
+          <li>Parts labeled by zone</li>
+          <li>1:1 support</li>
+          <li>Step-by-step install guide</li>
+          <li>Parts swap options</li>
+          <li>Installation walkthrough call</li>
+          <li>Post-install follow-up</li>
+        </ul>
+        <a href="design.html" class="btn-plan btn-plan-solid">Get My Kit →</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- SOCIAL PROOF -->
+<section class="proof">
+  <div class="proof-inner">
+    <div class="s-label" style="text-align:center">Social Proof</div>
+    <p class="proof-quote">Designed for homeowners who want pro results without paying $4,000–$10,000 for installation.</p>
+    <div style="display:flex;gap:32px;justify-content:center;flex-wrap:wrap;">
+      <div style="text-align:center">
+        <div style="font-family:'Playfair Display',serif;font-size:40px;font-weight:700;color:var(--forest)">500+</div>
+        <div style="font-size:13px;color:var(--gray);margin-top:4px">Yards Designed</div>
+      </div>
+      <div style="width:1px;background:var(--border)"></div>
+      <div style="text-align:center">
+        <div style="font-family:'Playfair Display',serif;font-size:40px;font-weight:700;color:var(--forest)">4.9★</div>
+        <div style="font-size:13px;color:var(--gray);margin-top:4px">Average Rating</div>
+      </div>
+      <div style="width:1px;background:var(--border)"></div>
+      <div style="text-align:center">
+        <div style="font-family:'Playfair Display',serif;font-size:40px;font-weight:700;color:var(--forest)">$3.2k</div>
+        <div style="font-size:13px;color:var(--gray);margin-top:4px">Avg. Customer Savings</div>
+      </div>
+    </div>
+    <div class="proof-photos">
+      <div class="proof-photo"><span>Zone 1 install</span></div>
+      <div class="proof-photo" style="background:linear-gradient(160deg,#a8c098 0%,#7a9a68 40%,#5a7a48 100%)"><span>Backyard zones</span></div>
+      <div class="proof-photo" style="background:linear-gradient(160deg,#c0ccb0 0%,#94aa80 40%,#6e8860 100%)"><span>Garden drip</span></div>
+      <div class="proof-photo" style="background:linear-gradient(160deg,#b0c4a0 0%,#86a274 40%,#607854 100%)"><span>Full install</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- GUARANTEE -->
+<div class="guarantee">
+  <div class="guarantee-inner">
+    <div class="guar-seal">🛡️</div>
+    <h2>Install With Confidence Guarantee</h2>
+    <p>If your system doesn't work as designed after following our plan, we'll help you diagnose and fix it—or we'll refund your design fee. No questions asked.</p>
+  </div>
+</div>
+
+<!-- ADDRESS CTA -->
+<section class="address-cta" id="start">
+  <div class="s-label">Get Started</div>
+  <h2 class="s-title">Stop guessing your irrigation system</h2>
+  <p class="s-sub">Enter your address and we'll pull your yard map instantly. Your custom design starts here.</p>
+  <div class="address-form">
+    <input class="address-input" id="lp-address" type="text" placeholder="Enter Your Address to Get Started" onkeydown="if(event.key==='Enter')lpGo()" />
+    <button class="btn-address" onclick="lpGo()">Get My Plan →</button>
+  </div>
+</section>
+<script>
+  function lpGo(){const v=document.getElementById('lp-address').value.trim();if(v)window.location.href='design.html?address='+encodeURIComponent(v);else document.getElementById('lp-address').focus();}
+</script>
+
+<!-- FAQ -->
+<section class="faq" id="faq">
+  <div class="faq-inner">
+    <div class="s-label">FAQ</div>
+    <h2 class="s-title">Questions we hear a lot</h2>
+    <div style="margin-top:8px">
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Do I need to know my water pressure? <span class="faq-icon">+</span></button>
+        <div class="faq-a">No—we'll guide you through a simple 5-minute test using a basic pressure gauge (under $15 at any hardware store). Most homeowners find it completely straightforward.</div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">What tools do I need? <span class="faq-icon">+</span></button>
+        <div class="faq-a">Basic tools only: a shovel or trenching spade, a PVC cutter, and a drill. No specialty equipment required.</div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Why don't you include pipe? <span class="faq-icon">+</span></button>
+        <div class="faq-a">Pipe is heavy and expensive to ship. We give you an exact cut list so you can grab everything at Home Depot or Lowe's in one quick trip—saving you $100–$300 on shipping.</div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">How long does installation take? <span class="faq-icon">+</span></button>
+        <div class="faq-a">Most homeowners complete installation in one to two days. Smaller yards can be done in a single afternoon.</div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">What if I've never done this before? <span class="faq-icon">+</span></button>
+        <div class="faq-a">That's exactly who Drip Atlas is for. We simplify every step—from the design to the install guide to the labeled parts. If you've assembled furniture from a manual, you can install this system.</div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Which controller brands do you support? <span class="faq-icon">+</span></button>
+        <div class="faq-a">We design for Hunter, Rain Bird, and Orbit. You can specify your preference, or we'll recommend the best fit for your zone count and smart-home setup.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <img src="file:///Users/andersmacbookpro/Downloads/drip-atlas-assets/Drip Atlas Logo_White.png" alt="Drip Atlas" />
+  <ul class="footer-links">
+    <li><a href="#">Privacy</a></li>
+    <li><a href="#">Terms</a></li>
+    <li><a href="#">Contact</a></li>
+  </ul>
+  <span class="footer-copy">© 2026 Drip Atlas. All rights reserved.</span>
+</footer>
+
+<script>
+  function toggleFaq(btn) {
+    const item = btn.closest('.faq-item');
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item.open').forEach(el => {
+      el.classList.remove('open');
+      el.querySelector('.faq-icon').textContent = '+';
+    });
+    if (!isOpen) {
+      item.classList.add('open');
+      btn.querySelector('.faq-icon').textContent = '−';
+    }
+  }
+</script>
+
+</body>
+</html>

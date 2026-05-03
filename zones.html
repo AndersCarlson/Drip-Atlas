@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Drip Atlas — Zone Layout</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#0f1410;--surface:#1a2016;--surface2:#212918;
+      --border:rgba(255,255,255,.1);--text:#e8f0e2;--muted:#7a8a72;
+      --lime:#c8e670;--amber:#f0a832;--cyan:#40c8f0;--red:#f05040;
+      --topbar:52px;--sidebar:288px;--panel:264px;
+    }
+    html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;
+      background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+
+    /* ── TOPBAR ── */
+    #topbar{
+      position:fixed;top:0;left:0;right:0;height:var(--topbar);z-index:500;
+      background:var(--surface);border-bottom:1px solid var(--border);
+      display:flex;align-items:center;padding:0 14px;gap:10px;
+    }
+    .tb-back{font-size:13px;color:var(--muted);text-decoration:none;
+      display:flex;align-items:center;gap:4px;transition:color .2s;flex-shrink:0}
+    .tb-back:hover{color:var(--text)}
+    .tb-sep{width:1px;height:20px;background:var(--border);flex-shrink:0}
+    .tb-logo{font-family:'Playfair Display',serif;font-size:15px;font-weight:600;
+      color:var(--lime);letter-spacing:-.02em;flex-shrink:0}
+    .tb-step{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+      color:var(--muted);flex-shrink:0}
+    #tb-addr{font-size:13px;font-weight:500;color:var(--text);flex:1;
+      overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .btn-save{
+      background:var(--lime);color:#1a2016;font-size:13px;font-weight:700;
+      padding:8px 18px;border-radius:6px;border:none;cursor:pointer;
+      font-family:'Inter',sans-serif;flex-shrink:0;transition:opacity .15s;
+    }
+    .btn-save:hover{opacity:.85}
+
+    /* ── SIDEBAR ── */
+    #sidebar{
+      position:fixed;top:var(--topbar);left:0;bottom:0;width:var(--sidebar);z-index:400;
+      background:var(--surface);border-right:1px solid var(--border);
+      display:flex;flex-direction:column;overflow:hidden;
+    }
+    .sb-head{padding:14px 14px 12px;border-bottom:1px solid var(--border)}
+    .sb-title{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+      color:var(--muted);margin-bottom:10px}
+    .sb-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+    .sb-stat{background:var(--surface2);border-radius:8px;padding:8px 10px}
+    .sb-stat-val{font-size:17px;font-weight:700;color:var(--lime);line-height:1}
+    .sb-stat-lbl{font-size:9px;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.06em}
+    .sb-scroll{flex:1;overflow-y:auto;padding:10px}
+    .sb-scroll::-webkit-scrollbar{width:4px}
+    .sb-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:2px}
+    .sb-section-lbl{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+      color:var(--muted);padding:6px 2px 4px;margin-top:4px}
+
+    /* ── ZONE CARDS ── */
+    .zone-card{
+      border-radius:10px;border:1.5px solid var(--border);background:var(--surface2);
+      margin-bottom:8px;overflow:hidden;cursor:pointer;transition:border-color .18s;
+    }
+    .zone-card:hover{border-color:rgba(200,230,112,.35)}
+    .zone-card.zc-active{border-color:var(--lime)}
+    .zc-hd{display:flex;align-items:center;gap:8px;padding:10px 12px 8px}
+    .zc-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+    .zc-name{font-size:12px;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .zc-badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:8px;
+      background:rgba(100,200,220,.14);color:#7dd9d9;flex-shrink:0}
+    .zc-count{font-size:11px;color:var(--muted);flex-shrink:0}
+    .zc-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:0 10px 10px}
+    .zc-cell{background:rgba(0,0,0,.22);border-radius:6px;padding:6px 8px}
+    .zc-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+    .zc-val{font-size:12px;font-weight:700}
+    .zc-warn{grid-column:span 2;background:rgba(240,168,50,.1);border:1px solid rgba(240,168,50,.28);
+      border-radius:6px;padding:6px 8px;font-size:10px;color:var(--amber);line-height:1.45}
+    .zone-card-drip .zc-hd{padding-bottom:10px}
+    .zc-drip-note{padding:0 12px 10px;font-size:11px;color:var(--muted);line-height:1.5}
+
+    /* ── MAP ── */
+    #map-wrap{
+      position:fixed;top:var(--topbar);left:var(--sidebar);right:0;bottom:0;z-index:100;
+      transition:right .25s ease;
+    }
+    #map-wrap.panel-open{right:var(--panel)}
+    #map{width:100%;height:100%}
+
+    /* ── TOOLBAR ── */
+    #toolbar{
+      position:absolute;bottom:22px;left:50%;transform:translateX(-50%);
+      z-index:300;display:flex;align-items:center;gap:5px;
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:10px;padding:5px;box-shadow:0 4px 24px rgba(0,0,0,.45);
+    }
+    .tool-btn{
+      width:34px;height:34px;border-radius:6px;border:1.5px solid var(--border);
+      background:transparent;color:var(--text);cursor:pointer;
+      display:flex;align-items:center;justify-content:center;
+      transition:all .13s;flex-shrink:0;
+    }
+    .tool-btn:hover{background:rgba(255,255,255,.07)}
+    .tool-btn.active{background:rgba(200,230,112,.14);border-color:var(--lime);color:var(--lime)}
+    .tool-sep{width:1px;height:22px;background:var(--border);margin:0 2px}
+    .tool-lbl{font-size:10px;font-weight:700;letter-spacing:.07em;color:var(--muted);
+      padding:0 4px;text-transform:uppercase;white-space:nowrap}
+    .tool-key{font-size:9px;color:var(--muted);position:absolute;bottom:2px;right:3px;
+      font-weight:600;letter-spacing:.02em;line-height:1}
+    .tool-btn{position:relative}
+
+    /* ── HEAD PANEL ── */
+    #head-panel{
+      position:fixed;top:var(--topbar);right:0;bottom:0;width:var(--panel);z-index:400;
+      background:var(--surface);border-left:1px solid var(--border);
+      display:flex;flex-direction:column;
+      transform:translateX(100%);transition:transform .24s ease;overflow:hidden;
+    }
+    #head-panel.open{transform:translateX(0)}
+    .hp-hd{display:flex;align-items:center;padding:12px 14px;border-bottom:1px solid var(--border)}
+    .hp-title{font-size:14px;font-weight:700;flex:1}
+    .hp-close{width:26px;height:26px;border-radius:5px;border:1px solid var(--border);
+      background:transparent;color:var(--muted);cursor:pointer;font-size:15px;font-weight:700;
+      display:flex;align-items:center;justify-content:center;transition:all .13s}
+    .hp-close:hover{background:rgba(255,255,255,.07);color:var(--text)}
+    .hp-body{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:14px}
+    .hp-body::-webkit-scrollbar{width:3px}
+    .hp-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1)}
+    .hp-lbl{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+      color:var(--muted);margin-bottom:7px}
+
+    /* head type buttons */
+    .htype-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+    .htype-btn{
+      border:1.5px solid var(--border);border-radius:8px;background:transparent;
+      color:var(--muted);padding:9px 4px 7px;cursor:pointer;text-align:center;
+      font-family:'Inter',sans-serif;font-size:11px;font-weight:700;transition:all .14s;
+    }
+    .htype-btn:hover{border-color:rgba(64,200,240,.4);color:var(--text)}
+    .htype-btn.active{border-color:var(--cyan);background:rgba(64,200,240,.09);color:var(--cyan)}
+    .htype-icon{font-size:20px;display:block;margin-bottom:4px}
+    .htype-sub{font-size:9px;font-weight:500;opacity:.65;margin-top:1px}
+
+    /* sliders */
+    .hp-range-row{display:flex;align-items:center;gap:10px}
+    .hp-range{flex:1;-webkit-appearance:none;appearance:none;height:3px;border-radius:2px;
+      background:var(--border);outline:none;cursor:pointer}
+    .hp-range::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;
+      border-radius:50%;background:var(--cyan);cursor:pointer;border:2px solid rgba(0,0,0,.3)}
+    .hp-range-val{font-size:12px;font-weight:700;color:var(--cyan);min-width:40px;text-align:right}
+
+    /* arc buttons */
+    .arc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+    .arc-btn{
+      border:1.5px solid var(--border);border-radius:7px;padding:7px 2px 5px;
+      background:transparent;color:var(--muted);cursor:pointer;text-align:center;
+      font-family:'Inter',sans-serif;font-size:11px;font-weight:700;transition:all .14s;
+    }
+    .arc-btn:hover{border-color:rgba(64,200,240,.4);color:var(--text)}
+    .arc-btn.active{border-color:var(--cyan);background:rgba(64,200,240,.09);color:var(--cyan)}
+    .arc-btn span{font-size:8px;font-weight:500;opacity:.55;display:block;margin-top:1px}
+
+    /* direction compass */
+    .compass-row{display:flex;align-items:center;gap:12px}
+    .compass-wrap{width:60px;height:60px;flex-shrink:0;position:relative}
+    .dir-inp-wrap{flex:1}
+    .dir-inp{width:100%;background:var(--surface2);border:1.5px solid var(--border);
+      border-radius:8px;padding:10px;color:var(--text);font-size:22px;
+      font-family:'Playfair Display',serif;font-weight:600;text-align:center;
+      outline:none;transition:border-color .2s}
+    .dir-inp:focus{border-color:var(--cyan)}
+    .dir-unit{font-size:10px;color:var(--muted);text-align:center;margin-top:4px}
+
+    /* stats grid */
+    .hp-stats{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+    .hp-stat{background:var(--surface2);border-radius:7px;padding:9px 10px}
+    .hp-stat-val{font-size:15px;font-weight:700;color:var(--lime)}
+    .hp-stat-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:3px}
+
+    .hp-zone-badge{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:5px 11px;border-radius:6px;font-size:12px;font-weight:700;
+    }
+
+    .btn-del-head{
+      width:100%;padding:10px;border-radius:8px;
+      border:1.5px solid rgba(240,80,64,.3);background:transparent;
+      color:var(--red);font-size:12px;font-weight:700;cursor:pointer;
+      font-family:'Inter',sans-serif;transition:all .14s;margin-top:4px;
+    }
+    .btn-del-head:hover{background:rgba(240,80,64,.1);border-color:var(--red)}
+
+    /* ── LEGEND ── */
+    #legend{
+      position:absolute;bottom:70px;right:12px;z-index:200;
+      background:rgba(26,32,22,.88);backdrop-filter:blur(8px);
+      border:1px solid var(--border);border-radius:10px;padding:11px 13px;min-width:136px;
+    }
+    .leg-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;
+      color:var(--muted);margin-bottom:8px}
+    .leg-row{display:flex;align-items:center;gap:7px;margin-bottom:5px;font-size:11px;color:var(--text)}
+    .leg-line{height:3px;width:22px;border-radius:2px;flex-shrink:0}
+    .leg-dot{width:10px;height:10px;border-radius:50%;border:2.5px solid;flex-shrink:0}
+
+    /* ── LEAFLET overrides ── */
+    .leaflet-control-zoom{margin:0 12px 70px 0 !important}
+    .head-mkr{
+      width:12px;height:12px;border-radius:50%;border:2.5px solid #fff;
+      cursor:pointer;transition:transform .14s,box-shadow .14s;
+    }
+    .head-mkr.sel{transform:scale(1.55);box-shadow:0 0 0 3px rgba(64,200,240,.5)}
+    .handle-dot{
+      width:9px;height:9px;border-radius:50%;background:var(--cyan);
+      border:2px solid rgba(0,0,0,.45);cursor:grab;display:none;
+    }
+    .handle-dot.vis{display:block}
+    /* ── UPGRADE MODAL ── */
+    #upgrade-backdrop{
+      position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.65);
+      backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;
+    }
+    #upgrade-backdrop.show{display:flex}
+    #upgrade-modal{
+      background:#f1ebe2;color:#1c1c1a;border-radius:20px;
+      width:min(480px,92vw);padding:0;overflow:hidden;
+      box-shadow:0 24px 64px rgba(0,0,0,.5);
+      animation:modalUp .28s cubic-bezier(.2,.8,.4,1) both;
+    }
+    @keyframes modalUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+    .um-hero{
+      background:#253319;padding:32px 36px 28px;position:relative;overflow:hidden;
+    }
+    .um-hero::after{
+      content:'';position:absolute;inset:0;
+      background:radial-gradient(ellipse at 80% 0%,rgba(200,230,112,.18) 0%,transparent 70%);
+    }
+    .um-eyebrow{
+      font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+      color:#c8e670;margin-bottom:10px;
+    }
+    .um-title{
+      font-family:'Playfair Display',serif;font-size:26px;font-weight:600;
+      color:#f1ebe2;line-height:1.2;margin-bottom:8px;position:relative;z-index:1;
+    }
+    .um-sub{font-size:13px;color:rgba(241,235,226,.65);line-height:1.6;position:relative;z-index:1;}
+    .um-body{padding:24px 32px 28px}
+    .um-features{list-style:none;margin:0 0 22px;display:flex;flex-direction:column;gap:9px}
+    .um-feat{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#3a3a32;line-height:1.4}
+    .um-check{
+      width:20px;height:20px;border-radius:50%;background:#253319;flex-shrink:0;margin-top:1px;
+      display:flex;align-items:center;justify-content:center;font-size:10px;color:#c8e670;font-weight:700;
+    }
+    .um-price-row{
+      display:flex;align-items:baseline;gap:6px;margin-bottom:20px;
+      padding:14px 16px;background:rgba(37,51,25,.07);border-radius:12px;
+    }
+    .um-price{font-family:'Playfair Display',serif;font-size:36px;font-weight:600;color:#253319}
+    .um-price-desc{font-size:13px;color:#7a7a72;line-height:1.4}
+    .um-cta{
+      display:block;width:100%;background:#253319;color:#f1ebe2;
+      font-size:15px;font-weight:700;padding:16px;border-radius:10px;border:none;
+      cursor:pointer;text-align:center;font-family:'Inter',sans-serif;
+      transition:background .18s,transform .14s;margin-bottom:10px;
+    }
+    .um-cta:hover{background:#2e4020;transform:translateY(-1px)}
+    .um-dismiss{
+      display:block;width:100%;background:transparent;color:#7a7a72;
+      font-size:13px;font-weight:500;padding:10px;border-radius:8px;border:none;
+      cursor:pointer;font-family:'Inter',sans-serif;transition:color .15s;
+    }
+    .um-dismiss:hover{color:#3a3a32}
+  </style>
+</head>
+<body>
+
+<!-- UPGRADE MODAL -->
+<div id="upgrade-backdrop" onclick="handleBackdropClick(event)">
+  <div id="upgrade-modal">
+    <div class="um-hero">
+      <div class="um-eyebrow">Irrigation Plan — $99</div>
+      <div class="um-title">Your design is ready.<br>Get the full plan.</div>
+      <div class="um-sub">You've mapped every zone and placed every head. Turn it into a professional irrigation plan with a complete materials list.</div>
+    </div>
+    <div class="um-body">
+      <ul class="um-features">
+        <li class="um-feat"><div class="um-check">✓</div><span><strong>Complete materials list</strong> — every pipe, fitting, head, and valve with quantities and part numbers</span></li>
+        <li class="um-feat"><div class="um-check">✓</div><span><strong>Printable zone-by-zone plan</strong> — bring it to the hardware store or hand it to your installer</span></li>
+        <li class="um-feat"><div class="um-check">✓</div><span><strong>Controller schedule</strong> — run times per zone based on your soil and climate</span></li>
+        <li class="um-feat"><div class="um-check">✓</div><span><strong>Pipe layout PDF</strong> — scaled drawing with trenching paths and connection points</span></li>
+        <li class="um-feat"><div class="um-check">✓</div><span><strong>Lifetime access</strong> — edit and re-download your plan anytime</span></li>
+      </ul>
+      <div class="um-price-row">
+        <span class="um-price">$99</span>
+        <span class="um-price-desc">one-time · no subscription<br>30-day money-back guarantee</span>
+      </div>
+      <button class="um-cta" onclick="checkout()">See the Material List →</button>
+      <button class="um-dismiss" onclick="closeUpgradeModal()">Keep editing my design</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<div id="topbar">
+  <a href="water.html" class="tb-back">← Back</a>
+  <div class="tb-sep"></div>
+  <span class="tb-logo">Drip Atlas</span>
+  <div class="tb-sep"></div>
+  <span class="tb-step">Step 6 of 7</span>
+  <span id="tb-addr">Zone Layout &amp; Sprinkler Design</span>
+  <button class="btn-save" onclick="saveAndContinue()">See the Material List →</button>
+</div>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div class="sb-head">
+    <div class="sb-title">Irrigation Zones</div>
+    <div class="sb-stats">
+      <div class="sb-stat">
+        <div class="sb-stat-val" id="sb-heads">—</div>
+        <div class="sb-stat-lbl">Heads</div>
+      </div>
+      <div class="sb-stat">
+        <div class="sb-stat-val" id="sb-gpm">—</div>
+        <div class="sb-stat-lbl">Peak GPM</div>
+      </div>
+      <div class="sb-stat">
+        <div class="sb-stat-val" id="sb-zones">—</div>
+        <div class="sb-stat-lbl">Zones</div>
+      </div>
+    </div>
+  </div>
+  <div class="sb-scroll" id="zone-list"></div>
+</div>
+
+<!-- MAP -->
+<div id="map-wrap">
+  <div id="map"></div>
+
+  <!-- Toolbar -->
+  <div id="toolbar">
+    <span class="tool-lbl">Tool</span>
+    <button class="tool-btn active" id="t-select" onclick="setTool('select')" title="Select (V)">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M2 1.5l9 5.5-4.5 1L4.5 13z" fill="currentColor"/>
+      </svg>
+      <span class="tool-key">V</span>
+    </button>
+    <button class="tool-btn" id="t-addhead" onclick="setTool('addhead')" title="Add Head (H)">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <circle cx="7" cy="7" r="2.5" fill="currentColor"/>
+        <line x1="7" y1="1" x2="7" y2="3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="7" y1="10.5" x2="7" y2="13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="1" y1="7" x2="3.5" y2="7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="10.5" y1="7" x2="13" y2="7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+      <span class="tool-key">H</span>
+    </button>
+    <div class="tool-sep"></div>
+    <button class="tool-btn" onclick="deleteSelected()" title="Delete (Del)">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M2.5 3.5h9M5.5 3.5V2h3v1.5M4.5 3.5l1 8h3l1-8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="tool-key">⌫</span>
+    </button>
+  </div>
+
+  <!-- Legend -->
+  <div id="legend">
+    <div class="leg-title">Legend</div>
+    <div class="leg-row"><div class="leg-line" style="background:#f0a832"></div>Main line</div>
+    <div class="leg-row"><div class="leg-line" style="background:#f0c870;height:2px"></div>Lateral pipe</div>
+    <div class="leg-row"><div class="leg-dot" style="border-color:#40c8f0;background:rgba(64,200,240,.25)"></div>Sprinkler head</div>
+    <div class="leg-row">
+      <div style="width:22px;height:10px;border-radius:3px;background:rgba(64,200,240,.22);border:1px solid rgba(64,200,240,.5);flex-shrink:0"></div>
+      Spray arc
+    </div>
+  </div>
+</div>
+
+<!-- HEAD PANEL -->
+<div id="head-panel">
+  <div class="hp-hd">
+    <span class="hp-title">Head Properties</span>
+    <button class="hp-close" onclick="closeHeadPanel()">×</button>
+  </div>
+  <div class="hp-body">
+
+    <div>
+      <div class="hp-lbl">Head Type</div>
+      <div class="htype-grid">
+        <button class="htype-btn active" id="ht-rotor" onclick="setHeadType('rotor')">
+          <span class="htype-icon">⟳</span>Rotor
+          <div class="htype-sub">8–30 ft</div>
+        </button>
+        <button class="htype-btn" id="ht-spray" onclick="setHeadType('spray')">
+          <span class="htype-icon">💦</span>Spray
+          <div class="htype-sub">5–18 ft</div>
+        </button>
+      </div>
+    </div>
+
+    <div>
+      <div class="hp-lbl">Throw Distance — <span id="hp-throw-val" style="color:var(--cyan)">15 ft</span></div>
+      <div class="hp-range-row">
+        <input class="hp-range" type="range" id="hp-throw" min="5" max="30" value="15"
+          oninput="updateThrow(this.value)"/>
+      </div>
+    </div>
+
+    <div>
+      <div class="hp-lbl">Spray Arc</div>
+      <div class="arc-grid">
+        <button class="arc-btn active" id="arc-360" onclick="setArc(360)">360°<span>Full</span></button>
+        <button class="arc-btn" id="arc-270" onclick="setArc(270)">270°<span>¾</span></button>
+        <button class="arc-btn" id="arc-180" onclick="setArc(180)">180°<span>Half</span></button>
+        <button class="arc-btn" id="arc-90"  onclick="setArc(90)">90°<span>Qtr</span></button>
+      </div>
+    </div>
+
+    <div>
+      <div class="hp-lbl">Spray Direction</div>
+      <div class="compass-row">
+        <div class="compass-wrap">
+          <svg viewBox="0 0 60 60" style="width:60px;height:60px">
+            <circle cx="30" cy="30" r="28" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.1)" stroke-width="1"/>
+            <text x="30" y="11" fill="#7a8a72" font-size="8" text-anchor="middle" font-family="Inter,sans-serif" font-weight="600">N</text>
+            <text x="30" y="54" fill="#7a8a72" font-size="8" text-anchor="middle" font-family="Inter,sans-serif" font-weight="600">S</text>
+            <text x="9"  y="33" fill="#7a8a72" font-size="8" text-anchor="middle" font-family="Inter,sans-serif" font-weight="600">W</text>
+            <text x="51" y="33" fill="#7a8a72" font-size="8" text-anchor="middle" font-family="Inter,sans-serif" font-weight="600">E</text>
+            <polygon id="compass-arrow" points="30,8 27,30 30,26 33,30"
+              fill="#40c8f0" transform-origin="30 30" transform="rotate(0)"/>
+          </svg>
+        </div>
+        <div class="dir-inp-wrap">
+          <input class="dir-inp" type="number" id="hp-dir" min="0" max="359" value="0"
+            placeholder="0" oninput="updateDir(this.value)"/>
+          <div class="dir-unit">° from north, clockwise</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="hp-lbl">Zone</div>
+      <div id="hp-zone-badge" class="hp-zone-badge" style="background:rgba(255,255,255,.05);color:var(--muted)">—</div>
+    </div>
+
+    <div>
+      <div class="hp-lbl">Output</div>
+      <div class="hp-stats">
+        <div class="hp-stat">
+          <div class="hp-stat-val" id="hp-gpm">—</div>
+          <div class="hp-stat-lbl">GPM</div>
+        </div>
+        <div class="hp-stat">
+          <div class="hp-stat-val" id="hp-cov">—</div>
+          <div class="hp-stat-lbl">Coverage ft²</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-del-head" onclick="deleteSelected()">Delete This Head</button>
+
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="map-config.js"></script>
+<script src="irrigation-rules.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════════════════════
+const ZONE_PALETTE = [
+  '#ef5350','#42a5f5','#66bb6a','#ffb300','#ab47bc',
+  '#26c6da','#ff7043','#8d6e63','#78909c','#26a69a',
+];
+const LSCAPE_ZONES = {
+  lawn:    {color:'#4CAF50',fill:'#4CAF50'},
+  garden:  {color:'#a07030',fill:'#a07030'},
+  shrubs:  {color:'#1a6b3a',fill:'#1a6b3a'},
+  driveway:{color:'#708090',fill:'#708090'},
+  path:    {color:'#b08040',fill:'#b08040'},
+  nowater: {color:'#cc3030',fill:'#cc3030'},
+};
+const HEAD_SPECS = {
+  rotor: {
+    label:   IRRIGATION_RULES.heads.rotor.label,
+    gpmFull: IRRIGATION_RULES.heads.rotor.gpmFull,
+    defR:    IRRIGATION_RULES.heads.rotor.radiusFt.default,
+    minR:    IRRIGATION_RULES.heads.rotor.radiusFt.min,
+    maxR:    IRRIGATION_RULES.heads.rotor.radiusFt.max,
+  },
+  spray: {
+    label:   IRRIGATION_RULES.heads.spray.label,
+    gpmFull: IRRIGATION_RULES.heads.spray.gpmFull,
+    defR:    IRRIGATION_RULES.heads.spray.radiusFt.default,
+    minR:    IRRIGATION_RULES.heads.spray.radiusFt.min,
+    maxR:    IRRIGATION_RULES.heads.spray.radiusFt.max,
+  },
+};
+
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+const design   = JSON.parse(sessionStorage.getItem('drip_design') || '{}');
+const water    = design.water || {};
+const lzones   = design.zones  || [];
+const lplants  = design.plants || [];
+
+// Derive supply from water step
+let supplyGPM = IRRIGATION_RULES.pressure.typicalGpm.default;
+let supplyPSI = IRRIGATION_RULES.pressure.typicalPsi.default;
+if (water.flowVal) {
+  if (water.flowUnit === 'gpm') { supplyGPM = +water.flowVal; supplyPSI = IRRIGATION_RULES.pressure.typicalPsi.default; }
+  else                          { supplyPSI = +water.flowVal; supplyGPM = supplyPSI * IRRIGATION_RULES.pressure.psiToGpmFactor; }
+}
+
+const iZones    = [];         // irrigation zone objects
+let   headSeq   = 0;
+const headMap   = new Map();  // headId → {head, arcPoly, marker, dirMkr}
+const pipeMap   = new Map();  // izId   → [L.polyline, ...]
+
+let map;
+let currentTool    = 'select';
+let selectedHeadId = null;
+
+// ═══════════════════════════════════════════════════════════
+// MATH UTILITIES
+// ═══════════════════════════════════════════════════════════
+const D2R = Math.PI / 180;
+function ftToM(f){ return f * 0.3048; }
+function mToFt(m){ return m / 0.3048; }
+
+// Distance in feet between two [lat,lng] points
+function distFt(a, b) {
+  const dLat = (b[0]-a[0]) * 111320;
+  const dLng = (b[1]-a[1]) * 111320 * Math.cos((a[0]+b[0])/2 * D2R);
+  return Math.hypot(dLat, dLng) * 3.28084;
+}
+
+// Move a point by bearing (0=N, CW) and distance in feet
+function move(lat, lng, bearDeg, distFt_) {
+  const m = ftToM(distFt_);
+  const b = bearDeg * D2R;
+  return [
+    lat  + m * Math.cos(b) / 111320,
+    lng  + m * Math.sin(b) / (111320 * Math.cos(lat * D2R)),
+  ];
+}
+
+// Bearing from point a=[lat,lng] to b=[lat,lng] (degrees, 0=N)
+function bearing(a, b) {
+  const dLatM = (b[0]-a[0]) * 111320;
+  const dLngM = (b[1]-a[1]) * 111320 * Math.cos(a[0] * D2R);
+  return (Math.atan2(dLngM, dLatM) / D2R + 360) % 360;
+}
+
+// Ray-cast point-in-polygon
+function pip(pt, poly) {
+  let inside = false;
+  const [px,py] = pt;
+  for (let i=0, j=poly.length-1; i<poly.length; j=i++) {
+    const [xi,yi]=poly[i], [xj,yj]=poly[j];
+    if (((yi>py)!==(yj>py)) && (px < (xj-xi)*(py-yi)/(yj-yi)+xi)) inside=!inside;
+  }
+  return inside;
+}
+
+function centroid(pts) {
+  return [
+    pts.reduce((s,p)=>s+p[0],0)/pts.length,
+    pts.reduce((s,p)=>s+p[1],0)/pts.length,
+  ];
+}
+
+// Point-to-segment distance in degrees (for boundary detection)
+function p2seg(p, a, b) {
+  const dx=b[0]-a[0], dy=b[1]-a[1];
+  if (!dx && !dy) return Math.hypot(p[0]-a[0],p[1]-a[1]);
+  const t = Math.max(0, Math.min(1, ((p[0]-a[0])*dx+(p[1]-a[1])*dy)/(dx*dx+dy*dy)));
+  return Math.hypot(p[0]-(a[0]+t*dx), p[1]-(a[1]+t*dy));
+}
+
+// Count how many polygon edges are within `threshDeg` of point
+function edgesNear(pt, poly, threshDeg) {
+  let n = 0;
+  for (let i=0; i<poly.length; i++) {
+    if (p2seg(pt, poly[i], poly[(i+1)%poly.length]) < threshDeg) n++;
+  }
+  return Math.min(n, 2);
+}
+
+// ═══════════════════════════════════════════════════════════
+// ENGINEERING
+// ═══════════════════════════════════════════════════════════
+function pipeSpec(gpm) {
+  const r = IRRIGATION_RULES.getPipeSpec(gpm);
+  return { sz: r.size, id: r.idIn };
+}
+
+// Hazen-Williams friction loss (ft-head) for a given run length
+function hW(gpm, diaIn, lenFt) {
+  if (!gpm || !diaIn || !lenFt) return 0;
+  return Math.round(IRRIGATION_RULES.pipe.frictionLossPer100ft(gpm, diaIn) * lenFt / 100 * 10) / 10;
+}
+
+function headGPM(type, arcDeg) {
+  return Math.round(HEAD_SPECS[type].gpmFull * arcDeg/360 * 10) / 10;
+}
+
+// ═══════════════════════════════════════════════════════════
+// HEAD PLACEMENT — triangular grid
+// ═══════════════════════════════════════════════════════════
+function placeHeads(poly, radiusFt) {
+  const rM   = ftToM(radiusFt);
+  const lats = poly.map(p=>p[0]), lngs = poly.map(p=>p[1]);
+  const minLat=Math.min(...lats), maxLat=Math.max(...lats);
+  const minLng=Math.min(...lngs), maxLng=Math.max(...lngs);
+  const midLat=(minLat+maxLat)/2;
+  const dLat  = rM / 111320;
+  const dLng  = rM / (111320 * Math.cos(midLat*D2R));
+  const rowH  = dLat * Math.sqrt(3) / 2;           // triangular grid
+
+  const thresh = rM * 0.55 / 111320;               // edge inclusion threshold
+  const heads  = [];
+  let row = 0;
+  for (let lat=minLat+dLat*0.5; lat<=maxLat+dLat*0.05; lat+=rowH, row++) {
+    const off = (row%2) * dLng * 0.5;              // stagger alternate rows
+    for (let lng=minLng+dLng*0.5+off; lng<=maxLng+dLng*0.05; lng+=dLng) {
+      const inside = pip([lat,lng], poly);
+      const near   = !inside && isNearBoundary([lat,lng], poly, thresh);
+      if (inside || near) heads.push({lat, lng});
+    }
+  }
+  return heads;
+}
+
+function isNearBoundary(pt, poly, threshDeg) {
+  for (let i=0; i<poly.length; i++) {
+    if (p2seg(pt, poly[i], poly[(i+1)%poly.length]) < threshDeg) return true;
+  }
+  return false;
+}
+
+// ═══════════════════════════════════════════════════════════
+// MINIMUM SPANNING TREE (Prim's) for pipe routing
+// ═══════════════════════════════════════════════════════════
+function mst(nodes) {
+  // nodes[0] is root; returns [{u,v}] edge list
+  const n = nodes.length;
+  if (n < 2) return [];
+  const inT = new Set([0]);
+  const edges = [];
+  while (inT.size < n) {
+    let bestD=Infinity, bu=-1, bv=-1;
+    inT.forEach(u => {
+      for (let v=0; v<n; v++) {
+        if (inT.has(v)) continue;
+        const d = distFt([nodes[u].lat,nodes[u].lng],[nodes[v].lat,nodes[v].lng]);
+        if (d < bestD) { bestD=d; bu=u; bv=v; }
+      }
+    });
+    if (bv===-1) break;
+    inT.add(bv);
+    edges.push({u:bu, v:bv});
+  }
+  return edges;
+}
+
+// ═══════════════════════════════════════════════════════════
+// ARC POLYGON GEOMETRY
+// ═══════════════════════════════════════════════════════════
+function arcPoly(lat, lng, rFt, dirDeg, arcDeg) {
+  const rM     = ftToM(rFt);
+  const cosLat = Math.cos(lat*D2R);
+  const nPts   = Math.max(16, Math.round(arcDeg/4));
+  const start  = dirDeg - arcDeg/2;
+  const pts    = [];
+  if (arcDeg < 360) pts.push([lat, lng]);
+  for (let i=0; i<=nPts; i++) {
+    const b = (start + arcDeg*i/nPts) * D2R;
+    pts.push([
+      lat + rM*Math.cos(b)/111320,
+      lng + rM*Math.sin(b)/(111320*cosLat),
+    ]);
+  }
+  if (arcDeg < 360) pts.push([lat, lng]);
+  return pts;
+}
+
+function dirHandleLL(lat, lng, rFt, dirDeg) {
+  const rM     = ftToM(rFt);
+  const cosLat = Math.cos(lat*D2R);
+  const b      = dirDeg * D2R;
+  return [
+    lat + rM*Math.cos(b)/111320,
+    lng + rM*Math.sin(b)/(111320*cosLat),
+  ];
+}
+
+// ═══════════════════════════════════════════════════════════
+// AUTO-GENERATE IRRIGATION ZONES
+// ═══════════════════════════════════════════════════════════
+function autoGenZones() {
+  const srcLat = water.srcLat || design.lat;
+  const srcLng = water.srcLng || design.lng;
+  let colorIdx = 0;
+
+  lzones.forEach((lz, lzIdx) => {
+    if (lz.type === 'lawn') {
+      const hType   = 'rotor';
+      const rFt     = HEAD_SPECS[hType].defR;
+      const rawHds  = placeHeads(lz.latlngs, rFt);
+      if (!rawHds.length) return;
+
+      const threshDeg = ftToM(rFt)*0.55/111320;
+
+      const heads = rawHds.map(h => {
+        const ec  = edgesNear([h.lat,h.lng], lz.latlngs, threshDeg);
+        const arc = ec>=2 ? 90 : ec===1 ? 180 : 360;
+        const dir = arc<360 ? Math.round(bearing([h.lat,h.lng], centroid(lz.latlngs))) : 0;
+        return {
+          id:     ++headSeq,
+          lat:    h.lat, lng: h.lng,
+          type:   hType, radiusFt: rFt,
+          dirDeg: dir,   arcDeg: arc,
+          gpm:    headGPM(hType, arc),
+          izIdx:  iZones.length,
+        };
+      });
+
+      const totalGpm  = Math.round(heads.reduce((s,h)=>s+h.gpm,0)*10)/10;
+      const ctr       = centroid(lz.latlngs);
+      const dFt       = srcLat ? Math.round(distFt([srcLat,srcLng],[ctr[0],ctr[1]])) : 50;
+      const mainPipe  = pipeSpec(totalGpm);
+      const latPipe   = pipeSpec(totalGpm * IRRIGATION_RULES.pipe.lateralSizingFactor);
+      const mainLoss  = hW(totalGpm, mainPipe.id, dFt);
+      const atZone    = Math.max(0, Math.round(supplyPSI - mainLoss));
+
+      iZones.push({
+        id: `iz${iZones.length}`, name: `Zone ${iZones.length+1}`,
+        color: ZONE_PALETTE[colorIdx++ % ZONE_PALETTE.length],
+        lzIdx, lzType: lz.type,
+        lzName: lz.name || 'Lawn',
+        heads, totalGpm, mainPipe, latPipe,
+        mainLoss, atZone, distFt: dFt, area: lz.area||0,
+      });
+    } else if (lz.type==='garden'||lz.type==='shrubs') {
+      iZones.push({
+        id: `iz_drip_${lzIdx}`, name: lz.name||(lz.type==='garden'?'Garden Bed':'Shrubs'),
+        color:'#7dd9d9', lzIdx, lzType:lz.type,
+        lzName: lz.name||lz.type,
+        heads:[], isDrip:true, totalGpm:0, area:lz.area||0,
+      });
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDERING
+// ═══════════════════════════════════════════════════════════
+function drawLandscape() {
+  lzones.forEach(lz => {
+    const spec = LSCAPE_ZONES[lz.type]||LSCAPE_ZONES.lawn;
+    L.polygon(lz.latlngs, {
+      color:spec.color, fillColor:spec.fill,
+      weight:1, opacity:0.35, fillOpacity:0.12, interactive:false,
+    }).addTo(map);
+  });
+  lplants.forEach(pl => {
+    L.circle([pl.lat,pl.lng], {
+      radius:ftToM(pl.radiusFt), color:'#4a8a4a', fillColor:'#2d6e3a',
+      weight:1, opacity:0.4, fillOpacity:0.18, interactive:false,
+    }).addTo(map);
+  });
+}
+
+function drawWaterSource() {
+  if (!water.srcLat||!water.srcLng) return;
+  const emoji = water.srcType==='manifold' ? '🔧' : '🚿';
+  L.marker([water.srcLat,water.srcLng], {
+    icon: L.divIcon({
+      className:'',
+      html:`<div style="width:26px;height:26px;border-radius:50%;background:#253319;border:3px solid #c8e670;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 10px rgba(0,0,0,.6)">${emoji}</div>`,
+      iconSize:[26,26], iconAnchor:[13,13],
+    }),
+    interactive:false,
+  }).addTo(map);
+}
+
+function drawPipes(iz) {
+  // Clear existing
+  if (pipeMap.has(iz.id)) {
+    pipeMap.get(iz.id).forEach(l=>map.removeLayer(l));
+  }
+  const layers = [];
+  if (iz.isDrip || !iz.heads.length) { pipeMap.set(iz.id,layers); return; }
+
+  const srcLat = water.srcLat||design.lat;
+  const srcLng = water.srcLng||design.lng;
+  if (!srcLat||!srcLng) { pipeMap.set(iz.id,layers); return; }
+
+  // Entry head = closest to source
+  let entryIdx=0, minD=Infinity;
+  iz.heads.forEach((h,i)=>{
+    const d=distFt([srcLat,srcLng],[h.lat,h.lng]);
+    if (d<minD){minD=d;entryIdx=i;}
+  });
+  const entry = iz.heads[entryIdx];
+
+  // Main line: source → entry head
+  layers.push(
+    L.polyline([[srcLat,srcLng],[entry.lat,entry.lng]], {
+      color:'#f0a832', weight:3, opacity:0.85, interactive:false,
+    }).addTo(map)
+  );
+
+  // Lateral lines: MST from entry head through all other heads
+  if (iz.heads.length > 1) {
+    const nodes = [entry, ...iz.heads.filter((_,i)=>i!==entryIdx)];
+    mst(nodes).forEach(({u,v})=>{
+      layers.push(
+        L.polyline([[nodes[u].lat,nodes[u].lng],[nodes[v].lat,nodes[v].lng]], {
+          color:'#f0c870', weight:1.6, opacity:0.7, interactive:false,
+        }).addTo(map)
+      );
+    });
+  }
+  pipeMap.set(iz.id, layers);
+}
+
+function drawHead(head, color) {
+  removeHead(head.id);
+
+  // Spray arc
+  const arcPts = arcPoly(head.lat,head.lng,head.radiusFt,head.dirDeg,head.arcDeg);
+  const arcLayer = L.polygon(arcPts, {
+    color:'#40c8f0', fillColor:'#40c8f0',
+    weight:1, opacity:0.55, fillOpacity:0.14, interactive:false,
+  }).addTo(map);
+
+  // Head marker
+  const mkrIcon = L.divIcon({
+    className:'',
+    html:`<div class="head-mkr" id="hm${head.id}" style="background:${color}"></div>`,
+    iconSize:[12,12], iconAnchor:[6,6],
+  });
+  const marker = L.marker([head.lat,head.lng], {icon:mkrIcon, draggable:true}).addTo(map);
+  marker.on('click', e=>{L.DomEvent.stopPropagation(e); selectHead(head.id);});
+  marker.on('dragstart', ()=>deselectHead());
+  marker.on('drag', e=>{
+    head.lat=e.latlng.lat; head.lng=e.latlng.lng;
+    refreshHead(head);
+  });
+  marker.on('dragend', ()=>{
+    refreshZonePipes(head.izIdx);
+    selectHead(head.id);
+  });
+
+  // Direction handle (initially hidden)
+  const dhPos = dirHandleLL(head.lat,head.lng,head.radiusFt,head.dirDeg);
+  const dhIcon = L.divIcon({
+    className:'',
+    html:`<div class="handle-dot" id="dh${head.id}"></div>`,
+    iconSize:[9,9], iconAnchor:[4,4],
+  });
+  const dirMkr = L.marker(dhPos, {icon:dhIcon, draggable:true}).addTo(map);
+  dirMkr.on('drag', e=>{
+    const ll = e.latlng;
+    const dLatM = (ll.lat-head.lat)*111320;
+    const dLngM = (ll.lng-head.lng)*111320*Math.cos(head.lat*D2R);
+    head.dirDeg = Math.round((Math.atan2(dLngM,dLatM)/D2R+360)%360);
+    refreshHead(head);
+    if (selectedHeadId===head.id) {
+      document.getElementById('hp-dir').value = head.dirDeg;
+      document.getElementById('compass-arrow').setAttribute('transform',`rotate(${head.dirDeg})`);
+    }
+  });
+
+  headMap.set(head.id, {head, arcLayer, marker, dirMkr});
+}
+
+function removeHead(id) {
+  if (!headMap.has(id)) return;
+  const {arcLayer,marker,dirMkr} = headMap.get(id);
+  map.removeLayer(arcLayer); map.removeLayer(marker); map.removeLayer(dirMkr);
+  headMap.delete(id);
+}
+
+function refreshHead(head) {
+  const iz = iZones[head.izIdx];
+  drawHead(head, iz.color);
+  if (selectedHeadId===head.id) highlightMarker(head.id, true);
+}
+
+function refreshZonePipes(izIdx) {
+  drawPipes(iZones[izIdx]);
+}
+
+function highlightMarker(headId, on) {
+  const entry = headMap.get(headId);
+  if (!entry) return;
+  const el = entry.marker.getElement();
+  if (el) el.querySelector('.head-mkr')?.classList.toggle('sel', on);
+  const dEl = entry.dirMkr.getElement();
+  if (dEl) dEl.querySelector('.handle-dot')?.classList.toggle('vis', on);
+}
+
+// ═══════════════════════════════════════════════════════════
+// SELECTION
+// ═══════════════════════════════════════════════════════════
+function selectHead(id) {
+  deselectHead();
+  selectedHeadId = id;
+  highlightMarker(id, true);
+  const {head} = headMap.get(id);
+  openHeadPanel(head);
+}
+
+function deselectHead() {
+  if (selectedHeadId) {
+    highlightMarker(selectedHeadId, false);
+    selectedHeadId = null;
+  }
+  closeHeadPanel();
+}
+
+// ═══════════════════════════════════════════════════════════
+// HEAD PANEL
+// ═══════════════════════════════════════════════════════════
+function openHeadPanel(head) {
+  const panel = document.getElementById('head-panel');
+  panel.classList.add('open');
+  document.getElementById('map-wrap').classList.add('panel-open');
+
+  const spec = HEAD_SPECS[head.type];
+  // type
+  document.getElementById('ht-rotor').classList.toggle('active', head.type==='rotor');
+  document.getElementById('ht-spray').classList.toggle('active', head.type==='spray');
+  // throw
+  document.getElementById('hp-throw').min   = spec.minR;
+  document.getElementById('hp-throw').max   = spec.maxR;
+  document.getElementById('hp-throw').value = head.radiusFt;
+  document.getElementById('hp-throw-val').textContent = head.radiusFt+' ft';
+  // arc
+  [360,270,180,90].forEach(a=>{
+    document.getElementById(`arc-${a}`).classList.toggle('active', head.arcDeg===a);
+  });
+  // direction
+  document.getElementById('hp-dir').value = head.dirDeg;
+  document.getElementById('compass-arrow').setAttribute('transform',`rotate(${head.dirDeg})`);
+  // zone badge
+  const iz  = iZones[head.izIdx];
+  const bdg = document.getElementById('hp-zone-badge');
+  bdg.textContent = iz.name;
+  bdg.style.background = iz.color+'22';
+  bdg.style.color       = iz.color;
+  bdg.style.border      = `1px solid ${iz.color}44`;
+  // stats
+  document.getElementById('hp-gpm').textContent = head.gpm.toFixed(1);
+  document.getElementById('hp-cov').textContent =
+    Math.round(Math.PI*head.radiusFt*head.radiusFt*head.arcDeg/360).toLocaleString();
+}
+
+function closeHeadPanel() {
+  document.getElementById('head-panel').classList.remove('open');
+  document.getElementById('map-wrap').classList.remove('panel-open');
+}
+
+function setHeadType(type) {
+  if (!selectedHeadId) return;
+  const {head} = headMap.get(selectedHeadId);
+  head.type     = type;
+  head.radiusFt = HEAD_SPECS[type].defR;
+  head.gpm      = headGPM(type, head.arcDeg);
+  refreshHead(head); selectHead(head.id);
+  recalcZone(head.izIdx); renderSidebar();
+}
+
+function updateThrow(val) {
+  if (!selectedHeadId) return;
+  const {head} = headMap.get(selectedHeadId);
+  head.radiusFt = +val;
+  document.getElementById('hp-throw-val').textContent = val+' ft';
+  document.getElementById('hp-cov').textContent =
+    Math.round(Math.PI*head.radiusFt*head.radiusFt*head.arcDeg/360).toLocaleString();
+  refreshHead(head); selectHead(head.id);
+}
+
+function setArc(deg) {
+  if (!selectedHeadId) return;
+  const {head} = headMap.get(selectedHeadId);
+  head.arcDeg = deg;
+  head.gpm    = headGPM(head.type, deg);
+  [360,270,180,90].forEach(a=>{
+    document.getElementById(`arc-${a}`).classList.toggle('active', a===deg);
+  });
+  document.getElementById('hp-gpm').textContent = head.gpm.toFixed(1);
+  document.getElementById('hp-cov').textContent =
+    Math.round(Math.PI*head.radiusFt*head.radiusFt*deg/360).toLocaleString();
+  refreshHead(head); selectHead(head.id);
+  recalcZone(head.izIdx); renderSidebar();
+}
+
+function updateDir(val) {
+  if (!selectedHeadId) return;
+  const {head,dirMkr} = headMap.get(selectedHeadId);
+  head.dirDeg = ((+val||0)+360)%360;
+  document.getElementById('compass-arrow').setAttribute('transform',`rotate(${head.dirDeg})`);
+  dirMkr.setLatLng(dirHandleLL(head.lat,head.lng,head.radiusFt,head.dirDeg));
+  refreshHead(head); selectHead(head.id);
+}
+
+// ═══════════════════════════════════════════════════════════
+// TOOLS
+// ═══════════════════════════════════════════════════════════
+function setTool(t) {
+  currentTool = t;
+  document.querySelectorAll('.tool-btn').forEach(b=>b.classList.remove('active'));
+  const btn = document.getElementById(`t-${t}`);
+  if (btn) btn.classList.add('active');
+  map.getContainer().style.cursor = t==='addhead' ? 'crosshair' : '';
+}
+
+function deleteSelected() {
+  if (!selectedHeadId) return;
+  const {head} = headMap.get(selectedHeadId);
+  const izIdx  = head.izIdx;
+  iZones[izIdx].heads = iZones[izIdx].heads.filter(h=>h.id!==head.id);
+  removeHead(head.id);
+  selectedHeadId = null;
+  closeHeadPanel();
+  recalcZone(izIdx);
+  refreshZonePipes(izIdx);
+  renderSidebar();
+}
+
+function addHeadAt(latlng) {
+  // Assign to izone whose lawn polygon contains the click, else first lawn zone
+  let bestIz = iZones.find(z=>!z.isDrip);
+  if (!bestIz) return;
+  iZones.forEach(iz=>{
+    if (iz.isDrip) return;
+    const lz = lzones[iz.lzIdx];
+    if (lz && pip([latlng.lat,latlng.lng], lz.latlngs)) bestIz = iz;
+  });
+
+  const head = {
+    id:       ++headSeq,
+    lat:      latlng.lat, lng: latlng.lng,
+    type:     'rotor', radiusFt: HEAD_SPECS.rotor.defR,
+    dirDeg:   0, arcDeg: 360,
+    gpm:      headGPM('rotor', 360),
+    izIdx:    iZones.indexOf(bestIz),
+  };
+  bestIz.heads.push(head);
+  drawHead(head, bestIz.color);
+  recalcZone(head.izIdx);
+  refreshZonePipes(head.izIdx);
+  renderSidebar();
+  selectHead(head.id);
+}
+
+// ═══════════════════════════════════════════════════════════
+// ZONE RECALC
+// ═══════════════════════════════════════════════════════════
+function recalcZone(izIdx) {
+  const iz       = iZones[izIdx];
+  iz.totalGpm    = Math.round(iz.heads.reduce((s,h)=>s+h.gpm,0)*10)/10;
+  iz.mainPipe    = pipeSpec(iz.totalGpm);
+  iz.latPipe     = pipeSpec(iz.totalGpm * IRRIGATION_RULES.pipe.lateralSizingFactor);
+  iz.mainLoss    = hW(iz.totalGpm, iz.mainPipe.id, iz.distFt||50);
+  iz.atZone      = Math.max(0, Math.round(supplyPSI - iz.mainLoss));
+}
+
+// ═══════════════════════════════════════════════════════════
+// SIDEBAR
+// ═══════════════════════════════════════════════════════════
+function renderSidebar() {
+  let totalHeads=0, peakGpm=0, sprayZones=0;
+  iZones.forEach(iz=>{ totalHeads+=iz.heads.length; peakGpm=Math.max(peakGpm,iz.totalGpm||0); if(!iz.isDrip) sprayZones++; });
+
+  document.getElementById('sb-heads').textContent = totalHeads;
+  document.getElementById('sb-gpm').textContent   = Math.round(peakGpm*10)/10;
+  document.getElementById('sb-zones').textContent = sprayZones;
+
+  const list = document.getElementById('zone-list');
+  list.innerHTML = '';
+
+  // Spray zones
+  const sprayList = iZones.filter(z=>!z.isDrip);
+  if (sprayList.length) {
+    list.innerHTML += `<div class="sb-section-lbl">Spray Zones</div>`;
+    sprayList.forEach((iz, i)=>{
+      const warn = iz.atZone < IRRIGATION_RULES.pressure.lowPressureWarnPsi
+        ? `⚠️ Low pressure (${iz.atZone} PSI). Consider splitting zone or larger pipe.`
+        : iz.totalGpm > supplyGPM * IRRIGATION_RULES.zones.maxZoneGpmFactor
+          ? `⚠️ Zone demand (${iz.totalGpm} GPM) exceeds ${Math.round(IRRIGATION_RULES.zones.maxZoneGpmFactor*100)}% of supply (${supplyGPM.toFixed(1)} GPM).`
+          : null;
+
+      list.innerHTML += `
+      <div class="zone-card" id="zc-${iz.id}" onclick="focusZone('${iz.id}')">
+        <div class="zc-hd">
+          <div class="zc-dot" style="background:${iz.color}"></div>
+          <span class="zc-name">${iz.name}</span>
+          <span class="zc-count">${iz.heads.length} heads</span>
+        </div>
+        <div class="zc-grid">
+          <div class="zc-cell">
+            <div class="zc-lbl">GPM</div>
+            <div class="zc-val" style="color:var(--lime)">${iz.totalGpm}</div>
+          </div>
+          <div class="zc-cell">
+            <div class="zc-lbl">Src distance</div>
+            <div class="zc-val">${iz.distFt} ft</div>
+          </div>
+          <div class="zc-cell">
+            <div class="zc-lbl">Main pipe</div>
+            <div class="zc-val" style="color:var(--amber)">${iz.mainPipe.sz} PVC</div>
+          </div>
+          <div class="zc-cell">
+            <div class="zc-lbl">Lateral</div>
+            <div class="zc-val" style="color:#f0c870">${iz.latPipe.sz} PVC</div>
+          </div>
+          <div class="zc-cell">
+            <div class="zc-lbl">Friction loss</div>
+            <div class="zc-val">${iz.mainLoss} PSI</div>
+          </div>
+          <div class="zc-cell">
+            <div class="zc-lbl">Pressure at zone</div>
+            <div class="zc-val" style="color:${iz.atZone<IRRIGATION_RULES.pressure.lowPressureWarnPsi?'var(--red)':'var(--cyan)'}">${iz.atZone} PSI</div>
+          </div>
+          ${warn?`<div class="zc-warn">${warn}</div>`:''}
+        </div>
+      </div>`;
+    });
+  }
+
+  // Drip zones
+  const dripList = iZones.filter(z=>z.isDrip);
+  if (dripList.length) {
+    list.innerHTML += `<div class="sb-section-lbl" style="margin-top:8px">Drip Zones</div>`;
+    dripList.forEach(iz=>{
+      list.innerHTML += `
+      <div class="zone-card zone-card-drip">
+        <div class="zc-hd">
+          <div class="zc-dot" style="background:${iz.color}"></div>
+          <span class="zc-name">${iz.lzName||iz.name}</span>
+          <span class="zc-badge">drip</span>
+        </div>
+        <div class="zc-drip-note">
+          Use ½" poly drip tubing with 0.5–1 GPH emitters per plant.
+          Typical operating pressure: 20–30 PSI with pressure regulator.
+        </div>
+      </div>`;
+    });
+  }
+}
+
+function focusZone(izId) {
+  document.querySelectorAll('.zone-card').forEach(c=>c.classList.remove('zc-active'));
+  const card = document.getElementById(`zc-${izId}`);
+  if (card) card.classList.add('zc-active');
+  const iz = iZones.find(z=>z.id===izId);
+  if (!iz) return;
+  const lz = lzones[iz.lzIdx];
+  if (lz?.latlngs) map.panTo(centroid(lz.latlngs), {animate:true, duration:0.4});
+}
+
+// ═══════════════════════════════════════════════════════════
+// SAVE
+// ═══════════════════════════════════════════════════════════
+function saveAndContinue() {
+  const saved = iZones.map(iz=>({
+    id:iz.id, name:iz.name, color:iz.color, isDrip:iz.isDrip||false,
+    totalGpm:iz.totalGpm, mainPipe:iz.mainPipe, latPipe:iz.latPipe,
+    pressureAtZone:iz.atZone, distFt:iz.distFt,
+    heads: iz.heads.map(h=>({
+      id:h.id, lat:h.lat, lng:h.lng,
+      type:h.type, radiusFt:h.radiusFt, dirDeg:h.dirDeg, arcDeg:h.arcDeg, gpm:h.gpm,
+    })),
+  }));
+  sessionStorage.setItem('drip_design', JSON.stringify({...design, irrigationZones:saved}));
+  document.getElementById('upgrade-backdrop').classList.add('show');
+}
+
+function closeUpgradeModal() {
+  document.getElementById('upgrade-backdrop').classList.remove('show');
+}
+
+function handleBackdropClick(e) {
+  if (e.target === document.getElementById('upgrade-backdrop')) closeUpgradeModal();
+}
+
+function checkout() {
+  window.location.href = 'checkout.html';
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+function init() {
+  const lat = water.srcLat || design.lat || 37.7749;
+  const lng = water.srcLng || design.lng || -122.4194;
+
+  map = L.map('map', {center:[lat,lng], zoom:19, zoomControl:false, attributionControl:false});
+  initMapLayers(map);
+  L.control.zoom({position:'bottomright'}).addTo(map);
+
+  drawLandscape();
+  drawWaterSource();
+  autoGenZones();
+
+  iZones.forEach(iz => {
+    if (!iz.isDrip) {
+      iz.heads.forEach(h => drawHead(h, iz.color));
+      drawPipes(iz);
+    }
+  });
+
+  renderSidebar();
+
+  if (design.address) {
+    document.getElementById('tb-addr').textContent = `Zone Layout — ${design.address}`;
+  }
+
+  map.on('click', e => {
+    if (currentTool==='addhead') addHeadAt(e.latlng);
+    else deselectHead();
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName==='INPUT') return;
+    if (e.key==='v'||e.key==='V') setTool('select');
+    if (e.key==='h'||e.key==='H') setTool('addhead');
+    if (e.key==='Escape')          { setTool('select'); deselectHead(); }
+    if (e.key==='Delete'||e.key==='Backspace') deleteSelected();
+  });
+}
+
+window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

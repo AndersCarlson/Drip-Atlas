@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Drip Atlas — Design Tool</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --forest:#253319;--lime:#c8e670;--teal:#7dd9d9;--cream:#f1ebe2;
+      --white:#fff;--charcoal:#1c1c1a;--gray:#7a7a72;--border:rgba(37,51,25,.12);
+      --ui:#1e1e1c;--ui2:#272725;--ui3:#303030;--muted:rgba(255,255,255,.45);
+      --tb:52px;--panel:268px;--topbar:52px;
+    }
+    html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:#0e1a0a;-webkit-font-smoothing:antialiased}
+
+    /* ── TOP BAR ── */
+    .topbar{
+      position:fixed;top:0;left:0;right:0;height:var(--topbar);
+      background:var(--charcoal);border-bottom:1px solid rgba(255,255,255,.08);
+      display:flex;align-items:center;padding:0 14px;gap:10px;z-index:2000;
+    }
+    .tb-logo img{height:22px;opacity:.85;display:block}
+    .tb-div{width:1px;height:22px;background:rgba(255,255,255,.12);flex-shrink:0}
+    .tb-addr{font-size:13px;font-weight:500;color:rgba(255,255,255,.65);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .tb-step{font-size:11px;color:rgba(255,255,255,.3);white-space:nowrap}
+    .tb-back{font-size:12px;color:rgba(255,255,255,.4);text-decoration:none;display:flex;align-items:center;gap:4px;transition:color .2s;flex-shrink:0}
+    .tb-back:hover{color:rgba(255,255,255,.8)}
+    .btn-save{
+      background:var(--lime);color:var(--forest);font-size:13px;font-weight:700;
+      padding:7px 16px;border-radius:6px;border:none;cursor:pointer;
+      font-family:'Inter',sans-serif;transition:opacity .15s;flex-shrink:0;
+    }
+    .btn-save:hover{opacity:.85}
+    .btn-save:disabled{opacity:.3;cursor:not-allowed}
+
+    /* ── LAYOUT ── */
+    .app{
+      position:fixed;top:var(--topbar);bottom:0;left:0;right:0;
+      display:flex;
+    }
+
+    /* ── TOOLBAR ── */
+    .toolbar{
+      width:var(--tb);background:var(--ui);border-right:1px solid rgba(255,255,255,.07);
+      display:flex;flex-direction:column;align-items:center;padding:10px 0;gap:2px;
+      z-index:1000;flex-shrink:0;
+    }
+    .tool{
+      width:36px;height:36px;border-radius:7px;border:none;
+      background:transparent;color:var(--muted);cursor:pointer;
+      display:flex;align-items:center;justify-content:center;
+      transition:background .12s,color .12s;position:relative;flex-shrink:0;
+    }
+    .tool:hover{background:rgba(255,255,255,.08);color:rgba(255,255,255,.9)}
+    .tool.active{background:var(--forest);color:var(--lime)}
+    .tool svg{width:17px;height:17px;display:block}
+    .tool-sep{width:26px;height:1px;background:rgba(255,255,255,.09);margin:5px 0;flex-shrink:0}
+    /* tooltip */
+    .tool::after{
+      content:attr(data-tip);position:absolute;left:calc(100% + 9px);top:50%;
+      transform:translateY(-50%);background:var(--charcoal);color:rgba(255,255,255,.85);
+      font-size:11px;font-weight:500;padding:4px 9px;border-radius:5px;
+      white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .12s;
+      border:1px solid rgba(255,255,255,.1);z-index:9999;
+    }
+    .tool:hover::after{opacity:1}
+
+    /* ── MAP ── */
+    .map-wrap{flex:1;position:relative;overflow:hidden}
+    #map{width:100%;height:100%}
+    .leaflet-control-container,.leaflet-draw{display:none!important}
+    /* cursor states */
+    .map-wrap.mode-polygon #map,.map-wrap.mode-rect #map{cursor:crosshair}
+    .map-wrap.mode-select #map{cursor:default}
+
+    /* map zoom */
+    .map-zoom{position:absolute;bottom:36px;right:14px;z-index:900;display:flex;flex-direction:column;gap:2px}
+    .zoom-btn{
+      width:30px;height:30px;background:rgba(28,28,26,.9);backdrop-filter:blur(4px);
+      border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.75);
+      font-size:16px;border-radius:5px;cursor:pointer;display:flex;align-items:center;
+      justify-content:center;transition:background .12s;line-height:1;
+    }
+    .zoom-btn:hover{background:rgba(255,255,255,.12)}
+
+    /* status bar */
+    .statusbar{
+      position:absolute;bottom:0;left:0;right:0;height:26px;
+      background:rgba(20,20,18,.88);backdrop-filter:blur(6px);
+      border-top:1px solid rgba(255,255,255,.07);
+      display:flex;align-items:center;padding:0 14px;gap:20px;z-index:900;
+    }
+    .sb-item{font-size:10px;color:rgba(255,255,255,.35);letter-spacing:.02em}
+    .sb-item span{color:rgba(255,255,255,.65);font-weight:500}
+
+    /* ── PROPERTIES PANEL ── */
+    .panel{
+      width:var(--panel);background:var(--ui);border-left:1px solid rgba(255,255,255,.07);
+      display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;
+    }
+    .panel-hd{
+      padding:12px 14px 10px;font-size:10px;font-weight:700;
+      letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.3);
+      border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0;
+    }
+    .panel-empty{
+      padding:28px 16px;text-align:center;
+      font-size:12px;color:rgba(255,255,255,.25);line-height:1.65;
+    }
+    .panel-empty-icon{font-size:26px;margin-bottom:10px}
+    .panel-body{padding:14px;display:flex;flex-direction:column;gap:12px;overflow-y:auto}
+    .prop-lbl{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:5px}
+    .prop-sel,.prop-inp{
+      width:100%;background:var(--ui3);border:1px solid rgba(255,255,255,.1);
+      border-radius:7px;color:#fff;font-size:13px;font-weight:500;
+      padding:8px 10px;font-family:'Inter',sans-serif;outline:none;
+      transition:border-color .15s;
+    }
+    .prop-sel{appearance:none;-webkit-appearance:none;cursor:pointer}
+    .prop-sel:focus,.prop-inp:focus{border-color:rgba(200,230,112,.5)}
+    .prop-inp::placeholder{color:rgba(255,255,255,.25)}
+    .stat-box{background:var(--ui2);border-radius:8px;padding:11px 12px}
+    .stat-val{font-size:20px;font-weight:700;color:var(--lime);font-family:'Playfair Display',serif}
+    .stat-unit{font-size:11px;color:rgba(255,255,255,.35);margin-top:2px}
+    .btn-del{
+      width:100%;background:rgba(200,50,50,.12);border:1px solid rgba(200,50,50,.22);
+      color:rgba(255,140,140,.85);font-size:12px;font-weight:600;padding:9px;
+      border-radius:7px;cursor:pointer;font-family:'Inter',sans-serif;transition:background .12s;
+    }
+    .btn-del:hover{background:rgba(200,50,50,.22)}
+
+    /* shapes list */
+    .shapes-sect{border-top:1px solid rgba(255,255,255,.07);flex-shrink:0}
+    .shapes-hd{padding:10px 14px 6px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.3)}
+    .shapes-scroll{max-height:180px;overflow-y:auto;padding:0 6px 8px}
+    .shape-row{
+      display:flex;align-items:center;gap:8px;padding:6px 8px;
+      border-radius:6px;cursor:pointer;transition:background .1s;
+    }
+    .shape-row:hover{background:rgba(255,255,255,.05)}
+    .shape-row.sel{background:rgba(200,230,112,.08)}
+    .shape-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+    .shape-name{font-size:12px;color:rgba(255,255,255,.65);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .shape-area{font-size:10px;color:rgba(255,255,255,.3);flex-shrink:0}
+
+    /* ── LOT CONFIRM MODAL ── */
+    .modal-bg{
+      position:fixed;inset:0;background:rgba(0,0,0,.55);
+      backdrop-filter:blur(5px);z-index:3000;
+      display:flex;align-items:center;justify-content:center;padding:20px;
+    }
+    .modal{
+      background:#fff;border-radius:18px;padding:32px;
+      max-width:460px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.4);
+    }
+    .modal-eyebrow{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gray);margin-bottom:10px}
+    .modal-title{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--forest);line-height:1.2;margin-bottom:14px}
+    .modal-body{font-size:14px;color:var(--gray);line-height:1.7;margin-bottom:20px}
+    .modal-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+    .modal-stat{background:var(--cream);border-radius:10px;padding:13px 14px}
+    .modal-stat-val{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--forest)}
+    .modal-stat-lbl{font-size:11px;color:var(--gray);margin-top:2px}
+    .modal-note{font-size:12px;color:var(--gray);line-height:1.6;padding:10px 13px;background:rgba(37,51,25,.06);border-radius:7px;border-left:3px solid var(--forest);margin-bottom:22px}
+    .modal-btns{display:flex;flex-direction:column;gap:9px}
+    .btn-modal-p{
+      background:var(--forest);color:#fff;font-size:14px;font-weight:600;
+      padding:14px;border-radius:9px;border:none;cursor:pointer;
+      font-family:'Inter',sans-serif;transition:background .15s;
+    }
+    .btn-modal-p:hover{background:#2e4020}
+    .btn-modal-s{
+      background:transparent;color:var(--charcoal);font-size:13px;font-weight:500;
+      padding:12px;border-radius:9px;border:1.5px solid var(--border);cursor:pointer;
+      font-family:'Inter',sans-serif;transition:border-color .15s;
+    }
+    .btn-modal-s:hover{border-color:var(--forest)}
+
+    /* ── LOADING OVERLAY ── */
+    .loader{
+      position:fixed;inset:0;background:rgba(14,26,10,.95);
+      z-index:4000;display:flex;flex-direction:column;
+      align-items:center;justify-content:center;gap:18px;
+    }
+    .loader-ring{
+      width:48px;height:48px;border-radius:50%;
+      border:3px solid rgba(200,230,112,.15);
+      border-top-color:var(--lime);
+      animation:spin 1s linear infinite;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .loader p{font-size:14px;color:rgba(255,255,255,.5)}
+
+    /* ── MAP OVERLAYS ── */
+    /* Leaflet tooltip overrides */
+    .lf-zone-lbl{
+      background:rgba(0,0,0,.62)!important;backdrop-filter:blur(4px)!important;
+      border:none!important;box-shadow:none!important;
+      color:#fff!important;font-size:11px!important;font-weight:700!important;
+      padding:3px 8px!important;border-radius:4px!important;
+      font-family:'Inter',sans-serif!important;pointer-events:none!important;
+    }
+    .lf-zone-lbl::before{display:none!important}
+
+    /* hint toast */
+    #hint{
+      position:fixed;bottom:36px;left:50%;transform:translateX(-50%);
+      background:rgba(20,20,18,.92);backdrop-filter:blur(8px);
+      border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.8);
+      font-size:12px;font-weight:500;padding:8px 18px;border-radius:100px;
+      z-index:2500;transition:opacity .3s;pointer-events:none;
+      font-family:'Inter',sans-serif;white-space:nowrap;opacity:0;
+    }
+
+    /* plant markers */
+    .plant-ic{font-size:20px;line-height:1;display:block;text-align:center;
+      cursor:pointer;user-select:none;filter:drop-shadow(0 1px 3px rgba(0,0,0,.6));
+      transition:filter .15s}
+    .plant-ic.selected{filter:drop-shadow(0 0 6px rgba(200,230,112,.9)) drop-shadow(0 1px 3px rgba(0,0,0,.6))}
+    .plant-handle{width:11px;height:11px;background:rgba(200,230,112,.95);
+      border:2px solid rgba(37,51,25,.6);border-radius:50%;cursor:ew-resize;
+      box-shadow:0 1px 5px rgba(0,0,0,.6)}
+    /* plant type selector chip in panel */
+    .plant-type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+    .ptype-btn{
+      background:var(--ui3);border:1.5px solid rgba(255,255,255,.1);border-radius:8px;
+      color:rgba(255,255,255,.6);font-size:11px;font-weight:600;padding:8px 4px;
+      cursor:pointer;text-align:center;transition:all .12s;font-family:'Inter',sans-serif;
+    }
+    .ptype-btn:hover{border-color:rgba(255,255,255,.3);color:#fff}
+    .ptype-btn.active{border-color:var(--lime);background:rgba(200,230,112,.12);color:var(--lime)}
+    .ptype-icon{font-size:18px;display:block;margin-bottom:3px}
+    /* size slider */
+    .size-row{display:flex;align-items:center;gap:8px}
+    .size-slider{flex:1;-webkit-appearance:none;height:4px;border-radius:2px;
+      background:var(--ui3);outline:none;cursor:pointer}
+    .size-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;
+      border-radius:50%;background:var(--lime);cursor:pointer}
+    .size-val{font-size:12px;color:var(--lime);font-weight:600;min-width:36px;text-align:right}
+
+    /* ── WATER SOURCE PLACEMENT OVERLAY ── */
+    .ws-overlay{
+      position:fixed;top:var(--topbar);left:0;right:0;bottom:0;
+      z-index:3000;display:flex;pointer-events:none;
+    }
+    .ws-overlay.active{pointer-events:all}
+    .ws-panel{
+      width:300px;flex-shrink:0;
+      background:var(--charcoal);border-right:1px solid rgba(255,255,255,.1);
+      padding:28px 22px;display:flex;flex-direction:column;gap:0;
+      transform:translateX(-100%);transition:transform .35s cubic-bezier(.4,0,.2,1);
+    }
+    .ws-overlay.active .ws-panel{transform:translateX(0)}
+    .ws-map-shield{
+      flex:1;cursor:crosshair;
+      background:transparent;
+      pointer-events:none;
+    }
+    .ws-overlay.active .ws-map-shield{pointer-events:all}
+    .ws-step-lbl{font-size:10px;font-weight:700;letter-spacing:.12em;
+      text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:14px}
+    .ws-title{font-family:'Playfair Display',serif;font-size:21px;font-weight:700;
+      color:var(--lime);line-height:1.2;margin-bottom:10px}
+    .ws-desc{font-size:13px;color:rgba(255,255,255,.5);line-height:1.65;margin-bottom:24px}
+    .ws-type-lbl{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+      color:rgba(255,255,255,.35);margin-bottom:8px}
+    .ws-type-row{display:flex;gap:8px;margin-bottom:22px}
+    .ws-type-btn{
+      flex:1;padding:9px 10px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;
+      text-align:center;border:1.5px solid rgba(255,255,255,.12);
+      background:transparent;color:rgba(255,255,255,.4);
+      font-family:'Inter',sans-serif;transition:all .2s;
+    }
+    .ws-type-btn.active{background:var(--forest);border-color:var(--lime);color:var(--lime)}
+    .ws-placed{
+      background:rgba(200,230,112,.1);border:1px solid rgba(200,230,112,.25);
+      border-radius:10px;padding:12px 14px;margin-bottom:18px;display:none;
+    }
+    .ws-placed-lbl{font-size:10px;font-weight:700;letter-spacing:.08em;
+      text-transform:uppercase;color:var(--lime);margin-bottom:4px}
+    .ws-placed-val{font-size:13px;font-weight:600;color:rgba(255,255,255,.8)}
+    .ws-hint-bar{
+      position:absolute;bottom:32px;left:50%;transform:translateX(-50%);
+      background:rgba(28,28,26,.9);backdrop-filter:blur(6px);
+      border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.8);
+      font-size:12px;font-weight:500;padding:8px 20px;border-radius:100px;
+      pointer-events:none;white-space:nowrap;font-family:'Inter',sans-serif;
+      z-index:3001;transition:opacity .3s;
+    }
+    .ws-btn{
+      width:100%;padding:13px;background:var(--lime);color:var(--forest);
+      font-size:14px;font-weight:700;border:none;border-radius:9px;cursor:pointer;
+      font-family:'Inter',sans-serif;transition:opacity .15s;margin-top:auto;
+    }
+    .ws-btn:disabled{opacity:.3;cursor:not-allowed}
+    .ws-btn:not(:disabled):hover{opacity:.85}
+    .ws-skip{
+      width:100%;padding:9px;background:none;border:none;
+      color:rgba(255,255,255,.28);font-size:12px;cursor:pointer;
+      font-family:'Inter',sans-serif;margin-top:6px;transition:color .2s;
+    }
+    .ws-skip:hover{color:rgba(255,255,255,.55)}
+  </style>
+</head>
+<body>
+
+<!-- Loading -->
+<div class="loader" id="loader">
+  <div class="loader-ring"></div>
+  <p>Loading your property…</p>
+</div>
+
+<!-- Top bar -->
+<div class="topbar">
+  <div class="tb-logo"><img src="file:///Users/andersmacbookpro/Downloads/drip-atlas-assets/Drip Atlas Logo_White.png" alt="Drip Atlas"/></div>
+  <div class="tb-div"></div>
+  <div class="tb-addr" id="tb-addr">Your Property</div>
+  <div class="tb-step" id="tb-step">Step 1 of 7 — Place Water Source</div>
+  <div class="tb-div"></div>
+  <a href="design.html" class="tb-back">← Back</a>
+  <button class="btn-save" id="btn-save" disabled onclick="saveDesign()">Save &amp; Continue →</button>
+</div>
+
+<!-- App layout -->
+<div class="app">
+
+  <!-- Toolbar -->
+  <div class="toolbar" id="toolbar">
+    <button class="tool active" id="tool-select" data-tool="select" data-tip="Select  V" onclick="setTool('select')">
+      <svg viewBox="0 0 18 18" fill="none"><path d="M4 2l10 7-5 1.5L11 16l-2.5-1.5L7 18 4 2z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="tool" id="tool-polygon" data-tool="polygon" data-tip="Draw Zone  P" onclick="setTool('polygon')">
+      <svg viewBox="0 0 18 18" fill="none"><polygon points="9,2 16,7 13,15 5,15 2,7" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="tool" id="tool-rect" data-tool="rect" data-tip="Draw Rectangle  R" onclick="setTool('rect')">
+      <svg viewBox="0 0 18 18" fill="none"><rect x="2.5" y="4.5" width="13" height="9" rx="1.5" stroke="currentColor" stroke-width="1.4"/></svg>
+    </button>
+    <div class="tool-sep"></div>
+    <button class="tool" id="tool-edit" data-tool="edit" data-tip="Edit Vertices  E" onclick="setTool('edit')">
+      <svg viewBox="0 0 18 18" fill="none"><path d="M3 13.5V15h1.5l6.5-6.5-1.5-1.5L3 13.5zM14.7 5.3a1 1 0 000-1.4l-1.6-1.6a1 1 0 00-1.4 0l-1.2 1.2 3 3 1.2-1.2z" fill="currentColor"/></svg>
+    </button>
+    <button class="tool" id="tool-delete" data-tool="delete" data-tip="Delete  ⌫" onclick="deleteSelected()">
+      <svg viewBox="0 0 18 18" fill="none"><path d="M3 5h12M7 5V3h4v2M6 5l.5 10h5L12 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="tool-sep"></div>
+    <div class="tool-sep"></div>
+    <button class="tool" id="tool-plant" data-tool="plant" data-tip="Place Plant  L" onclick="setTool('plant')">
+      <svg viewBox="0 0 18 18" fill="none"><circle cx="9" cy="7" r="4.5" fill="currentColor" fill-opacity=".25" stroke="currentColor" stroke-width="1.3"/><line x1="9" y1="11.5" x2="9" y2="16" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><line x1="6.5" y1="14" x2="9" y2="12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+
+  <!-- Map -->
+  <div class="map-wrap mode-select" id="map-wrap">
+    <div id="map"></div>
+    <div class="map-zoom">
+      <button class="zoom-btn" onclick="map.zoomIn()">+</button>
+      <button class="zoom-btn" onclick="map.zoomOut()">−</button>
+    </div>
+    <div class="statusbar">
+      <div class="sb-item">Zoom <span id="sb-zoom">19</span></div>
+      <div class="sb-item">Tool <span id="sb-tool">Select</span></div>
+      <div class="sb-item">Zones <span id="sb-zones">0</span></div>
+      <div class="sb-item">Total area <span id="sb-area">0 sqft</span></div>
+    </div>
+  </div>
+
+  <!-- Properties panel -->
+  <div class="panel">
+    <div class="panel-hd">Properties</div>
+    <div id="panel-empty" class="panel-empty">
+      <div class="panel-empty-icon">✏️</div>
+      Draw lawn areas, garden beds, and other zones using the polygon tool.<br/><br/>
+      <small style="color:rgba(255,255,255,.18)">V select · P polygon · R rect · E edit · ⌫ delete</small>
+    </div>
+    <div id="panel-body" class="panel-body" style="display:none">
+      <div>
+        <div class="prop-lbl">Zone Type</div>
+        <select class="prop-sel" id="prop-type" onchange="updateType(this.value)">
+          <option value="lawn">🌿  Lawn</option>
+          <option value="garden">🌸  Garden Bed</option>
+          <option value="shrubs">🌳  Shrubs / Trees</option>
+          <option value="driveway">🚗  Driveway</option>
+          <option value="path">👣  Walkway / Path</option>
+          <option value="nowater">⛔  No-Water Zone</option>
+        </select>
+      </div>
+      <div>
+        <div class="prop-lbl">Label</div>
+        <input class="prop-inp" id="prop-name" type="text" placeholder="e.g. Front Lawn" oninput="updateName(this.value)"/>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="prop-area">—</div>
+        <div class="stat-unit">Square feet</div>
+      </div>
+      <button class="btn-del" onclick="deleteSelected()">Delete Zone</button>
+    </div>
+    <!-- Plant properties (shown when a plant is selected) -->
+    <div id="plant-body" class="panel-body" style="display:none">
+      <div>
+        <div class="prop-lbl">Plant Type</div>
+        <div class="plant-type-grid">
+          <button class="ptype-btn active" id="ptype-tree"   onclick="setPlantType('tree')">  <span class="ptype-icon">🌳</span>Tree</button>
+          <button class="ptype-btn"        id="ptype-shrub"  onclick="setPlantType('shrub')"> <span class="ptype-icon">🌿</span>Shrub</button>
+          <button class="ptype-btn"        id="ptype-grass"  onclick="setPlantType('grass')"> <span class="ptype-icon">🌾</span>Grasses</button>
+        </div>
+      </div>
+      <div>
+        <div class="prop-lbl">Label</div>
+        <input class="prop-inp" id="plant-name-inp" type="text" placeholder="e.g. Oak Tree" oninput="updatePlantName(this.value)"/>
+      </div>
+      <div>
+        <div class="prop-lbl">Canopy Diameter — <span id="plant-size-lbl" style="color:var(--lime)">—</span></div>
+        <div class="size-row">
+          <input class="size-slider" id="plant-size-slider" type="range" min="2" max="60" value="16" oninput="updatePlantRadius(this.value)"/>
+          <span class="size-val" id="plant-size-val">16 ft</span>
+        </div>
+      </div>
+      <button class="btn-del" onclick="deletePlant()">Delete Plant</button>
+    </div>
+
+    <div class="shapes-sect" id="shapes-sect">
+      <div class="shapes-hd">Zones (<span id="zone-count">0</span>)</div>
+      <div class="shapes-scroll" id="shapes-scroll"></div>
+    </div>
+    <div class="shapes-sect" id="plants-sect">
+      <div class="shapes-hd">Plants (<span id="plant-count">0</span>)</div>
+      <div class="shapes-scroll" id="plants-scroll"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Water Source Placement Overlay -->
+<div class="ws-overlay" id="ws-overlay">
+  <div class="ws-panel">
+    <div class="ws-step-lbl">Step 1 of 7 — Water Source</div>
+    <div class="ws-title">Where is your water source?</div>
+    <p class="ws-desc" id="ws-desc">Click anywhere on the map to drop your water source. You can move it by clicking a new spot. This is where your irrigation pipes will route from.</p>
+
+    <div class="ws-type-lbl">Source Type</div>
+    <div class="ws-type-row">
+      <button class="ws-type-btn active" id="wt-hose" onclick="setWsType('hose')">🚿 Hose Tap</button>
+      <button class="ws-type-btn" id="wt-manifold" onclick="setWsType('manifold')">🔧 Manifold</button>
+    </div>
+
+    <div class="ws-placed" id="ws-placed">
+      <div class="ws-placed-lbl">Source Placed ✓</div>
+      <div class="ws-placed-val" id="ws-placed-val">—</div>
+    </div>
+
+    <button class="ws-btn" id="ws-continue-btn" disabled onclick="dismissWsOverlay()">Continue to Design →</button>
+    <div id="ws-rules-summary" style="margin-top:18px;border-top:1px solid rgba(255,255,255,.08);padding-top:16px;display:flex;flex-direction:column;gap:8px"></div>
+    <button class="ws-skip" onclick="skipWsPlacement()">Skip — place later</button>
+  </div>
+  <div class="ws-map-shield" id="ws-map-shield" onclick="wsMapClick(event)">
+    <div class="ws-hint-bar" id="ws-hint-bar">Click the map to place your water source</div>
+  </div>
+</div>
+
+
+<div id="hint"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+<script src="map-config.js"></script>
+<script src="irrigation-rules.js"></script>
+<script>
+// ─────────────────────────────────────────
+// CONSTANTS
+// ─────────────────────────────────────────
+const ZONES = {
+  lawn:     { label:'Lawn',           color:'#5db85d', fill:'#4CAF50', icon:'🌿' },
+  garden:   { label:'Garden Bed',     color:'#c8a050', fill:'#a07030', icon:'🌸' },
+  shrubs:   { label:'Shrubs / Trees', color:'#2d8b57', fill:'#1a6b3a', icon:'🌳' },
+  driveway: { label:'Driveway',       color:'#9eaab8', fill:'#708090', icon:'🚗' },
+  path:     { label:'Walkway',        color:'#d4aa6a', fill:'#b08040', icon:'👣' },
+  nowater:  { label:'No-Water Zone',  color:'#e05555', fill:'#cc3030', icon:'⛔' },
+};
+
+// ─────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────
+let map, drawnItems, drawHandler;
+let shapes    = new Map(); // L.stamp(layer) → { layer, type, name }
+let selectedId = null;
+let currentTool = 'select';
+let dragState  = null;
+let _coords    = null;
+
+// Water source placement state
+let wsMarker  = null;
+let wsType    = 'hose';
+
+// ─────────────────────────────────────────
+// BOOT
+// ─────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  const p   = new URLSearchParams(location.search);
+  const lat = parseFloat(p.get('lat'))  || 42.3601;
+  const lng = parseFloat(p.get('lng'))  || -71.0589;
+  const addr = decodeURIComponent(p.get('address') || 'Your Property');
+  _coords = { lat, lng };
+
+  document.getElementById('tb-addr').textContent = addr;
+
+  // Init map
+  map = L.map('map', { zoomControl:false, attributionControl:false, zoomSnap:0.5 });
+  initMapLayers(map);
+
+  drawnItems = new L.FeatureGroup().addTo(map);
+  map.setView([lat, lng], 19);
+
+  map.on('zoomend', () => document.getElementById('sb-zoom').textContent = map.getZoom().toFixed(1));
+  map.on(L.Draw.Event.CREATED, onShapeCreated);
+  map.on('click', () => { if (currentTool === 'select') deselect(); });
+
+  document.getElementById('loader').style.display = 'none';
+
+  // Pre-select source type from design data, then show water source overlay
+  const savedDesign = JSON.parse(sessionStorage.getItem('drip_design') || '{}');
+  if (savedDesign.water?.sourceType) setWsType(savedDesign.water.sourceType);
+
+  // Populate rules summary from IRRIGATION_RULES
+  const R = IRRIGATION_RULES;
+  document.getElementById('ws-rules-summary').innerHTML = [
+    { icon:'💧', text:`Supply default: <strong>${R.pressure.typicalGpm.default} GPM</strong> / <strong>${R.pressure.typicalPsi.default} PSI</strong>` },
+    { icon:'📏', text:`Head spacing: <strong>radius = spacing</strong> (${Math.round(R.coverage.spacingFactor * 100)}% head-to-head)` },
+    { icon:'⚠️', text:`Warn if zone exceeds <strong>${Math.round(R.zones.maxZoneGpmFactor * 100)}%</strong> of supply GPM` },
+    { icon:'🚫', text:`Don't mix rotor + spray — precip rates differ (<strong>${R.heads.rotor.precipIn_hr}"</strong> vs <strong>${R.heads.spray.precipIn_hr}"</strong>/hr)` },
+  ].map(r => `<div style="display:flex;gap:8px;align-items:flex-start;font-size:11px;color:rgba(255,255,255,.45);line-height:1.5">
+    <span style="flex-shrink:0">${r.icon}</span><span>${r.text}</span>
+  </div>`).join('');
+
+  document.getElementById('ws-overlay').classList.add('active');
+});
+
+// ─────────────────────────────────────────
+// LOAD PROPERTY (OSM)
+// ─────────────────────────────────────────
+
+// ─────────────────────────────────────────
+// LOT MODAL
+// ─────────────────────────────────────────
+
+// ─────────────────────────────────────────
+// TOOLS
+// ─────────────────────────────────────────
+function setTool(tool) {
+  // Clean up previous draw handler
+  if (drawHandler) { try { drawHandler.disable(); } catch(e){} drawHandler = null; }
+  // Remove plant-click listener if leaving plant mode
+  if (currentTool === 'plant') map.off('click', onPlantClick);
+
+  // Disable vertex editing if leaving edit mode
+  if (currentTool === 'edit' && selectedId !== null) {
+    const e = shapes.get(selectedId);
+    if (e?.layer?.editing) try { e.layer.editing.disable(); } catch(_){}
+  }
+
+  currentTool = tool;
+
+  // Toolbar active state
+  document.querySelectorAll('.tool[data-tool]').forEach(b =>
+    b.classList.toggle('active', b.dataset.tool === tool)
+  );
+
+  // Map cursor
+  const mw = document.getElementById('map-wrap');
+  const cursorMode = (tool === 'polygon' || tool === 'rect' || tool === 'plant') ? tool : 'select';
+  mw.className = 'map-wrap mode-' + cursorMode;
+
+  document.getElementById('sb-tool').textContent =
+    { select:'Select', polygon:'Draw Zone', rect:'Draw Rect', edit:'Edit', plant:'Place Plant' }[tool] || tool;
+
+  // Re-wire zone interactions
+  shapes.forEach(({ layer }, id) => {
+    layer.off('click').off('mousedown');
+    if (tool === 'select') {
+      layer.on('click',     e => { L.DomEvent.stopPropagation(e); selectShape(id); });
+      layer.on('mousedown', e => startDrag(e, id));
+    }
+  });
+
+  // Draw zone handlers
+  if (tool === 'polygon' || tool === 'rect') {
+    const z = ZONES[document.getElementById('prop-type').value || 'lawn'];
+    const opts = { shapeOptions:{ color:z.color, fillColor:z.fill, fillOpacity:0.28, weight:2 } };
+    drawHandler = tool === 'polygon'
+      ? new L.Draw.Polygon(map, { ...opts, allowIntersection:false })
+      : new L.Draw.Rectangle(map, opts);
+    drawHandler.enable();
+  }
+
+  // Plant placement
+  if (tool === 'plant') {
+    map.on('click', onPlantClick);
+    hint('Click the map to place a plant · L to toggle tool', 3000);
+  }
+
+  if (tool === 'edit' && selectedId !== null) {
+    const e = shapes.get(selectedId);
+    if (e?.layer?.editing) try { e.layer.editing.enable(); } catch(_){}
+  }
+}
+
+function onPlantClick(e) {
+  // Don't fire if clicking on an existing layer
+  if (e.originalEvent._stopped) return;
+  placePlant(e.latlng);
+}
+
+// ─────────────────────────────────────────
+// SHAPE CREATION
+// ─────────────────────────────────────────
+function onShapeCreated(e) {
+  const layer = e.layer;
+  const type  = document.getElementById('prop-type').value || 'lawn';
+  const z     = ZONES[type];
+
+  layer.setStyle({ color:z.color, fillColor:z.fill, fillOpacity:0.28, weight:2 });
+  drawnItems.addLayer(layer);
+
+  const id   = L.stamp(layer);
+  const area = calcArea(layer.getLatLngs()[0]);
+  const name = z.label;
+
+  shapes.set(id, { layer, type, name, area });
+
+  layer.bindTooltip(`${z.icon} ${name}`, {
+    permanent:true, direction:'center', className:'lf-zone-lbl'
+  });
+
+  layer.on('click',     ev => { L.DomEvent.stopPropagation(ev); selectShape(id); });
+  layer.on('mousedown', ev => startDrag(ev, id));
+
+  updateList();
+  selectShape(id);
+  updateSaveBtn();
+
+  // Re-arm tool so user can draw again
+  setTimeout(() => { if (currentTool === 'polygon' || currentTool === 'rect') setTool(currentTool); }, 40);
+}
+
+// ─────────────────────────────────────────
+// SELECTION
+// ─────────────────────────────────────────
+function selectShape(id) {
+  deselect(false);
+  selectedId = id;
+  const s = shapes.get(id);
+  if (!s) return;
+
+  s.layer.setStyle({ weight:3, opacity:1 });
+  document.getElementById('panel-empty').style.display = 'none';
+  document.getElementById('panel-body').style.display  = '';
+  document.getElementById('prop-type').value  = s.type;
+  document.getElementById('prop-name').value  = s.name;
+  document.getElementById('prop-area').textContent = Math.round(s.area).toLocaleString();
+
+  document.querySelectorAll('.shape-row').forEach(r =>
+    r.classList.toggle('sel', r.dataset.id == id)
+  );
+
+  if (currentTool === 'edit' && s.layer.editing) {
+    try { s.layer.editing.enable(); } catch(_){}
+  }
+}
+
+function deselect(reset = true) {
+  if (selectedId !== null) {
+    const s = shapes.get(selectedId);
+    if (s) {
+      s.layer.setStyle({ weight:2, opacity:.9 });
+      if (s.layer.editing) try { s.layer.editing.disable(); } catch(_){}
+    }
+  }
+  if (reset) {
+    selectedId = null;
+    document.getElementById('panel-empty').style.display = '';
+    document.getElementById('panel-body').style.display  = 'none';
+    document.querySelectorAll('.shape-row').forEach(r => r.classList.remove('sel'));
+  }
+}
+
+// ─────────────────────────────────────────
+// DRAG TO MOVE
+// ─────────────────────────────────────────
+function startDrag(e, id) {
+  if (currentTool !== 'select') return;
+  L.DomEvent.stopPropagation(e);
+  const s = shapes.get(id);
+  if (!s) return;
+  map.dragging.disable();
+  const orig = s.layer.getLatLngs()[0].map(ll => ({ lat:ll.lat, lng:ll.lng }));
+  dragState = { id, start:e.latlng, orig };
+  map.on('mousemove', onDragMove);
+  map.on('mouseup',   onDragEnd);
+  document.addEventListener('mouseup', onDragEnd);
+}
+
+function onDragMove(e) {
+  if (!dragState) return;
+  const { id, start, orig } = dragState;
+  const s = shapes.get(id); if (!s) return;
+  const dLat = e.latlng.lat - start.lat;
+  const dLng = e.latlng.lng - start.lng;
+  s.layer.setLatLngs(orig.map(o => [o.lat + dLat, o.lng + dLng]));
+}
+
+function onDragEnd() {
+  if (!dragState) return;
+  // Recalculate area after move
+  const s = shapes.get(dragState.id);
+  if (s) { s.area = calcArea(s.layer.getLatLngs()[0]); updateList(); }
+  dragState = null;
+  map.dragging.enable();
+  map.off('mousemove', onDragMove);
+  map.off('mouseup',   onDragEnd);
+  document.removeEventListener('mouseup', onDragEnd);
+}
+
+// ─────────────────────────────────────────
+// PROPERTY UPDATES
+// ─────────────────────────────────────────
+function updateType(type) {
+  if (selectedId === null) return;
+  const s = shapes.get(selectedId); if (!s) return;
+  s.type = type;
+  const z = ZONES[type];
+  s.layer.setStyle({ color:z.color, fillColor:z.fill, fillOpacity:0.28 });
+  if (!document.getElementById('prop-name').value) s.name = z.label;
+  s.layer.setTooltipContent(`${z.icon} ${s.name}`);
+  updateList();
+}
+
+function updateName(val) {
+  if (selectedId === null) return;
+  const s = shapes.get(selectedId); if (!s) return;
+  s.name = val || ZONES[s.type].label;
+  s.layer.setTooltipContent(`${ZONES[s.type].icon} ${s.name}`);
+  updateList();
+}
+
+// ─────────────────────────────────────────
+// DELETE
+// ─────────────────────────────────────────
+function deleteSelected() {
+  if (selectedId === null) return;
+  const s = shapes.get(selectedId); if (!s) return;
+  drawnItems.removeLayer(s.layer);
+  shapes.delete(selectedId);
+  selectedId = null;
+  document.getElementById('panel-empty').style.display = '';
+  document.getElementById('panel-body').style.display  = 'none';
+  updateList();
+  updateSaveBtn();
+}
+
+// ─────────────────────────────────────────
+// SHAPES LIST
+// ─────────────────────────────────────────
+function updateList() {
+  const scroll = document.getElementById('shapes-scroll');
+  const count  = shapes.size;
+  document.getElementById('zone-count').textContent = count;
+  document.getElementById('sb-zones').textContent   = count;
+
+  let total = 0;
+  scroll.innerHTML = '';
+  shapes.forEach((s, id) => {
+    total += s.area;
+    const z  = ZONES[s.type];
+    const el = document.createElement('div');
+    el.className = 'shape-row' + (id === selectedId ? ' sel' : '');
+    el.dataset.id = id;
+    el.innerHTML  = `<div class="shape-dot" style="background:${z.color}"></div>
+      <span class="shape-name">${z.icon} ${s.name}</span>
+      <span class="shape-area">${Math.round(s.area).toLocaleString()} ft²</span>`;
+    el.onclick = () => { setTool('select'); selectShape(id); };
+    scroll.appendChild(el);
+  });
+
+  document.getElementById('sb-area').textContent = Math.round(total).toLocaleString() + ' sqft';
+}
+
+// ─────────────────────────────────────────
+// AREA CALCULATION
+// ─────────────────────────────────────────
+function calcArea(latlngs) {
+  if (!latlngs || latlngs.length < 3) return 0;
+  const R = 6371000;
+  let area = 0;
+  const n = latlngs.length;
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n;
+    const xi = latlngs[i].lng * Math.PI / 180 * R * Math.cos(latlngs[i].lat * Math.PI / 180);
+    const yi = latlngs[i].lat * Math.PI / 180 * R;
+    const xj = latlngs[j].lng * Math.PI / 180 * R * Math.cos(latlngs[j].lat * Math.PI / 180);
+    const yj = latlngs[j].lat * Math.PI / 180 * R;
+    area += xi * yj - xj * yi;
+  }
+  return Math.abs(area) / 2 * 10.7639;
+}
+
+// ─────────────────────────────────────────
+// SAVE / HINT / UTILS
+// ─────────────────────────────────────────
+function updateSaveBtn() {
+  document.getElementById('btn-save').disabled = (shapes.size === 0 && plants.size === 0);
+}
+
+function saveDesign() {
+  const p = new URLSearchParams(location.search);
+  const existing = JSON.parse(sessionStorage.getItem('drip_design') || '{}');
+  const data = {
+    ...existing,
+    address: document.getElementById('tb-addr').textContent,
+    lat: parseFloat(p.get('lat')) || _coords?.lat,
+    lng: parseFloat(p.get('lng')) || _coords?.lng,
+    zones: [],
+    plants: [],
+  };
+  shapes.forEach(s => {
+    data.zones.push({
+      type: s.type, name: s.name, area: Math.round(s.area),
+      latlngs: s.layer.getLatLngs()[0].map(ll => [ll.lat, ll.lng]),
+    });
+  });
+  plants.forEach(s => {
+    data.plants.push({ type: s.type, name: s.name, radiusFt: s.radiusFt, lat: s.lat, lng: s.lng });
+  });
+  sessionStorage.setItem('drip_design', JSON.stringify(data));
+  window.location.href = 'zones.html';
+}
+
+// ─────────────────────────────────────────
+// WATER SOURCE PLACEMENT OVERLAY
+// ─────────────────────────────────────────
+function wsMapClick(event) {
+  const rect = map.getContainer().getBoundingClientRect();
+  const latlng = map.containerPointToLatLng(
+    L.point(event.clientX - rect.left, event.clientY - rect.top)
+  );
+  dropWsMarker(latlng);
+}
+
+function makeWsIcon(type) {
+  const emoji = type === 'hose' ? '🚿' : '🔧';
+  return L.divIcon({
+    html: `<div style="display:flex;flex-direction:column;align-items:center">
+      <div style="background:#253319;color:#c8e670;font-size:16px;width:34px;height:34px;
+        border-radius:50%;display:flex;align-items:center;justify-content:center;
+        box-shadow:0 3px 10px rgba(0,0,0,.55);border:2px solid rgba(200,230,112,.45)">${emoji}</div>
+      <div style="width:2px;height:8px;background:#253319"></div>
+      <div style="width:5px;height:5px;border-radius:50%;background:#253319"></div>
+    </div>`,
+    className: '', iconSize: [34, 52], iconAnchor: [17, 52],
+  });
+}
+
+function dropWsMarker(latlng) {
+  if (wsMarker) map.removeLayer(wsMarker);
+  wsMarker = L.marker(latlng, { icon: makeWsIcon(wsType), draggable: true }).addTo(map);
+  wsMarker.on('drag', e => updateWsPlaced(e.target.getLatLng()));
+  updateWsPlaced(latlng);
+}
+
+function updateWsPlaced(latlng) {
+  const label = wsType === 'hose' ? '🚿 Hose Tap' : '🔧 Main Line Manifold';
+  document.getElementById('ws-placed-val').textContent  = label;
+  document.getElementById('ws-placed').style.display    = '';
+  document.getElementById('ws-hint-bar').style.opacity  = '0';
+  document.getElementById('ws-continue-btn').disabled   = false;
+}
+
+function setWsType(type) {
+  wsType = type;
+  document.getElementById('wt-hose').classList.toggle('active', type === 'hose');
+  document.getElementById('wt-manifold').classList.toggle('active', type === 'manifold');
+  if (wsMarker) {
+    wsMarker.setIcon(makeWsIcon(type));
+    updateWsPlaced(wsMarker.getLatLng());
+  }
+}
+
+function dismissWsOverlay() {
+  const design = JSON.parse(sessionStorage.getItem('drip_design') || '{}');
+  if (!design.water) design.water = {};
+  design.water.srcType = wsType;
+  if (wsMarker) {
+    const ll = wsMarker.getLatLng();
+    design.water.srcLat = ll.lat;
+    design.water.srcLng = ll.lng;
+  }
+  sessionStorage.setItem('drip_design', JSON.stringify(design));
+  document.getElementById('ws-overlay').classList.remove('active');
+  document.getElementById('tb-step').textContent = 'Step 2 of 7 — Outline Your Landscape';
+  setTool('polygon');
+  hint('Draw zones with the polygon tool — click to add points, double-click to close', 4000);
+}
+
+function skipWsPlacement() {
+  document.getElementById('ws-overlay').classList.remove('active');
+  document.getElementById('tb-step').textContent = 'Step 2 of 7 — Outline Your Landscape';
+  setTool('polygon');
+  hint('Draw zones with the polygon tool — click to add points, double-click to close', 4000);
+}
+
+let _hintTimer;
+function hint(msg, dur = 3000) {
+  const el = document.getElementById('hint');
+  el.textContent = msg;
+  el.style.opacity = '1';
+  clearTimeout(_hintTimer);
+  _hintTimer = setTimeout(() => { el.style.opacity = '0'; }, dur);
+}
+
+// ─────────────────────────────────────────
+// PLANTS
+// ─────────────────────────────────────────
+const PLANTS = {
+  tree:  { label:'Tree',    icon:'🌳', color:'#2d6e3a', defaultFt:16, minFt:4,  maxFt:60 },
+  shrub: { label:'Shrub',   icon:'🌿', color:'#4a8a4a', defaultFt:6,  minFt:2,  maxFt:20 },
+  grass: { label:'Grasses', icon:'🌾', color:'#8a9a3a', defaultFt:4,  minFt:2,  maxFt:12 },
+};
+
+const plants     = new Map(); // id → { circle, centerMkr, handleMkr, type, name, radiusFt, lat, lng }
+let plantIdSeq   = 0;
+let selPlantId   = null;
+let activePlantType = 'tree';
+
+function ftToM(ft) { return ft * 0.3048; }
+function mToFt(m)  { return m  / 0.3048; }
+
+function handleLatLng(lat, lng, radiusFt) {
+  const dLng = ftToM(radiusFt) / (111320 * Math.cos(lat * Math.PI / 180));
+  return [lat, lng + dLng];
+}
+
+function placePlant(latlng) {
+  const type = activePlantType;
+  const p    = PLANTS[type];
+  const id   = ++plantIdSeq;
+  const rFt  = p.defaultFt;
+  const rM   = ftToM(rFt);
+
+  // Canopy circle
+  const circle = L.circle(latlng, {
+    radius: rM, color: p.color, fillColor: p.color,
+    fillOpacity: 0.25, weight: 2, interactive: true,
+  }).addTo(map);
+
+  // Centre icon marker
+  const centIcon = L.divIcon({
+    html: `<span class="plant-ic" id="pic-${id}">${p.icon}</span>`,
+    className: '', iconSize:[26,26], iconAnchor:[13,13],
+  });
+  const centerMkr = L.marker(latlng, { icon: centIcon, draggable: true, zIndexOffset: 200 }).addTo(map);
+
+  // Resize handle
+  const hIcon = L.divIcon({ html:'<div class="plant-handle"></div>', className:'', iconSize:[11,11], iconAnchor:[5.5,5.5] });
+  const handleMkr = L.marker(handleLatLng(latlng.lat, latlng.lng, rFt), { icon: hIcon, draggable: true, zIndexOffset: 300 }).addTo(map);
+
+  const entry = { circle, centerMkr, handleMkr, type, name: p.label, radiusFt: rFt, lat: latlng.lat, lng: latlng.lng };
+  plants.set(id, entry);
+
+  // Click → select
+  circle.on('click',    ev => { L.DomEvent.stopPropagation(ev); selectPlant(id); });
+  centerMkr.on('click', ev => { L.DomEvent.stopPropagation(ev); selectPlant(id); });
+
+  // Drag centre → move whole plant
+  centerMkr.on('drag', ev => {
+    const ll = ev.target.getLatLng();
+    entry.lat = ll.lat; entry.lng = ll.lng;
+    circle.setLatLng(ll);
+    handleMkr.setLatLng(handleLatLng(ll.lat, ll.lng, entry.radiusFt));
+  });
+
+  // Drag handle → resize
+  handleMkr.on('drag', ev => {
+    const ctr  = L.latLng(entry.lat, entry.lng);
+    const dist = ctr.distanceTo(ev.target.getLatLng());
+    const newFt = Math.max(p.minFt, Math.min(p.maxFt, mToFt(dist)));
+    entry.radiusFt = newFt;
+    circle.setRadius(ftToM(newFt));
+    // update panel if selected
+    if (selPlantId === id) syncPlantPanel(id);
+  });
+  handleMkr.on('dragend', () => {
+    handleMkr.setLatLng(handleLatLng(entry.lat, entry.lng, entry.radiusFt));
+  });
+
+  updatePlantList();
+  selectPlant(id);
+}
+
+function selectPlant(id) {
+  // deselect any zone
+  deselect(true);
+  deselectPlant(false);
+  selPlantId = id;
+
+  document.getElementById('panel-empty').style.display = 'none';
+  document.getElementById('panel-body').style.display  = 'none';
+  document.getElementById('plant-body').style.display  = '';
+
+  const el = document.getElementById(`pic-${id}`);
+  if (el) el.classList.add('selected');
+
+  syncPlantPanel(id);
+  document.querySelectorAll('.shape-row[data-kind="plant"]').forEach(r =>
+    r.classList.toggle('sel', r.dataset.id == id)
+  );
+}
+
+function deselectPlant(reset = true) {
+  if (selPlantId !== null) {
+    const el = document.getElementById(`pic-${selPlantId}`);
+    if (el) el.classList.remove('selected');
+  }
+  if (reset) {
+    selPlantId = null;
+    document.getElementById('plant-body').style.display = 'none';
+    document.getElementById('panel-empty').style.display = '';
+    document.querySelectorAll('.shape-row[data-kind="plant"]').forEach(r => r.classList.remove('sel'));
+  }
+}
+
+function syncPlantPanel(id) {
+  const s = plants.get(id); if (!s) return;
+  document.getElementById('plant-name-inp').value = s.name;
+  document.getElementById('plant-size-slider').value = Math.round(s.radiusFt * 2); // diameter
+  const diam = Math.round(s.radiusFt * 2);
+  document.getElementById('plant-size-val').textContent  = diam + ' ft';
+  document.getElementById('plant-size-lbl').textContent  = diam + ' ft diameter';
+  // active type chips
+  ['tree','shrub','grass'].forEach(t => {
+    document.getElementById('ptype-' + t).classList.toggle('active', t === s.type);
+  });
+}
+
+function setPlantType(type) {
+  activePlantType = type;
+  ['tree','shrub','grass'].forEach(t =>
+    document.getElementById('ptype-' + t).classList.toggle('active', t === type)
+  );
+  if (selPlantId === null) return;
+  const s = plants.get(selPlantId); if (!s) return;
+  s.type = type;
+  const p = PLANTS[type];
+  s.name = p.label;
+  document.getElementById('plant-name-inp').value = p.label;
+  s.circle.setStyle({ color: p.color, fillColor: p.color });
+  document.getElementById(`pic-${selPlantId}`).textContent = p.icon;
+  updatePlantList();
+}
+
+function updatePlantName(val) {
+  if (selPlantId === null) return;
+  const s = plants.get(selPlantId); if (!s) return;
+  s.name = val || PLANTS[s.type].label;
+  updatePlantList();
+}
+
+function updatePlantRadius(diamFt) {
+  if (selPlantId === null) return;
+  const s = plants.get(selPlantId); if (!s) return;
+  s.radiusFt = Math.max(1, parseInt(diamFt) / 2);
+  s.circle.setRadius(ftToM(s.radiusFt));
+  s.handleMkr.setLatLng(handleLatLng(s.lat, s.lng, s.radiusFt));
+  const diam = Math.round(s.radiusFt * 2);
+  document.getElementById('plant-size-val').textContent = diam + ' ft';
+  document.getElementById('plant-size-lbl').textContent = diam + ' ft diameter';
+}
+
+function deletePlant() {
+  if (selPlantId === null) return;
+  const s = plants.get(selPlantId); if (!s) return;
+  map.removeLayer(s.circle);
+  map.removeLayer(s.centerMkr);
+  map.removeLayer(s.handleMkr);
+  plants.delete(selPlantId);
+  selPlantId = null;
+  document.getElementById('plant-body').style.display  = 'none';
+  document.getElementById('panel-empty').style.display = '';
+  updatePlantList();
+  updateSaveBtn();
+}
+
+function updatePlantList() {
+  const scroll = document.getElementById('plants-scroll');
+  document.getElementById('plant-count').textContent = plants.size;
+  scroll.innerHTML = '';
+  plants.forEach((s, id) => {
+    const p  = PLANTS[s.type];
+    const el = document.createElement('div');
+    el.className = 'shape-row' + (id === selPlantId ? ' sel' : '');
+    el.dataset.id   = id;
+    el.dataset.kind = 'plant';
+    el.innerHTML = `<div class="shape-dot" style="background:${p.color}"></div>
+      <span class="shape-name">${p.icon} ${s.name}</span>
+      <span class="shape-area">${Math.round(s.radiusFt*2)}ft ⌀</span>`;
+    el.onclick = () => { setTool('select'); selectPlant(id); };
+    scroll.appendChild(el);
+  });
+}
+
+// ─────────────────────────────────────────
+// KEYBOARD SHORTCUTS
+// ─────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName)) return;
+  switch (e.key) {
+    case 'v': case 'V': setTool('select');  break;
+    case 'p': case 'P': setTool('polygon'); break;
+    case 'r': case 'R': setTool('rect');    break;
+    case 'e': case 'E': setTool('edit');    break;
+    case 'l': case 'L': setTool('plant');   break;
+    case 'Escape':
+      if (drawHandler) { try { drawHandler.disable(); } catch(_){} drawHandler = null; }
+      setTool('select');
+      break;
+    case 'Delete': case 'Backspace':
+      if (selPlantId !== null) deletePlant(); else deleteSelected();
+      break;
+  }
+});
+</script>
+</body>
+</html>

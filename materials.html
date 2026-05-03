@@ -1,0 +1,1905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Drip Atlas — Materials List</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --cream:#f1ebe2;--cream2:#e8e0d4;--green:#253319;--green2:#2e4020;
+      --green3:#1a2516;--lime:#a8c840;--text:#1c1c1a;--muted:#7a7a72;
+      --border:#d8d0c4;--white:#fff;--sidebar:220px;--topbar:60px;
+    }
+    html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;
+      background:var(--cream);color:var(--text);-webkit-font-smoothing:antialiased}
+
+    /* ── SHELL ── */
+    .shell{display:flex;height:100vh;overflow:hidden}
+
+    /* ── SIDEBAR ── */
+    .sidebar{width:var(--sidebar);flex-shrink:0;background:var(--white);
+      border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+    .sb-brand{padding:18px 20px 14px;border-bottom:1px solid var(--border);
+      display:flex;align-items:center;gap:10px}
+    .sb-logo{font-family:'Playfair Display',serif;font-size:17px;color:var(--green);line-height:1}
+    .sb-plan-badge{margin-left:auto;font-size:10px;font-weight:700;letter-spacing:.08em;
+      background:var(--green);color:#f1ebe2;padding:3px 8px;border-radius:20px}
+    .sb-address{padding:9px 20px 13px;border-bottom:1px solid var(--border)}
+    .sb-addr-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+      color:var(--muted);margin-bottom:2px}
+    .sb-addr-val{font-size:12px;color:var(--text);line-height:1.4}
+    .sb-nav{padding:10px 8px;flex:1;overflow-y:auto}
+    .nav-section{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+      color:var(--muted);padding:10px 12px 6px}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;
+      cursor:pointer;font-size:13px;font-weight:500;color:var(--text);
+      transition:background .12s,color .12s;margin-bottom:2px;user-select:none}
+    .nav-item:hover{background:var(--cream)}
+    .nav-item.active{background:var(--green);color:#f1ebe2}
+    .nav-item .ni-icon{font-size:16px;width:20px;text-align:center}
+    .nav-item .ni-badge{margin-left:auto;font-size:10px;font-weight:700;
+      background:rgba(0,0,0,.1);padding:2px 6px;border-radius:10px}
+    .nav-item.active .ni-badge{background:rgba(255,255,255,.2);color:#f1ebe2}
+    .sb-footer{padding:10px 12px 18px;border-top:1px solid var(--border)}
+    .sb-btn{display:flex;align-items:center;gap:8px;width:100%;padding:9px 12px;
+      border-radius:8px;border:1.5px solid var(--border);background:transparent;
+      font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;
+      font-family:'Inter',sans-serif;transition:border-color .12s,color .12s;margin-bottom:6px}
+    .sb-btn:hover{border-color:var(--green);color:var(--green)}
+
+    /* ── MAIN ── */
+    .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+    /* ── TOPBAR ── */
+    .topbar{height:var(--topbar);flex-shrink:0;background:var(--white);
+      border-bottom:1px solid var(--border);display:flex;align-items:center;
+      gap:14px;padding:0 24px}
+    .tb-title{font-family:'Playfair Display',serif;font-size:18px;color:var(--green);
+      flex-shrink:0;margin-right:8px}
+    .tb-divider{width:1px;height:28px;background:var(--border);flex-shrink:0}
+    .brand-group,.pipe-group{display:flex;align-items:center;gap:6px}
+    .brand-label{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;
+      color:var(--muted);white-space:nowrap}
+    .brand-btn{padding:5px 12px;border-radius:6px;border:1.5px solid var(--border);
+      font-size:12px;font-weight:700;cursor:pointer;background:var(--white);
+      color:var(--muted);font-family:'Inter',sans-serif;transition:all .12s}
+    .brand-btn:hover{border-color:var(--text);color:var(--text)}
+    .brand-btn.active[data-brand=rainbird]{background:#c8222a;border-color:#c8222a;color:#fff}
+    .brand-btn.active[data-brand=hunter]{background:#005baa;border-color:#005baa;color:#fff}
+    .brand-btn.active[data-brand=orbit]{background:#f06020;border-color:#f06020;color:#fff}
+    .pipe-select{padding:5px 10px;border-radius:6px;border:1.5px solid var(--border);
+      font-size:12px;font-weight:600;color:var(--text);background:var(--white);
+      font-family:'Inter',sans-serif;cursor:pointer;outline:none;transition:border-color .12s}
+    .pipe-select:focus{border-color:var(--green)}
+    .tb-total{margin-left:auto;display:flex;align-items:center}
+    .tb-kit-btn{
+      background:var(--green);color:#f1ebe2;border:none;border-radius:9px;
+      font-size:13px;font-weight:700;padding:9px 16px;cursor:pointer;
+      font-family:'Inter',sans-serif;transition:background .15s,transform .12s;
+      white-space:nowrap;
+    }
+    .tb-kit-btn:hover{background:var(--green2);transform:translateY(-1px)}
+
+    /* ── CONTENT ── */
+    .content{flex:1;overflow-y:auto;padding:24px}
+    .tab-pane{display:none}
+    .tab-pane.active{display:block}
+
+    /* ── ZONE CARD ── */
+    .zones-header{margin-bottom:20px}
+    .zones-header h2{font-family:'Playfair Display',serif;font-size:24px;
+      color:var(--green);margin-bottom:4px}
+    .zones-header p{font-size:13px;color:var(--muted)}
+    .zone-card{background:var(--white);border:1px solid var(--border);
+      border-radius:14px;margin-bottom:20px;overflow:hidden}
+    .zc-header{display:flex;align-items:stretch;gap:0;border-bottom:1px solid var(--border)}
+
+    /* Zone satellite thumbnail */
+    .zone-thumb-wrap{width:160px;flex-shrink:0;position:relative;
+      background:var(--cream2);overflow:hidden;border-right:1px solid var(--border)}
+    .zone-thumb{width:100%;height:100%;object-fit:cover;display:block;min-height:90px}
+    .zone-thumb-overlay{position:absolute;bottom:0;left:0;right:0;
+      background:linear-gradient(transparent,rgba(0,0,0,.55));padding:6px 8px 6px}
+    .zone-thumb-label{font-size:9px;font-weight:700;color:rgba(255,255,255,.9);
+      letter-spacing:.06em;text-transform:uppercase}
+    .zone-thumb-fallback{display:flex;flex-direction:column;align-items:center;
+      justify-content:center;width:100%;height:90px;gap:4px}
+    .zone-thumb-fallback .ztf-icon{font-size:24px}
+    .zone-thumb-fallback .ztf-txt{font-size:9px;font-weight:600;color:var(--muted);
+      text-align:center;padding:0 8px;line-height:1.3}
+
+    .zc-info{flex:1;padding:14px 18px;display:flex;flex-direction:column;justify-content:center;gap:8px}
+    .zc-name-row{display:flex;align-items:center;gap:10px}
+    .zc-dot{width:13px;height:13px;border-radius:50%;flex-shrink:0}
+    .zc-name{font-size:15px;font-weight:700}
+    .zc-type{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+      color:var(--muted)}
+    .zc-badges{display:flex;gap:6px;flex-wrap:wrap}
+    .zc-badge{font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;
+      background:var(--cream);color:var(--text)}
+    .zc-badge.gpm{background:#e8f5e0;color:#2a5e1a}
+    .zc-badge.psi{background:#e0eef8;color:#1a3e5a}
+    .zc-badge.pipe{background:#f5f0e8;color:#5a4020}
+    .zc-badge.warn{background:#ffeee0;color:#8a3010}
+
+    /* Parts table */
+    .parts-table{width:100%;border-collapse:collapse}
+    .parts-table thead th{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+      color:var(--muted);padding:9px 16px;text-align:left;
+      border-bottom:1px solid var(--border);background:var(--cream)}
+    .parts-table thead th.right{text-align:right}
+    .parts-table tbody tr{border-bottom:1px solid rgba(0,0,0,.04);transition:background .1s}
+    .parts-table tbody tr:last-child{border-bottom:none}
+    .parts-table tbody tr:hover{background:rgba(0,0,0,.02)}
+    .parts-table td{padding:10px 16px;font-size:13px;vertical-align:middle}
+    .parts-table td.right{text-align:right}
+    .parts-table td.img-cell{padding:8px 10px 8px 16px;width:68px}
+
+    /* Product thumbnail */
+    .prod-thumb{width:52px;height:52px;border-radius:8px;border:1.5px solid var(--border);
+      background:var(--white);overflow:hidden;display:flex;align-items:center;
+      justify-content:center;flex-shrink:0}
+    .prod-thumb svg{width:38px;height:38px}
+
+    .prod-category{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;
+      text-transform:uppercase;padding:2px 6px;border-radius:4px;margin-bottom:3px}
+    .cat-head{background:#e8f5e0;color:#2a5e1a}
+    .cat-fitting{background:#e0f0f8;color:#1a4060}
+    .cat-pipe{background:#f5ece0;color:#5a3010}
+    .cat-drip{background:#f0e8f5;color:#4a1a6a}
+    .prod-name{font-weight:600;color:var(--text)}
+    .prod-sku{font-size:11px;color:var(--muted);margin-top:1px}
+    .qty-cell{font-size:15px;font-weight:700}
+    .unit-cell{font-size:13px;color:var(--muted)}
+    .price-cell{font-size:14px;font-weight:700}
+    .btn-swap{padding:5px 10px;border-radius:6px;border:1.5px solid var(--border);
+      font-size:11px;font-weight:700;color:var(--muted);background:var(--white);
+      cursor:pointer;font-family:'Inter',sans-serif;transition:all .12s;white-space:nowrap}
+    .btn-swap:hover{border-color:var(--green);color:var(--green);background:rgba(37,51,25,.04)}
+    .zc-footer{display:flex;align-items:center;justify-content:space-between;
+      padding:10px 18px;background:var(--cream);border-top:1px solid var(--border)}
+    .zc-warn{font-size:12px;color:#8a3010}
+    .zc-subtotal{font-size:14px;font-weight:700;color:var(--green)}
+
+    /* Grand total */
+    .grand-total-card{background:var(--green);color:#f1ebe2;border-radius:14px;
+      padding:22px 24px;margin-top:8px}
+    .gt-title{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:14px}
+    .gt-rows{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+    .gt-row{display:flex;justify-content:space-between;font-size:13px;color:rgba(241,235,226,.7)}
+    .gt-total-row{display:flex;justify-content:space-between;font-size:18px;font-weight:700;
+      color:#f1ebe2;padding-top:12px;border-top:1px solid rgba(255,255,255,.2)}
+    .gt-note{font-size:12px;color:rgba(241,235,226,.55);margin-top:10px}
+    .gt-print-btn{margin-top:10px;padding:11px 20px;border-radius:8px;
+      border:1.5px solid rgba(255,255,255,.3);background:transparent;
+      color:#f1ebe2;font-size:13px;font-weight:700;cursor:pointer;
+      font-family:'Inter',sans-serif;transition:background .15s}
+    .gt-print-btn:hover{background:rgba(255,255,255,.1)}
+    .gt-kit-btn{
+      display:block;width:100%;margin-top:16px;padding:17px;border-radius:12px;
+      border:none;background:#f1ebe2;color:var(--green);
+      font-size:16px;font-weight:800;cursor:pointer;font-family:'Inter',sans-serif;
+      letter-spacing:.01em;transition:background .15s,transform .12s;
+      box-shadow:0 4px 20px rgba(0,0,0,.25);
+    }
+    .gt-kit-btn:hover{background:#fff;transform:translateY(-1px)}
+    .gt-kit-btn:active{transform:none}
+    .gt-kit-divider{border:none;border-top:1px solid rgba(255,255,255,.15);margin:18px 0 0}
+
+    /* ── KIT UPGRADE MODAL ── */
+    #kit-backdrop{
+      position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.7);
+      backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;
+      padding:20px;
+    }
+    #kit-backdrop.show{display:flex}
+    #kit-modal{
+      background:var(--white);border-radius:24px;overflow:hidden;
+      width:min(640px,100%);max-height:92vh;overflow-y:auto;
+      box-shadow:0 32px 80px rgba(0,0,0,.5);
+      animation:kitUp .28s cubic-bezier(.2,.8,.4,1) both;
+    }
+    @keyframes kitUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+    .km-hero{
+      background:var(--green);padding:28px 32px 22px;position:relative;overflow:hidden;
+    }
+    .km-hero::before{
+      content:'';position:absolute;top:-60px;right:-60px;width:220px;height:220px;
+      border-radius:50%;background:rgba(200,230,112,.1);
+    }
+    .km-hero::after{
+      content:'';position:absolute;bottom:-40px;right:60px;width:140px;height:140px;
+      border-radius:50%;background:rgba(200,230,112,.07);
+    }
+    .km-eyebrow{
+      font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+      color:#c8e670;margin-bottom:10px;position:relative;z-index:1;
+    }
+    .km-title{
+      font-family:'Playfair Display',serif;font-size:26px;color:#f1ebe2;
+      line-height:1.2;margin-bottom:8px;position:relative;z-index:1;
+    }
+    .km-sub{font-size:13px;color:rgba(241,235,226,.7);line-height:1.55;
+      position:relative;z-index:1;max-width:420px}
+    .km-delivery-banner{
+      display:flex;align-items:center;gap:10px;margin-top:16px;
+      padding:11px 14px;background:rgba(200,230,112,.12);border-radius:10px;
+      border:1px solid rgba(200,230,112,.25);position:relative;z-index:1;
+    }
+    .km-delivery-icon{font-size:24px;flex-shrink:0}
+    .km-delivery-text{font-size:13px;color:rgba(241,235,226,.9);line-height:1.5}
+    .km-delivery-text strong{color:#c8e670}
+
+    .km-body{padding:20px 32px 24px}
+    .km-section-title{font-size:11px;font-weight:700;letter-spacing:.12em;
+      text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+    .km-features{list-style:none;display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+    .km-feat{display:flex;align-items:flex-start;gap:12px}
+    .km-feat-icon{
+      width:26px;height:26px;border-radius:6px;flex-shrink:0;
+      display:flex;align-items:center;justify-content:center;font-size:14px;
+      background:rgba(37,51,25,.08);
+    }
+    .km-feat-text{font-size:13px;line-height:1.45;color:var(--text)}
+    .km-feat-text strong{color:var(--green);font-weight:700}
+
+    .km-specialist-card{
+      background:var(--cream);border-radius:12px;padding:14px 16px;
+      margin-bottom:16px;border:1px solid var(--border);
+      display:flex;align-items:flex-start;gap:12px;
+    }
+    .km-specialist-avatar{
+      width:38px;height:38px;border-radius:50%;flex-shrink:0;
+      background:var(--green);display:flex;align-items:center;justify-content:center;
+      font-size:18px;
+    }
+    .km-specialist-text .km-spec-name{font-size:13px;font-weight:700;color:var(--green);margin-bottom:2px}
+    .km-specialist-text .km-spec-desc{font-size:12px;color:var(--muted);line-height:1.5}
+
+    .km-price-row{
+      display:flex;align-items:center;gap:12px;padding:12px 16px;
+      background:rgba(37,51,25,.06);border-radius:12px;margin-bottom:14px;
+    }
+    .km-price{font-family:'Playfair Display',serif;font-size:34px;font-weight:600;color:var(--green)}
+    .km-price-details{font-size:13px;color:var(--muted);line-height:1.5}
+    .km-price-details strong{color:var(--text)}
+
+    .km-cta{
+      display:block;width:100%;background:var(--green);color:#f1ebe2;
+      font-size:16px;font-weight:800;padding:18px;border-radius:12px;border:none;
+      cursor:pointer;font-family:'Inter',sans-serif;transition:background .18s,transform .12s;
+      margin-bottom:10px;letter-spacing:.01em;
+    }
+    .km-cta:hover{background:var(--green2);transform:translateY(-1px)}
+    .km-payment-row{
+      display:flex;align-items:center;gap:8px;margin:10px 0 4px;
+      padding:10px 14px;border-radius:9px;border:1.5px solid var(--border);
+      background:var(--cream);
+    }
+    .km-payment-icon{font-size:16px;flex-shrink:0}
+    .km-payment-select{
+      flex:1;border:none;background:transparent;font-size:13px;font-weight:600;
+      color:var(--text);font-family:'Inter',sans-serif;cursor:pointer;outline:none;
+    }
+    .km-dismiss{
+      display:block;width:100%;background:transparent;border:none;
+      color:var(--muted);font-size:13px;font-weight:500;padding:10px;
+      cursor:pointer;font-family:'Inter',sans-serif;transition:color .14s;border-radius:8px;
+    }
+    .km-dismiss:hover{color:var(--text)}
+
+    /* ── TOAST ── */
+    #order-toast{
+      position:fixed;top:24px;left:50%;transform:translateX(-50%) translateY(-80px);
+      background:var(--green);color:#f1ebe2;padding:12px 22px;border-radius:40px;
+      font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px;
+      box-shadow:0 8px 32px rgba(0,0,0,.3);z-index:1000;
+      transition:transform .4s cubic-bezier(.2,.8,.4,1);pointer-events:none;
+    }
+    #order-toast.show{transform:translateX(-50%) translateY(0)}
+    .toast-icon{font-size:16px}
+
+    /* ── PLAN BADGE UPGRADE ── */
+    .sb-plan-badge.kit{background:#c8e670;color:#1a2516}
+
+    /* ── TRACK TAB ── */
+    .track-header,.pro-header{margin-bottom:22px}
+    .track-header h2,.pro-header h2{font-family:'Playfair Display',serif;font-size:24px;
+      color:var(--green);margin-bottom:4px}
+    .track-header p,.pro-header p{font-size:13px;color:var(--muted)}
+
+    .order-confirm-card{
+      background:var(--green);color:#f1ebe2;border-radius:14px;
+      padding:20px 24px;margin-bottom:20px;
+      display:flex;align-items:center;gap:16px;
+    }
+    .occ-check{
+      width:44px;height:44px;border-radius:50%;border:2.5px solid rgba(200,230,112,.7);
+      display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;
+    }
+    .occ-text .occ-title{font-size:16px;font-weight:700;margin-bottom:2px}
+    .occ-text .occ-sub{font-size:13px;color:rgba(241,235,226,.65)}
+    .occ-num{margin-left:auto;text-align:right}
+    .occ-num-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+      color:rgba(241,235,226,.5);margin-bottom:3px}
+    .occ-num-val{font-family:'Playfair Display',serif;font-size:18px;color:#c8e670}
+
+    .track-timeline{
+      background:var(--white);border:1px solid var(--border);border-radius:14px;
+      padding:20px 24px;margin-bottom:20px;
+    }
+    .tt-title{font-size:13px;font-weight:700;color:var(--green);margin-bottom:18px}
+    .tt-steps{display:flex;flex-direction:column;gap:0}
+    .tt-step{display:flex;gap:14px;position:relative}
+    .tt-step:not(:last-child) .tt-line{
+      position:absolute;left:11px;top:26px;bottom:-4px;width:2px;background:var(--border);
+    }
+    .tt-step:not(:last-child).done .tt-line{background:var(--green)}
+    .tt-step:not(:last-child).active .tt-line{background:linear-gradient(var(--green),var(--border))}
+    .tt-dot-wrap{flex-shrink:0;width:24px;padding-top:2px}
+    .tt-dot{
+      width:24px;height:24px;border-radius:50%;border:2.5px solid var(--border);
+      background:var(--white);display:flex;align-items:center;justify-content:center;
+      font-size:11px;
+    }
+    .tt-step.done .tt-dot{background:var(--green);border-color:var(--green);color:#f1ebe2;font-size:12px}
+    .tt-step.active .tt-dot{background:var(--white);border-color:var(--green);border-width:2.5px}
+    .tt-step.active .tt-dot::after{
+      content:'';width:10px;height:10px;border-radius:50%;background:var(--green);
+      animation:pulse 1.4s ease-in-out infinite;
+    }
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.85)}}
+    .tt-body{flex:1;padding-bottom:20px}
+    .tt-step:last-child .tt-body{padding-bottom:0}
+    .tt-step-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px}
+    .tt-step.done .tt-step-title{color:var(--green)}
+    .tt-step.pending .tt-step-title{color:var(--muted)}
+    .tt-step-desc{font-size:12px;color:var(--muted);line-height:1.5}
+    .tt-step.active .tt-step-desc{color:var(--text)}
+    .tt-step-time{font-size:11px;font-weight:700;color:var(--muted);margin-top:3px;letter-spacing:.03em}
+    .tt-step.done .tt-step-time{color:var(--green)}
+    .tt-step.active .tt-step-time{color:var(--green2)}
+    .tt-step-icon{margin-right:6px;font-size:14px}
+    .tt-tracking-badge{
+      display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;
+      margin:8px 0 4px;padding:8px 12px;
+      background:rgba(37,51,25,.06);border:1px solid rgba(37,51,25,.15);
+      border-radius:8px;
+    }
+    .tt-tracking-label{font-size:10px;font-weight:700;letter-spacing:.1em;
+      text-transform:uppercase;color:var(--muted)}
+    .tt-tracking-num{font-family:monospace;font-size:13px;font-weight:700;
+      color:var(--green);letter-spacing:.04em}
+    .tt-tracking-link{font-size:12px;font-weight:600;color:var(--green);
+      text-decoration:none;margin-left:4px;white-space:nowrap}
+    .tt-tracking-link:hover{text-decoration:underline}
+
+    .delivery-eta-card{
+      background:var(--cream2);border:1px solid var(--border);border-radius:14px;
+      padding:18px 22px;display:flex;align-items:center;gap:16px;
+    }
+    .dec-icon{font-size:32px}
+    .dec-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px}
+    .dec-date{font-family:'Playfair Display',serif;font-size:22px;color:var(--green)}
+    .dec-sub{font-size:12px;color:var(--muted);margin-top:2px}
+    .dec-tracking{margin-left:auto;text-align:right}
+    .dec-tracking-label{font-size:10px;font-weight:700;letter-spacing:.1em;
+      text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+    .dec-tracking-num{font-size:13px;font-weight:700;color:var(--text);
+      font-family:monospace;background:var(--white);padding:4px 10px;
+      border-radius:6px;border:1px solid var(--border)}
+
+    /* ── PRO TAB ── */
+    .pro-profile-card{
+      background:var(--white);border:1px solid var(--border);border-radius:14px;
+      padding:24px;margin-bottom:18px;display:flex;align-items:flex-start;gap:18px;
+    }
+    .pro-avatar{
+      width:64px;height:64px;border-radius:50%;flex-shrink:0;
+      background:var(--green);display:flex;align-items:center;justify-content:center;
+      font-size:30px;border:3px solid #c8e670;
+    }
+    .pro-info-name{font-family:'Playfair Display',serif;font-size:20px;color:var(--green);
+      margin-bottom:3px}
+    .pro-info-title{font-size:13px;color:var(--muted);margin-bottom:10px}
+    .pro-credentials{display:flex;flex-wrap:wrap;gap:6px}
+    .pro-cred{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;
+      background:rgba(37,51,25,.08);color:var(--green)}
+    .pro-contact-card{
+      background:var(--cream);border:1px solid var(--border);border-radius:14px;
+      padding:20px 22px;margin-bottom:18px;
+    }
+    .pcc-title{font-size:13px;font-weight:700;color:var(--green);margin-bottom:14px}
+    .pcc-call-banner{
+      display:flex;align-items:center;gap:12px;padding:14px 16px;
+      background:rgba(200,230,112,.18);border:1.5px solid rgba(200,230,112,.45);
+      border-radius:10px;margin-bottom:14px;
+    }
+    .pcc-call-icon{font-size:22px}
+    .pcc-call-text{font-size:13px;color:var(--text);line-height:1.5}
+    .pcc-call-text strong{color:var(--green)}
+    .pcc-rows{display:flex;flex-direction:column;gap:10px}
+    .pcc-row{display:flex;align-items:center;gap:10px;font-size:13px}
+    .pcc-row-icon{font-size:16px;width:22px;text-align:center;flex-shrink:0}
+    .pcc-row-label{color:var(--muted);min-width:90px}
+    .pcc-row-val{font-weight:600;color:var(--text)}
+    .pro-notes-card{
+      background:var(--white);border:1px solid var(--border);border-radius:14px;
+      overflow:hidden;
+    }
+    .pnc-header{padding:14px 20px;border-bottom:1px solid var(--border);
+      background:var(--cream);font-size:13px;font-weight:700;color:var(--green)}
+    .pnc-info{padding:14px 20px;border-bottom:1px solid var(--border);
+      font-size:13px;color:var(--muted);line-height:1.6;
+      display:flex;align-items:flex-start;gap:8px}
+    .pnc-info-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+    .pnc-textarea{
+      width:100%;padding:16px 20px;border:none;outline:none;resize:none;
+      font-size:13px;font-family:'Inter',sans-serif;color:var(--text);
+      background:var(--white);min-height:100px;line-height:1.6;
+    }
+    .pnc-footer{padding:10px 16px;border-top:1px solid var(--border);
+      display:flex;justify-content:flex-end;
+    }
+    .pnc-send{
+      padding:8px 18px;border-radius:8px;border:none;background:var(--green);
+      color:#f1ebe2;font-size:12px;font-weight:700;cursor:pointer;
+      font-family:'Inter',sans-serif;
+    }
+
+    /* ── SCHEDULE TAB ── */
+    .schedule-intro{margin-bottom:22px}
+    .schedule-intro h2{font-family:'Playfair Display',serif;font-size:24px;
+      color:var(--green);margin-bottom:5px}
+    .schedule-intro p{font-size:13px;color:var(--muted);line-height:1.7;max-width:560px}
+    .schedule-table-wrap{background:var(--white);border:1px solid var(--border);
+      border-radius:14px;overflow:hidden;margin-bottom:22px}
+    .sch-table{width:100%;border-collapse:collapse}
+    .sch-table th{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+      color:var(--muted);padding:10px 18px;text-align:left;
+      background:var(--cream);border-bottom:1px solid var(--border)}
+    .sch-table td{padding:12px 18px;font-size:13px;border-bottom:1px solid rgba(0,0,0,.04)}
+    .sch-table tr:last-child td{border-bottom:none}
+    .sch-name{font-weight:700}
+    .sch-dot{display:inline-block;width:10px;height:10px;border-radius:50%;
+      margin-right:7px;vertical-align:middle}
+    .runtime-bar-wrap{display:flex;align-items:center;gap:10px}
+    .runtime-bar{height:6px;border-radius:3px;min-width:4px}
+    .week-grid-wrap{background:var(--white);border:1px solid var(--border);
+      border-radius:14px;padding:18px 22px;margin-bottom:22px}
+    .week-grid-title{font-size:14px;font-weight:700;color:var(--green);margin-bottom:14px}
+    .week-days{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+    .day-col{display:flex;flex-direction:column;align-items:center;gap:5px}
+    .day-label{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted)}
+    .day-zones{display:flex;flex-direction:column;gap:4px;width:100%}
+    .day-zone-block{border-radius:5px;padding:3px 4px;font-size:10px;font-weight:700;
+      color:rgba(255,255,255,.9);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .day-off{width:100%;height:32px;border-radius:6px;border:1.5px dashed var(--border);
+      display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted);font-weight:600}
+    .schedule-notes-card{background:var(--cream2);border:1px solid var(--border);
+      border-radius:14px;padding:18px 22px}
+    .sn-title{font-size:14px;font-weight:700;color:var(--green);margin-bottom:10px}
+    .sn-list{display:flex;flex-direction:column;gap:8px}
+    .sn-item{display:flex;gap:10px;font-size:13px;line-height:1.5}
+    .sn-bullet{font-size:16px;flex-shrink:0;margin-top:1px}
+
+    /* ── MANIFOLD TAB ── */
+    .manifold-intro{margin-bottom:22px}
+    .manifold-intro h2{font-family:'Playfair Display',serif;font-size:24px;
+      color:var(--green);margin-bottom:5px}
+    .manifold-intro p{font-size:13px;color:var(--muted);line-height:1.7;max-width:560px}
+    .manifold-diagram-card{background:var(--white);border:1px solid var(--border);
+      border-radius:14px;padding:18px;margin-bottom:20px}
+    .mdc-title{font-size:14px;font-weight:700;color:var(--green);margin-bottom:14px}
+    .manifold-svg-wrap{overflow-x:auto}
+    .manifold-layout{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+    .manifold-parts-card,.wiring-card{background:var(--white);border:1px solid var(--border);
+      border-radius:14px;overflow:hidden}
+    .mpc-head{padding:13px 18px;border-bottom:1px solid var(--border);
+      font-size:14px;font-weight:700;color:var(--green);background:var(--cream)}
+    .mpc-row{display:flex;align-items:center;padding:11px 18px;
+      border-bottom:1px solid rgba(0,0,0,.04);gap:11px}
+    .mpc-row:last-child{border-bottom:none}
+    .mpc-icon{font-size:20px;width:26px;text-align:center;flex-shrink:0}
+    .mpc-info{flex:1}
+    .mpc-name{font-size:13px;font-weight:600}
+    .mpc-sku{font-size:11px;color:var(--muted)}
+    .mpc-qty{font-size:14px;font-weight:700;white-space:nowrap}
+    .mpc-price{font-size:13px;font-weight:700;color:var(--green);white-space:nowrap;min-width:52px;text-align:right}
+    .mpc-swap{padding:4px 8px;border-radius:5px;border:1.5px solid var(--border);
+      font-size:11px;font-weight:700;color:var(--muted);background:var(--white);
+      cursor:pointer;font-family:'Inter',sans-serif;transition:all .12s}
+    .mpc-swap:hover{border-color:var(--green);color:var(--green)}
+    .wc-title{padding:13px 18px;border-bottom:1px solid var(--border);
+      font-size:14px;font-weight:700;color:var(--green);background:var(--cream)}
+    .wc-wire-row{display:flex;align-items:center;gap:10px;padding:10px 18px;
+      border-bottom:1px solid rgba(0,0,0,.05)}
+    .wc-wire-row:last-of-type{border-bottom:none}
+    .wire-swatch{width:30px;height:9px;border-radius:3px;flex-shrink:0}
+    .wc-wire-label{font-size:13px;font-weight:600;flex:1}
+    .wc-wire-len{font-size:13px;color:var(--muted)}
+    .wc-note{margin:12px 18px 14px;padding:12px;background:var(--cream);
+      border-radius:8px;font-size:12px;color:var(--muted);line-height:1.6}
+
+    /* ── BLUEPRINT TAB ── */
+    .blueprint-wrap{
+      background:#0a1828;border-radius:14px;overflow:hidden;
+      height:calc(100vh - var(--topbar) - 48px);
+      display:flex;flex-direction:column;
+    }
+    .bp-toolbar{
+      display:flex;align-items:center;gap:10px;padding:9px 14px;
+      background:rgba(255,255,255,.04);
+      border-bottom:1px solid rgba(100,180,255,.15);
+      flex-shrink:0;
+    }
+    .bp-toolbar-label{font-size:11px;font-weight:700;letter-spacing:.08em;
+      text-transform:uppercase;color:rgba(100,180,255,.6)}
+    .bp-btn{padding:5px 11px;border-radius:6px;border:1.5px solid rgba(100,180,255,.3);
+      background:transparent;color:rgba(150,210,255,.8);font-size:11px;font-weight:700;
+      cursor:pointer;font-family:'Inter',sans-serif;transition:all .12s;letter-spacing:.03em}
+    .bp-btn:hover{border-color:rgba(150,210,255,.7);color:rgba(210,240,255,.95);
+      background:rgba(100,180,255,.08)}
+    .bp-stat{font-size:11px;color:rgba(100,160,200,.65);padding:4px 10px;
+      border-radius:6px;border:1px solid rgba(100,180,255,.12);background:rgba(100,180,255,.04)}
+    .bp-svg-wrap{flex:1;overflow:auto;padding:10px;
+      display:flex;align-items:flex-start;justify-content:center}
+    #blueprint-svg{display:block}
+
+    /* ── SWAP SHEET ── */
+    #swap-backdrop{position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.5);
+      backdrop-filter:blur(4px);display:none;align-items:flex-end;justify-content:center;
+      padding:0 0 0 var(--sidebar)}
+    #swap-backdrop.show{display:flex}
+    #swap-sheet{background:var(--white);border-radius:20px 20px 0 0;width:100%;
+      max-width:740px;margin:0 auto;
+      box-shadow:0 -12px 48px rgba(0,0,0,.18);
+      animation:sheetUp .22s ease-out both}
+    @keyframes sheetUp{from{transform:translateY(100%)}to{transform:none}}
+    .ss-drag{width:36px;height:4px;border-radius:2px;background:var(--border);margin:12px auto 0}
+    .ss-header{padding:14px 22px 12px;border-bottom:1px solid var(--border)}
+    .ss-title{font-size:15px;font-weight:700}
+    .ss-sub{font-size:12px;color:var(--muted);margin-top:2px}
+    .ss-options{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+      gap:10px;padding:14px 22px 22px}
+    .swap-option{border:2px solid var(--border);border-radius:12px;padding:14px;
+      cursor:pointer;transition:all .15s;position:relative}
+    .swap-option:hover{border-color:var(--green);background:rgba(37,51,25,.03)}
+    .swap-option.current{border-color:var(--green);background:rgba(37,51,25,.05)}
+    .so-badge{position:absolute;top:10px;right:10px;font-size:9px;font-weight:700;
+      letter-spacing:.08em;text-transform:uppercase;
+      background:var(--green);color:#f1ebe2;padding:2px 6px;border-radius:10px}
+    .so-brand{font-size:10px;font-weight:700;letter-spacing:.1em;
+      text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+    .so-name{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;line-height:1.3}
+    .so-sku{font-size:11px;color:var(--muted)}
+    .so-price{font-size:15px;font-weight:700;color:var(--green);margin-top:8px}
+    .so-use{display:block;width:100%;margin-top:10px;padding:8px;border-radius:7px;
+      border:none;background:var(--green);color:#f1ebe2;font-size:12px;font-weight:700;
+      cursor:pointer;font-family:'Inter',sans-serif;transition:background .12s}
+    .so-use:hover{background:var(--green2)}
+    .swap-option.current .so-use{background:var(--muted)}
+  </style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ═══════ SIDEBAR ═══════ -->
+  <div class="sidebar">
+    <div class="sb-brand">
+      <div class="sb-logo">🌿 Drip Atlas</div>
+      <div class="sb-plan-badge">$99 Plan</div>
+    </div>
+    <div class="sb-address">
+      <div class="sb-addr-label">Property</div>
+      <div class="sb-addr-val" id="sb-address">Loading…</div>
+    </div>
+    <div class="sb-nav">
+      <div class="nav-section">Your Plan</div>
+      <div class="nav-item active" data-tab="zones" onclick="setTab('zones')">
+        <span class="ni-icon">📋</span> Zone Parts
+        <span class="ni-badge" id="nb-zones">—</span>
+      </div>
+      <div class="nav-item" data-tab="schedule" onclick="setTab('schedule')">
+        <span class="ni-icon">💧</span> Water Schedule
+      </div>
+      <div class="nav-item" data-tab="manifold" onclick="setTab('manifold')">
+        <span class="ni-icon">🔧</span> Manifold Assembly
+      </div>
+      <div class="nav-item" data-tab="blueprint" onclick="setTab('blueprint')">
+        <span class="ni-icon">📐</span> Blueprint
+      </div>
+      <div class="nav-item kit-only" data-tab="track" onclick="setTab('track')" style="display:none">
+        <span class="ni-icon">📦</span> Track My Order
+        <span class="ni-badge" id="nb-track" style="background:#c8e670;color:#1a2516">NEW</span>
+      </div>
+      <div class="nav-item kit-only" data-tab="pro" onclick="setTab('pro')" style="display:none">
+        <span class="ni-icon">👷</span> My Irrigation Pro
+      </div>
+    </div>
+    <div class="sb-footer">
+      <button class="sb-btn" onclick="window.print()">🖨️ &nbsp;Print List</button>
+      <button class="sb-btn" onclick="window.location.href='zones.html'">← Edit Design</button>
+    </div>
+  </div>
+
+  <!-- ═══════ MAIN ═══════ -->
+  <div class="main">
+    <div class="topbar">
+      <span class="tb-title" id="tb-title">Zone Parts</span>
+      <div class="tb-divider"></div>
+      <div class="brand-group">
+        <span class="brand-label">Brand</span>
+        <button class="brand-btn active" data-brand="rainbird" onclick="setBrand('rainbird')">Rain Bird</button>
+        <button class="brand-btn" data-brand="hunter" onclick="setBrand('hunter')">Hunter</button>
+        <button class="brand-btn" data-brand="orbit" onclick="setBrand('orbit')">Orbit</button>
+      </div>
+      <div class="tb-divider"></div>
+      <div class="pipe-group">
+        <span class="brand-label">Pipe</span>
+        <select class="pipe-select" id="pipe-select" onchange="setPipe(this.value)">
+          <option value="pvc">Schedule 40 PVC</option>
+          <option value="poly">Blue Poly Pipe</option>
+          <option value="pex">PEX</option>
+        </select>
+      </div>
+      <div class="tb-total" style="background:none;padding:0;gap:10px">
+        <span style="font-size:12px;color:var(--muted);font-weight:500">Est. <strong id="tb-total-val" style="color:var(--text)">—</strong></span>
+        <button class="tb-kit-btn" onclick="openKitModal()">📦 Order this Kit</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- ══ ZONES PARTS ══ -->
+      <div class="tab-pane active" id="tab-zones">
+        <div class="zones-header">
+          <h2>Zone Parts List</h2>
+          <p>Parts required per zone. Switch brand or pipe type above to reprice instantly.</p>
+        </div>
+        <div id="zones-list"></div>
+        <div id="grand-total-card"></div>
+      </div>
+
+      <!-- ══ WATER SCHEDULE ══ -->
+      <div class="tab-pane" id="tab-schedule">
+        <div class="schedule-intro">
+          <h2>Watering Schedule</h2>
+          <p>Run times are calculated from head type, precipitation rate, and a 1 inch/week ET target. Adjust for your climate and soil type.</p>
+        </div>
+        <div class="schedule-table-wrap">
+          <table class="sch-table">
+            <thead><tr>
+              <th>Zone</th><th>Head Type</th><th>Heads</th>
+              <th>Precip Rate</th><th>Run Time / Day</th><th>Days / Wk</th><th>Weekly Total</th>
+            </tr></thead>
+            <tbody id="sch-tbody"></tbody>
+          </table>
+        </div>
+        <div class="week-grid-wrap">
+          <div class="week-grid-title">📅 Recommended Weekly Schedule</div>
+          <div class="week-days" id="week-days"></div>
+        </div>
+        <div class="schedule-notes-card">
+          <div class="sn-title">Controller Setup Notes</div>
+          <div class="sn-list" id="sn-list"></div>
+        </div>
+      </div>
+
+      <!-- ══ MANIFOLD ══ -->
+      <div class="tab-pane" id="tab-manifold">
+        <div class="manifold-intro">
+          <h2>Manifold Assembly</h2>
+          <p>All zones connect to a single valve manifold near your water source. Each zone gets one 24VAC solenoid valve wired back to your controller.</p>
+        </div>
+        <div class="manifold-diagram-card">
+          <div class="mdc-title">Assembly Diagram</div>
+          <div class="manifold-svg-wrap">
+            <svg id="manifold-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+          </div>
+        </div>
+        <div class="manifold-layout" style="margin-top:18px">
+          <div class="manifold-parts-card">
+            <div class="mpc-head">Manifold Parts</div>
+            <div id="manifold-parts-list"></div>
+          </div>
+          <div class="wiring-card">
+            <div class="wc-title">Controller Wiring</div>
+            <div id="wiring-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ BLUEPRINT ══ -->
+      <div class="tab-pane" id="tab-blueprint" style="padding:0;margin:-24px">
+        <div class="blueprint-wrap">
+          <div class="bp-toolbar">
+            <span class="bp-toolbar-label">Blueprint</span>
+            <button class="bp-btn" onclick="exportBlueprintSVG()">⬇ Export SVG</button>
+            <button class="bp-btn" onclick="window.print()">🖨 Print</button>
+            <span id="bp-scale-stat" class="bp-stat">—</span>
+            <span id="bp-heads-stat" class="bp-stat">—</span>
+            <span id="bp-zones-stat" class="bp-stat">—</span>
+          </div>
+          <div class="bp-svg-wrap">
+            <svg id="blueprint-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ TRACK MY ORDER ══ -->
+      <div class="tab-pane" id="tab-track">
+        <div class="track-header">
+          <h2>Track My Order</h2>
+          <p>Your Complete Kit is on its way. Here's where things stand.</p>
+        </div>
+        <div id="track-content"></div>
+      </div>
+
+      <!-- ══ MY IRRIGATION PRO ══ -->
+      <div class="tab-pane" id="tab-pro">
+        <div class="pro-header">
+          <h2>My Irrigation Pro</h2>
+          <p>Your dedicated specialist is assigned to your project and ready to help.</p>
+        </div>
+        <div id="pro-content"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="order-toast">
+  <span class="toast-icon">✓</span>
+  <span id="toast-msg">Order placed!</span>
+</div>
+
+<!-- KIT UPGRADE MODAL -->
+<div id="kit-backdrop" onclick="handleKitBackdrop(event)">
+  <div id="kit-modal">
+    <div class="km-hero">
+      <div class="km-eyebrow">Complete Kit — $949</div>
+      <div class="km-title">Get everything.<br>Done in a weekend.</div>
+      <div class="km-sub">We box every single part from your materials list, labeled by zone, and ship it straight to your door. A licensed specialist reviews your plan before it ships.</div>
+      <div class="km-delivery-banner">
+        <div class="km-delivery-icon">📦</div>
+        <div class="km-delivery-text">
+          <strong>Arrives within one week.</strong> All parts are pre-picked, counted, and labeled by zone so you can start digging the day the box arrives.
+        </div>
+      </div>
+    </div>
+    <div class="km-body">
+
+      <div class="km-section-title">What's in the box</div>
+      <ul class="km-features">
+        <li class="km-feat"><div class="km-feat-icon">🔵</div><div class="km-feat-text"><strong>Every sprinkler head, pipe, fitting, and valve</strong> — complete parts for all <span id="km-zone-count">your</span> zones, nothing missing</div></li>
+        <li class="km-feat"><div class="km-feat-icon">🏷️</div><div class="km-feat-text"><strong>Pre-labeled by zone</strong> — bags marked Zone 1, Zone 2, etc. so you never wonder what goes where</div></li>
+        <li class="km-feat"><div class="km-feat-icon">📐</div><div class="km-feat-text"><strong>Printed irrigation plan</strong> — your full blueprint and materials list, folded and included in the box</div></li>
+        <li class="km-feat"><div class="km-feat-icon">💧</div><div class="km-feat-text"><strong>Controller + wiring bundle</strong> — a <span id="km-zone-ctrl">multi-zone</span> controller with pre-cut wire labeled per zone</div></li>
+        <li class="km-feat"><div class="km-feat-icon">🧴</div><div class="km-feat-text"><strong>Install supplies</strong> — PVC cement, primer, Teflon tape, wire connectors, and flags for marking head locations</div></li>
+        <li class="km-feat"><div class="km-feat-icon">🛡️</div><div class="km-feat-text"><strong>90-day satisfaction guarantee</strong> — if anything is missing or wrong, we'll ship a replacement free</div></li>
+      </ul>
+
+      <div class="km-section-title">Your specialist call</div>
+      <div class="km-specialist-card">
+        <div class="km-specialist-avatar">👷</div>
+        <div class="km-specialist-text">
+          <div class="km-spec-name">Licensed Irrigation Specialist Review</div>
+          <div class="km-spec-desc">Before your order ships, a licensed irrigation specialist will call you to walk through your design, confirm your water pressure, and answer any questions. Most calls take 15–20 minutes. You'll also get their direct number for questions during installation.</div>
+        </div>
+      </div>
+
+      <div class="km-price-row">
+        <div class="km-price">$949</div>
+        <div class="km-price-details">
+          <strong>One-time payment · No subscription</strong><br>
+          Includes all parts + specialist call + 90-day guarantee.<br>
+          Most customers save $200–$400 vs. buying separately.
+        </div>
+      </div>
+
+      <button class="km-cta" onclick="orderKit()">Order this Kit — $949</button>
+      <div class="km-payment-row">
+        <span class="km-payment-icon">💳</span>
+        <select id="km-payment-select" class="km-payment-select">
+          <option value="card-on-file">Visa ending in 4242</option>
+          <option value="new-card">Change payment method…</option>
+        </select>
+      </div>
+      <button class="km-dismiss" onclick="closeKitModal()">Keep my materials list</button>
+    </div>
+  </div>
+</div>
+
+<!-- SWAP BOTTOM SHEET -->
+<div id="swap-backdrop" onclick="closeSwap(event)">
+  <div id="swap-sheet">
+    <div class="ss-drag"></div>
+    <div class="ss-header">
+      <div class="ss-title" id="ss-title">Swap Product</div>
+      <div class="ss-sub" id="ss-sub">Choose an equivalent</div>
+    </div>
+    <div class="ss-options" id="ss-options"></div>
+  </div>
+</div>
+
+<script src="map-config.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════════
+// PRODUCT CATALOG
+// ═══════════════════════════════════════════════════════════
+const CATALOG = {
+  rainbird:{
+    rotor:      {name:'Rain Bird 5000 Series Rotor',    sku:'RB-5000-SS', price:8.99, icon:'rotor'},
+    spray_head: {name:'Rain Bird 1804 Pop-Up Spray',     sku:'RB-1804VAN',price:3.49, icon:'spray'},
+    funny_pipe: {name:'Rain Bird ½" × 12" Swing Pipe',  sku:'RB-SP12',   price:1.69, icon:'fp'},
+    fp_tee:     {name:'Rain Bird Swing Pipe Tee',         sku:'RB-SPTEE', price:0.89, icon:'tee'},
+    fp_adapter: {name:'Rain Bird ½" MPT Swing Adapter',  sku:'RB-SPAD',  price:1.29, icon:'adapter'},
+    drip_emitter:{name:'Rain Bird Drip Emitter ½ GPH',  sku:'RB-DREM',  price:0.49, icon:'emitter'},
+    drip_tube:  {name:'Rain Bird ½" Drip Tubing (100ft)',sku:'RB-DRIP100',price:24.99,icon:'drip_tube'},
+    valve:      {name:'Rain Bird 100-DV Anti-Siphon',    sku:'RB-100DV', price:18.99, icon:'valve'},
+  },
+  hunter:{
+    rotor:      {name:'Hunter PGP-ADJ Gear Rotor',       sku:'HU-PGPADJ',price:9.49, icon:'rotor'},
+    spray_head: {name:'Hunter Pro Spray Pop-Up Head',     sku:'HU-PS04',  price:3.99, icon:'spray'},
+    funny_pipe: {name:'Hunter ½" × 12" Swing Pipe',      sku:'HU-SP12',  price:1.89, icon:'fp'},
+    fp_tee:     {name:'Hunter Swing Pipe Tee',             sku:'HU-SPTEE',price:0.99, icon:'tee'},
+    fp_adapter: {name:'Hunter ½" MPT Swing Adapter',      sku:'HU-SPAD', price:1.39, icon:'adapter'},
+    drip_emitter:{name:'Hunter Eco-Mat Emitter ½ GPH',   sku:'HU-DREM', price:0.59, icon:'emitter'},
+    drip_tube:  {name:'Hunter ½" Dripline (100ft)',       sku:'HU-DRIP100',price:27.99,icon:'drip_tube'},
+    valve:      {name:'Hunter ICV-101G Globe Valve',      sku:'HU-ICV101',price:21.99,icon:'valve'},
+  },
+  orbit:{
+    rotor:      {name:'Orbit 54008 Gear Drive Rotor',    sku:'OR-54008', price:7.49, icon:'rotor'},
+    spray_head: {name:'Orbit 55027 Pop-Up Spray Head',   sku:'OR-55027', price:2.79, icon:'spray'},
+    funny_pipe: {name:'Orbit ½" × 12" Riser Tube',       sku:'OR-FP12',  price:1.29, icon:'fp'},
+    fp_tee:     {name:'Orbit Riser Tube Tee',              sku:'OR-RTTEE',price:0.79, icon:'tee'},
+    fp_adapter: {name:'Orbit ½" MPT Riser Adapter',      sku:'OR-RTAD',  price:0.99, icon:'adapter'},
+    drip_emitter:{name:'Orbit Drip Emitter ½ GPH',       sku:'OR-DREM',  price:0.39, icon:'emitter'},
+    drip_tube:  {name:'Orbit ½" Drip Tubing (100ft)',    sku:'OR-DRIP100',price:19.99,icon:'drip_tube'},
+    valve:      {name:'Orbit 57280 In-Line Valve',        sku:'OR-57280', price:14.99,icon:'valve'},
+  }
+};
+
+const PIPE_CAT = {
+  pvc: {name:'Schedule 40 PVC', pricePerFt:0.45},
+  poly:{name:'Blue Poly Pipe',  pricePerFt:0.32},
+  pex: {name:'PEX Pipe',        pricePerFt:0.68},
+};
+
+const MANIFOLD_PARTS = {
+  manifold_body:  {name:'PVC Manifold Body',              sku:'MAN-BODY',  price:14.99, icon:'🔲'},
+  wire_bundle:    {name:'18 AWG 5-Strand Wire (per ft)',  sku:'WIRE-18AWG',price:0.18,  icon:'🔌'},
+  valve_box:      {name:'12" Rectangular Valve Box',      sku:'VBOX-12R',  price:16.99, icon:'📦'},
+  wire_connectors:{name:'Waterproof Wire Connectors 10pk',sku:'WCONN-10',  price:7.99,  icon:'🔌'},
+  teflon_tape:    {name:'Teflon Pipe Tape',                sku:'TFLNTAPE',  price:2.49,  icon:'🧵'},
+  pvc_primer:     {name:'PVC Primer (4oz)',                sku:'PVCPRIM',   price:3.99,  icon:'🧴'},
+  pvc_cement:     {name:'PVC Cement (4oz)',                sku:'PVCCMT',    price:4.99,  icon:'🧴'},
+};
+
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+let brand = 'rainbird';
+let pipeType = 'pvc';
+let activeTab = 'zones';
+const overrides = {};
+
+// ═══════════════════════════════════════════════════════════
+// DESIGN DATA (sessionStorage or mock)
+// ═══════════════════════════════════════════════════════════
+const MOCK_DESIGN = {
+  address:'123 Oak Street, Austin TX 78701',
+  water:{sourceType:'tap', flowVal:'10', flowUnit:'gpm', srcLat:30.2500, srcLng:-97.7500},
+  irrigationZones:[
+    {id:'iz0',name:'Front Lawn',color:'#5db85d',isDrip:false,
+     totalGpm:4.5,mainPipe:{sz:'¾"',id:0.824},latPipe:{sz:'½"',id:0.622},
+     pressureAtZone:52,distFt:42,area:1200,
+     heads:[
+       {id:'h0',lat:30.25047,lng:-97.74968,type:'rotor',radiusFt:15,dirDeg:0,  arcDeg:180,gpm:1.0},
+       {id:'h1',lat:30.25047,lng:-97.75032,type:'rotor',radiusFt:15,dirDeg:270,arcDeg:180,gpm:1.0},
+       {id:'h2',lat:30.25019,lng:-97.74968,type:'rotor',radiusFt:15,dirDeg:90, arcDeg:180,gpm:1.0},
+       {id:'h3',lat:30.25019,lng:-97.75032,type:'rotor',radiusFt:15,dirDeg:180,arcDeg:360,gpm:2.0},
+     ]},
+    {id:'iz1',name:'Back Yard',color:'#4CAF50',isDrip:false,
+     totalGpm:6.0,mainPipe:{sz:'¾"',id:0.824},latPipe:{sz:'½"',id:0.622},
+     pressureAtZone:48,distFt:68,area:1800,
+     heads:[
+       {id:'h4',lat:30.25099,lng:-97.74975,type:'rotor',radiusFt:15,dirDeg:0,  arcDeg:360,gpm:2.0},
+       {id:'h5',lat:30.25099,lng:-97.75025,type:'rotor',radiusFt:15,dirDeg:0,  arcDeg:360,gpm:2.0},
+       {id:'h6',lat:30.25071,lng:-97.74999,type:'rotor',radiusFt:15,dirDeg:0,  arcDeg:360,gpm:2.0},
+     ]},
+    {id:'iz2',name:'Side Beds',color:'#c8a050',isDrip:false,
+     totalGpm:3.0,mainPipe:{sz:'½"',id:0.622},latPipe:{sz:'½"',id:0.622},
+     pressureAtZone:55,distFt:25,area:500,
+     heads:[
+       {id:'h7', lat:30.25004,lng:-97.74920,type:'spray',radiusFt:10,dirDeg:0,  arcDeg:90,gpm:0.75},
+       {id:'h8', lat:30.24980,lng:-97.74920,type:'spray',radiusFt:10,dirDeg:90, arcDeg:90,gpm:0.75},
+       {id:'h9', lat:30.24980,lng:-97.74948,type:'spray',radiusFt:10,dirDeg:180,arcDeg:90,gpm:0.75},
+       {id:'h10',lat:30.25004,lng:-97.74948,type:'spray',radiusFt:10,dirDeg:270,arcDeg:90,gpm:0.75},
+     ]},
+    {id:'iz3',name:'Garden Beds',color:'#a07030',isDrip:true,
+     totalGpm:1.2,mainPipe:{sz:'½"',id:0.622},latPipe:{sz:'½"',id:0.622},
+     pressureAtZone:55,distFt:35,area:420,heads:[]},
+  ]
+};
+
+const design = (()=>{
+  try{ const d=JSON.parse(sessionStorage.getItem('drip_design')); return d||MOCK_DESIGN; }
+  catch(e){ return MOCK_DESIGN; }
+})();
+const zones = design.irrigationZones || [];
+
+// ═══════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════
+const fmt = n => '$'+(+n).toFixed(2);
+const fmtInt = n => '$'+Math.round(n).toLocaleString();
+const overKey = (iz,k) => `${iz}::${k}`;
+const getBrand = (izId,k) => overrides[overKey(izId,k)] || brand;
+
+function hexToRgb(hex){
+  if (!hex||hex.length<7) return '128,128,128';
+  return `${parseInt(hex.slice(1,3),16)},${parseInt(hex.slice(3,5),16)},${parseInt(hex.slice(5,7),16)}`;
+}
+function estLatFt(iz){ return Math.round((iz.heads?.length||0) * 14); }
+
+// ═══════════════════════════════════════════════════════════
+// ZONE THUMBNAIL URL  (Esri World Imagery Export)
+// ═══════════════════════════════════════════════════════════
+function zoneThumbnailUrl(iz){
+  const heads = (iz.heads||[]).filter(h=>h.lat&&h.lng);
+  let minLat,maxLat,minLng,maxLng;
+  if(heads.length){
+    const lats=heads.map(h=>h.lat), lngs=heads.map(h=>h.lng);
+    const maxR = Math.max(...heads.map(h=>h.radiusFt||15));
+    const padLat = (maxR*0.3048+10)/111320;
+    const padLng = (maxR*0.3048+10)/(111320*Math.cos(lats[0]*Math.PI/180));
+    minLat=Math.min(...lats)-padLat; maxLat=Math.max(...lats)+padLat;
+    minLng=Math.min(...lngs)-padLng; maxLng=Math.max(...lngs)+padLng;
+  } else if(design.water?.srcLat){
+    const p=0.0006;
+    minLat=design.water.srcLat-p; maxLat=design.water.srcLat+p;
+    minLng=design.water.srcLng-p; maxLng=design.water.srcLng+p;
+  } else { return null; }
+  const centerLat = (minLat + maxLat) / 2;
+  const centerLng = (minLng + maxLng) / 2;
+  const padDeg    = Math.max((maxLng - minLng) / 2, (maxLat - minLat) / 2);
+  return satelliteExportUrl(centerLat, centerLng, 320, 140, padDeg);
+}
+
+// ═══════════════════════════════════════════════════════════
+// PRODUCT THUMBNAIL SVG
+// ═══════════════════════════════════════════════════════════
+const BRAND_COLORS = {rainbird:'#c8222a',hunter:'#005baa',orbit:'#f06020'};
+
+function prodThumbHTML(iconKey, brandKey){
+  const c  = BRAND_COLORS[brandKey]||'#7a7a72';
+  const cl = c+'40'; // light fill
+  const cm = c+'70'; // mid
+  const svgs = {
+    rotor:`<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="20" cy="20" r="15" fill="${cl}" stroke="${c}" stroke-width="1.8"/>
+      <path d="M20,20 L20,6 A14,14 0 0,1 32.1,27 Z" fill="${cm}"/>
+      <circle cx="20" cy="20" r="5" fill="${c}"/>
+      <circle cx="20" cy="20" r="2.5" fill="white" opacity=".7"/>
+    </svg>`,
+    spray:`<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20,24 L7,10 Q20,4 33,10 Z" fill="${cl}" stroke="${cm}" stroke-width="1" stroke-linejoin="round"/>
+      <line x1="20" y1="24" x2="10" y2="9"  stroke="${c}" stroke-width=".8" opacity=".6"/>
+      <line x1="20" y1="24" x2="20" y2="7"  stroke="${c}" stroke-width=".8" opacity=".6"/>
+      <line x1="20" y1="24" x2="30" y2="9"  stroke="${c}" stroke-width=".8" opacity=".6"/>
+      <circle cx="20" cy="24" r="5" fill="${c}" stroke="white" stroke-width="1.2"/>
+      <circle cx="20" cy="24" r="2" fill="white" opacity=".8"/>
+    </svg>`,
+    fp:`<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8,32 Q8,10 30,10" fill="none" stroke="${c}" stroke-width="7" stroke-linecap="round"/>
+      <path d="M8,32 Q8,10 30,10" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity=".25"/>
+    </svg>`,
+    tee:`<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+      <line x1="5" y1="20" x2="35" y2="20" stroke="${c}" stroke-width="7" stroke-linecap="round"/>
+      <line x1="20" y1="20" x2="20" y2="36" stroke="${c}" stroke-width="7" stroke-linecap="round"/>
+      <line x1="5" y1="20" x2="35" y2="20" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity=".2"/>
+    </svg>`,
+    adapter:`<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+      <rect x="3" y="13" width="16" height="14" rx="4" fill="${c}"/>
+      <rect x="21" y="16" width="16" height="8"  rx="3" fill="${c}"/>
+      <rect x="3" y="13" width="16" height="14" rx="4" fill="white" opacity=".2"/>
+      <circle cx="20" cy="20" r="2.5" fill="${c}" stroke="white" stroke-width="1"/>
+    </svg>`,
+    valve:`<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+      <rect x="7" y="20" width="26" height="14" rx="4" fill="${cl}" stroke="${c}" stroke-width="1.8"/>
+      <rect x="14" y="10" width="12" height="12" rx="3" fill="${c}"/>
+      <rect x="14" y="10" width="12" height="12" rx="3" fill="white" opacity=".2"/>
+      <rect x="18" y="7"  width="4" height="5" rx="1" fill="${c}"/>
+    </svg>`,
+    emitter:`<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+      <rect x="13" y="8" width="14" height="14" rx="3" fill="${c}"/>
+      <rect x="13" y="8" width="14" height="14" rx="3" fill="white" opacity=".2"/>
+      <path d="M20,22 Q15,28 20,34 Q25,28 20,22Z" fill="${c}"/>
+    </svg>`,
+    drip_tube:`<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+      <path d="M5,30 Q5,20 20,20 Q35,20 35,10" fill="none" stroke="${c}" stroke-width="5" stroke-linecap="round"/>
+      <path d="M5,36 Q5,26 20,26 Q35,26 35,16" fill="none" stroke="${c}" stroke-width="3" stroke-linecap="round" opacity=".45"/>
+      <circle cx="10" cy="27" r="2" fill="${c}" opacity=".7"/>
+      <circle cx="21" cy="22" r="2" fill="${c}" opacity=".7"/>
+      <circle cx="32" cy="14" r="2" fill="${c}" opacity=".7"/>
+    </svg>`,
+    pipe:`<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+      <rect x="3" y="14" width="34" height="12" rx="6" fill="${cl}" stroke="${c}" stroke-width="1.8"/>
+      <ellipse cx="37" cy="20" rx="3.5" ry="6" fill="${cm}" stroke="${c}" stroke-width="1.5"/>
+      <ellipse cx="3"  cy="20" rx="3.5" ry="6" fill="${cl}" stroke="${c}" stroke-width="1"/>
+    </svg>`,
+  };
+  return `<div class="prod-thumb">${svgs[iconKey]||svgs.pipe}</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// PARTS CALCULATION
+// ═══════════════════════════════════════════════════════════
+function calcZoneParts(iz){
+  const pipe = PIPE_CAT[pipeType];
+  const heads = iz.heads||[];
+  const rotors = heads.filter(h=>h.type==='rotor').length;
+  const sprays = heads.filter(h=>h.type==='spray').length;
+  const parts = [];
+  if(rotors>0) parts.push({key:'rotor',     category:'head',   ...CATALOG[getBrand(iz.id,'rotor')].rotor,     qty:rotors,        unit:'ea'});
+  if(sprays>0) parts.push({key:'spray_head',category:'head',   ...CATALOG[getBrand(iz.id,'spray_head')].spray_head, qty:sprays,   unit:'ea'});
+  if(heads.length>0){
+    parts.push({key:'funny_pipe', category:'fitting',...CATALOG[getBrand(iz.id,'funny_pipe')].funny_pipe, qty:heads.length, unit:'ea'});
+    parts.push({key:'fp_tee',     category:'fitting',...CATALOG[getBrand(iz.id,'fp_tee')].fp_tee,         qty:heads.length, unit:'ea'});
+    parts.push({key:'fp_adapter', category:'fitting',...CATALOG[getBrand(iz.id,'fp_adapter')].fp_adapter, qty:heads.length, unit:'ea'});
+  }
+  const mainFt = Math.round((iz.distFt||40)*1.2);
+  const latFt  = estLatFt(iz);
+  const mainSz = iz.mainPipe?.sz||'¾"';
+  const latSz  = iz.latPipe?.sz||'½"';
+  if(mainFt>0) parts.push({key:'main_pipe',category:'pipe',icon:'pipe',
+    name:`${pipe.name} ${mainSz} (Main Line)`,sku:`PIPE-MAIN-${pipeType.toUpperCase()}`,
+    price:pipe.pricePerFt,qty:mainFt,unit:'ft'});
+  if(latFt>0)  parts.push({key:'lat_pipe', category:'pipe',icon:'pipe',
+    name:`${pipe.name} ${latSz} (Lateral)`,sku:`PIPE-LAT-${pipeType.toUpperCase()}`,
+    price:pipe.pricePerFt,qty:latFt,unit:'ft'});
+  return parts;
+}
+
+function calcDripParts(iz){
+  const pipe = PIPE_CAT[pipeType];
+  const cat  = CATALOG[brand];
+  const areaSqFt = iz.area||400;
+  const emitters = Math.ceil(areaSqFt*0.044);
+  const dripRolls = Math.ceil(areaSqFt*0.15/100);
+  const mainFt = Math.round((iz.distFt||30)*1.2);
+  return [
+    {key:'drip_emitter',category:'drip',...cat.drip_emitter,qty:emitters,   unit:'ea'},
+    {key:'drip_tube',   category:'drip',...cat.drip_tube,   qty:Math.max(1,dripRolls),unit:'roll'},
+    {key:'main_pipe',   category:'pipe', icon:'pipe',
+     name:`${pipe.name} ${iz.mainPipe?.sz||'½"'} (Main Line)`,
+     sku:`PIPE-MAIN-${pipeType.toUpperCase()}`,price:pipe.pricePerFt,qty:mainFt,unit:'ft'},
+  ];
+}
+
+const zoneSubtotal = parts => parts.reduce((s,p)=>s+p.price*p.qty, 0);
+
+// ═══════════════════════════════════════════════════════════
+// RENDER ZONES PARTS
+// ═══════════════════════════════════════════════════════════
+function renderZonesParts(){
+  const sprayZones = zones.filter(z=>!z.isDrip);
+  const dripZones  = zones.filter(z=>z.isDrip);
+  let grandTotal=0, html='';
+
+  sprayZones.forEach(iz=>{
+    const parts=calcZoneParts(iz);
+    const sub=zoneSubtotal(parts);
+    grandTotal+=sub;
+    const warn=iz.pressureAtZone<30?`⚠️ Low pressure (${iz.pressureAtZone} PSI) — consider splitting zone`:'';
+    const thumbUrl=zoneThumbnailUrl(iz);
+
+    html+=`<div class="zone-card">
+      <div class="zc-header">
+        <div class="zone-thumb-wrap">
+          ${thumbUrl
+            ? `<img class="zone-thumb" src="${thumbUrl}" alt="${iz.name}" onerror="this.parentElement.innerHTML='<div class=zone-thumb-fallback><div class=ztf-icon>🗺️</div><div class=ztf-txt>${iz.name}</div></div>'">`
+            : `<div class="zone-thumb-fallback"><div class="ztf-icon">🗺️</div><div class="ztf-txt">${iz.name}</div></div>`}
+          <div class="zone-thumb-overlay">
+            <div class="zone-thumb-label">${iz.name}</div>
+          </div>
+        </div>
+        <div class="zc-info">
+          <div class="zc-name-row">
+            <div class="zc-dot" style="background:${iz.color}"></div>
+            <span class="zc-name">${iz.name}</span>
+            <span class="zc-type">Spray</span>
+          </div>
+          <div class="zc-badges">
+            <span class="zc-badge gpm">⚡ ${iz.totalGpm} GPM</span>
+            <span class="zc-badge psi">${iz.pressureAtZone} PSI</span>
+            <span class="zc-badge pipe">Main: ${iz.mainPipe?.sz||'¾"'}</span>
+            <span class="zc-badge pipe">Lat: ${iz.latPipe?.sz||'½"'}</span>
+            <span class="zc-badge pipe">📏 ${iz.distFt} ft</span>
+            ${warn?`<span class="zc-badge warn">${warn}</span>`:''}
+          </div>
+        </div>
+      </div>
+      <table class="parts-table">
+        <thead><tr>
+          <th style="width:52px"></th>
+          <th style="width:40%">Product</th>
+          <th>Qty</th><th>Unit Price</th>
+          <th class="right">Total</th><th></th>
+        </tr></thead>
+        <tbody>${parts.map(p=>partRow(p,iz.id)).join('')}</tbody>
+      </table>
+      <div class="zc-footer">
+        <span class="zc-warn"></span>
+        <span class="zc-subtotal">Zone Subtotal: ${fmt(sub)}</span>
+      </div>
+    </div>`;
+  });
+
+  dripZones.forEach(iz=>{
+    const parts=calcDripParts(iz);
+    const sub=zoneSubtotal(parts);
+    grandTotal+=sub;
+    const thumbUrl=zoneThumbnailUrl(iz);
+    html+=`<div class="zone-card">
+      <div class="zc-header">
+        <div class="zone-thumb-wrap">
+          ${thumbUrl
+            ? `<img class="zone-thumb" src="${thumbUrl}" alt="${iz.name}" onerror="this.parentElement.innerHTML='<div class=zone-thumb-fallback><div class=ztf-icon>💧</div><div class=ztf-txt>${iz.name}</div></div>'">`
+            : `<div class="zone-thumb-fallback"><div class="ztf-icon">💧</div><div class="ztf-txt">${iz.name}</div></div>`}
+          <div class="zone-thumb-overlay">
+            <div class="zone-thumb-label">${iz.name}</div>
+          </div>
+        </div>
+        <div class="zc-info">
+          <div class="zc-name-row">
+            <div class="zc-dot" style="background:${iz.color}"></div>
+            <span class="zc-name">${iz.name}</span>
+            <span class="zc-type">Drip</span>
+          </div>
+          <div class="zc-badges">
+            <span class="zc-badge pipe">~${iz.area||400} sq ft</span>
+            <span class="zc-badge pipe">📏 ${iz.distFt} ft</span>
+          </div>
+        </div>
+      </div>
+      <table class="parts-table">
+        <thead><tr>
+          <th style="width:52px"></th><th style="width:40%">Product</th>
+          <th>Qty</th><th>Unit Price</th><th class="right">Total</th><th></th>
+        </tr></thead>
+        <tbody>${parts.map(p=>partRow(p,iz.id)).join('')}</tbody>
+      </table>
+      <div class="zc-footer">
+        <span></span>
+        <span class="zc-subtotal">Zone Subtotal: ${fmt(sub)}</span>
+      </div>
+    </div>`;
+  });
+
+  const valveCost = CATALOG[brand].valve.price * zones.length;
+  grandTotal += valveCost;
+
+  document.getElementById('zones-list').innerHTML = html;
+  document.getElementById('nb-zones').textContent = zones.length;
+  document.getElementById('tb-total-val').textContent = fmtInt(grandTotal);
+
+  // Grand total card
+  const sprayHeadsSub = sprayZones.reduce((s,z)=>s+zoneSubtotal(calcZoneParts(z).filter(p=>p.category!=='pipe')),0);
+  const pipeSub = sprayZones.reduce((s,z)=>s+zoneSubtotal(calcZoneParts(z).filter(p=>p.category==='pipe')),0)
+                + dripZones.reduce((s,z)=>s+zoneSubtotal(calcDripParts(z).filter(p=>p.category==='pipe')),0);
+  const dripSub = dripZones.reduce((s,z)=>s+zoneSubtotal(calcDripParts(z).filter(p=>p.category!=='pipe')),0);
+  const sprayCount = sprayZones.reduce((s,z)=>s+(z.heads?.length||0),0);
+
+  document.getElementById('grand-total-card').innerHTML=`
+    <div class="grand-total-card">
+      <div class="gt-title">Estimated Materials Total</div>
+      <div class="gt-rows">
+        <div class="gt-row"><span>${sprayCount} sprinkler heads + fittings</span><span>${fmt(sprayHeadsSub)}</span></div>
+        <div class="gt-row"><span>Pipe (all zones)</span><span>${fmt(pipeSub)}</span></div>
+        <div class="gt-row"><span>Drip emitters &amp; tubing</span><span>${fmt(dripSub)}</span></div>
+        <div class="gt-row"><span>${zones.length} zone valves (see Manifold tab)</span><span>${fmt(valveCost)}</span></div>
+      </div>
+      <div class="gt-total-row"><span>Estimated Total</span><span>${fmtInt(grandTotal)}</span></div>
+      <div class="gt-note">* Estimates only. Prices vary by retailer. Does not include controller, wire, or labor.</div>
+      <button class="gt-print-btn" onclick="window.print()">🖨️ Print Materials List</button>
+    </div>`;
+}
+
+function partRow(p, izId){
+  const catClass={head:'cat-head',fitting:'cat-fitting',pipe:'cat-pipe',drip:'cat-drip'}[p.category]||'';
+  const catLabel={head:'Head',fitting:'Fitting',pipe:'Pipe',drip:'Drip'}[p.category]||'';
+  const total=p.price*p.qty;
+  const canSwap=(p.category==='head'||p.category==='fitting');
+  const bk = getBrand(izId, p.key)||brand;
+  return `<tr>
+    <td class="img-cell">${prodThumbHTML(p.icon||p.key, bk)}</td>
+    <td>
+      <div class="prod-category ${catClass}">${catLabel}</div>
+      <div class="prod-name">${p.name}</div>
+      <div class="prod-sku">${p.sku}</div>
+    </td>
+    <td class="qty-cell">${p.qty} <span style="font-size:11px;font-weight:400;color:var(--muted)">${p.unit}</span></td>
+    <td class="unit-cell">${fmt(p.price)}</td>
+    <td class="right price-cell">${fmt(total)}</td>
+    <td>${canSwap?`<button class="btn-swap" onclick="openSwap('${izId}','${p.key}')">↕ Swap</button>`:''}</td>
+  </tr>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// WATER SCHEDULE
+// ═══════════════════════════════════════════════════════════
+const SCHED_DAYS=[0,2,5]; // Mon Wed Sat
+function precipRate(iz){
+  const heads=iz.heads||[];
+  if(!heads.length) return 0;
+  const isRotor=heads.some(h=>h.type==='rotor');
+  const avgArc=heads.reduce((s,h)=>s+h.arcDeg,0)/heads.length;
+  return isRotor ? +(0.45*(360/Math.max(avgArc,1))).toFixed(2) : 1.50;
+}
+function runTimeMin(iz){
+  const pr=precipRate(iz);
+  if(!pr) return 0;
+  return Math.round((1.0/pr)*60/3);
+}
+function renderSchedule(){
+  const sprayZones=zones.filter(z=>!z.isDrip);
+  let maxTime=0;
+  const rows=sprayZones.map(iz=>{
+    const isRotor=iz.heads?.some(h=>h.type==='rotor');
+    const pr=precipRate(iz), rt=runTimeMin(iz);
+    if(rt>maxTime) maxTime=rt;
+    return {iz,isRotor,pr,rt};
+  });
+  document.getElementById('sch-tbody').innerHTML=rows.map(({iz,isRotor,pr,rt})=>{
+    const bw=maxTime>0?Math.round((rt/maxTime)*120):40;
+    return `<tr>
+      <td class="sch-name"><span class="sch-dot" style="background:${iz.color}"></span>${iz.name}</td>
+      <td>${isRotor?'🔵 Rotor':'💧 Spray'}</td>
+      <td>${iz.heads?.length||0}</td>
+      <td>${pr} in/hr</td>
+      <td><div class="runtime-bar-wrap">
+        <div class="runtime-bar" style="width:${bw}px;background:${iz.color}"></div>
+        <span style="font-weight:700">${rt} min</span>
+      </div></td>
+      <td>3×</td>
+      <td>${Math.round(rt*3)} min</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('week-days').innerHTML=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map((d,i)=>{
+    if(!SCHED_DAYS.includes(i)) return `<div class="day-col"><div class="day-label">${d}</div><div class="day-off">Off</div></div>`;
+    const blocks=sprayZones.map(iz=>`<div class="day-zone-block" style="background:${iz.color}" title="${iz.name}: ${runTimeMin(iz)} min">${iz.name.split(' ')[0]} ${runTimeMin(iz)}m</div>`).join('');
+    return `<div class="day-col"><div class="day-label">${d}</div><div class="day-zones">${blocks}</div></div>`;
+  }).join('');
+
+  const totalWeeklyGal=sprayZones.reduce((s,iz)=>s+(iz.totalGpm||0)*runTimeMin(iz)*3,0);
+  document.getElementById('sn-list').innerHTML=`
+    <div class="sn-item"><span class="sn-bullet">🕐</span><span>Set your controller to run <strong>Monday, Wednesday, and Saturday</strong>. Skipping back-to-back days gives soil time to absorb moisture before the next cycle.</span></div>
+    <div class="sn-item"><span class="sn-bullet">💦</span><span>Schedule start time between <strong>4:00 AM and 6:00 AM</strong> to minimize evaporation and wind drift.</span></div>
+    <div class="sn-item"><span class="sn-bullet">📊</span><span>Estimated weekly use: <strong>~${Math.round(totalWeeklyGal).toLocaleString()} gallons</strong>. Adjust run times for drought or unusually wet periods.</span></div>
+    <div class="sn-item"><span class="sn-bullet">❄️</span><span>Suspend irrigation when overnight temps drop below <strong>35°F</strong>. Blow out lines before first hard freeze.</span></div>
+    <div class="sn-item"><span class="sn-bullet">🌧️</span><span>Install a <strong>rain sensor</strong> to automatically skip cycles — required by code in many municipalities.</span></div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// MANIFOLD
+// ═══════════════════════════════════════════════════════════
+function renderManifold(){
+  const cat=CATALOG[brand];
+  const numZones=zones.length;
+  const maxDist=Math.max(...zones.map(z=>z.distFt||50));
+  const wireFt=Math.round(maxDist*1.3*numZones*0.4+20);
+  const svgW=Math.max(600,numZones*120+80), svgH=220;
+  const vSpc=Math.min(110,(svgW-100)/numZones);
+  const manifoldY=100, valveY=50, wireY=158;
+  let sv='';
+  sv+=`<rect x="12" y="${manifoldY-12}" width="56" height="24" rx="7" fill="#253319"/>`;
+  sv+=`<text x="40" y="${manifoldY+6}" fill="#f1ebe2" font-size="10" font-weight="700" text-anchor="middle" font-family="Inter">SRC</text>`;
+  sv+=`<line x1="68" y1="${manifoldY}" x2="${60+vSpc*(numZones-1)+20}" y2="${manifoldY}" stroke="#253319" stroke-width="8" stroke-linecap="round"/>`;
+  zones.forEach((iz,i)=>{
+    const cx=60+vSpc*i+20;
+    sv+=`<line x1="${cx}" y1="${manifoldY}" x2="${cx}" y2="${valveY+28}" stroke="${iz.color}" stroke-width="4"/>`;
+    sv+=`<line x1="${cx}" y1="${manifoldY}" x2="${cx}" y2="${wireY}"     stroke="${iz.color}" stroke-width="4"/>`;
+    sv+=`<rect x="${cx-14}" y="${valveY}" width="28" height="28" rx="6" fill="${iz.color}" stroke="white" stroke-width="2"/>`;
+    sv+=`<text x="${cx}" y="${valveY+17}" fill="white" font-size="9" font-weight="700" text-anchor="middle" font-family="Inter">V${i+1}</text>`;
+    sv+=`<line x1="${cx}" y1="${wireY}" x2="${cx}" y2="${wireY+28}" stroke="#f0a832" stroke-width="2" stroke-dasharray="4,3"/>`;
+    sv+=`<text x="${cx}" y="${svgH-8}" fill="#7a7a72" font-size="10" text-anchor="middle" font-family="Inter">${iz.name.substring(0,10)}</text>`;
+  });
+  const ctrlX=60+vSpc*(numZones-1)/2+20;
+  sv+=`<line x1="80" y1="${wireY+28}" x2="${60+vSpc*(numZones-1)+20}" y2="${wireY+28}" stroke="#f0a832" stroke-width="2" stroke-dasharray="4,3"/>`;
+  sv+=`<rect x="${ctrlX-30}" y="${wireY+28}" width="60" height="22" rx="5" fill="#1a2516"/>`;
+  sv+=`<text x="${ctrlX}" y="${wireY+42}" fill="#c8e670" font-size="9" font-weight="700" text-anchor="middle" font-family="Inter">CONTROLLER</text>`;
+  document.getElementById('manifold-svg').setAttribute('viewBox',`0 0 ${svgW} ${svgH}`);
+  document.getElementById('manifold-svg').setAttribute('width',svgW);
+  document.getElementById('manifold-svg').setAttribute('height',svgH);
+  document.getElementById('manifold-svg').innerHTML=sv;
+
+  const mParts=[
+    {...cat.valve,key:'valve',qty:numZones,icon:'🔧'},
+    {...MANIFOLD_PARTS.manifold_body,qty:1},
+    {...MANIFOLD_PARTS.valve_box,qty:Math.ceil(numZones/6)},
+    {...MANIFOLD_PARTS.wire_connectors,qty:Math.ceil(numZones*2/10)},
+    {...MANIFOLD_PARTS.teflon_tape,qty:1},
+    {...MANIFOLD_PARTS.pvc_primer,qty:1},
+    {...MANIFOLD_PARTS.pvc_cement,qty:1},
+  ];
+  document.getElementById('manifold-parts-list').innerHTML=mParts.map(p=>`
+    <div class="mpc-row">
+      <div class="mpc-icon">${p.icon}</div>
+      <div class="mpc-info"><div class="mpc-name">${p.name}</div><div class="mpc-sku">${p.sku}</div></div>
+      <div class="mpc-qty">×${p.qty}</div>
+      <div class="mpc-price">${fmt(p.price*p.qty)}</div>
+      ${p.key==='valve'?`<button class="mpc-swap" onclick="openManifoldSwap()">↕</button>`:''}
+    </div>`).join('');
+
+  document.getElementById('wiring-list').innerHTML=`
+    <div class="wc-wire-row">
+      <div class="wire-swatch" style="background:#f0a832"></div>
+      <div class="wc-wire-label">Common Wire (White)</div>
+      <div class="wc-wire-len">~${wireFt} ft</div>
+    </div>
+    ${zones.map((iz,i)=>`
+    <div class="wc-wire-row">
+      <div class="wire-swatch" style="background:${iz.color}"></div>
+      <div class="wc-wire-label">Zone ${i+1} — ${iz.name}</div>
+      <div class="wc-wire-len">~${Math.round((iz.distFt||40)*1.3)} ft</div>
+    </div>`).join('')}
+    <div class="wc-wire-row">
+      <div class="wire-swatch" style="background:#cc3333"></div>
+      <div class="wc-wire-label">Sensor Wire (rain sensor)</div>
+      <div class="wc-wire-len">~${Math.round(wireFt*0.5)} ft</div>
+    </div>
+    <div class="wc-note">Use 18 AWG multi-strand direct-burial wire. Bundle all zone wires with the common wire in the same trench as your main supply pipe.</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// BLUEPRINT
+// ═══════════════════════════════════════════════════════════
+function dimLine(x1,y1,x2,y2,label,tickLen,color){
+  const mx=(x1+x2)/2, my=(y1+y2)/2;
+  const dx=x2-x1, dy=y2-y1;
+  const len=Math.hypot(dx,dy);
+  if(len<5) return '';
+  const nx=-dy/len*tickLen, ny=dx/len*tickLen;
+  const ang=(Math.atan2(dy,dx)*180/Math.PI).toFixed(1);
+  return `<line x1="${(x1-nx).toFixed(1)}" y1="${(y1-ny).toFixed(1)}" x2="${(x1+nx).toFixed(1)}" y2="${(y1+ny).toFixed(1)}" stroke="${color}" stroke-width=".8"/>
+  <line x1="${(x2-nx).toFixed(1)}" y1="${(y2-ny).toFixed(1)}" x2="${(x2+nx).toFixed(1)}" y2="${(y2+ny).toFixed(1)}" stroke="${color}" stroke-width=".8"/>
+  <line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${color}" stroke-width=".8"/>
+  <text x="${mx.toFixed(1)}" y="${(my-4).toFixed(1)}" fill="${color}" font-size="8" font-family="Inter,sans-serif" text-anchor="middle" transform="rotate(${ang},${mx.toFixed(1)},${my.toFixed(1)})">${label}</text>`;
+}
+
+function renderBlueprint(){
+  const SVG_W=1000, SVG_H=680;
+  const DX=55, DY=48, DW=650, DH=440;
+  const LEG_X=725, LEG_Y=48;
+  const TB_X=55, TB_Y=502, TB_W=930, TB_H=148;
+
+  // Collect all points with coordinates
+  const allPts=[];
+  zones.forEach(iz=>(iz.heads||[]).forEach(h=>{if(h.lat&&h.lng)allPts.push([h.lat,h.lng]);}));
+  if(design.water?.srcLat) allPts.push([design.water.srcLat,design.water.srcLng]);
+
+  let bounds;
+  if(allPts.length>=2){
+    const lats=allPts.map(p=>p[0]), lngs=allPts.map(p=>p[1]);
+    const dLat=Math.max(Math.max(...lats)-Math.min(...lats),0.0008);
+    const dLng=Math.max(Math.max(...lngs)-Math.min(...lngs),0.0008);
+    bounds={minLat:Math.min(...lats)-dLat*.28,maxLat:Math.max(...lats)+dLat*.28,
+            minLng:Math.min(...lngs)-dLng*.28,maxLng:Math.max(...lngs)+dLng*.28};
+  } else {
+    bounds={minLat:30.2492,maxLat:30.2518,minLng:-97.7512,maxLng:-97.7485};
+  }
+
+  const proj=(lat,lng)=>[
+    DX+(lng-bounds.minLng)/(bounds.maxLng-bounds.minLng)*DW,
+    DY+(1-(lat-bounds.minLat)/(bounds.maxLat-bounds.minLat))*DH
+  ];
+  const latMid=(bounds.minLat+bounds.maxLat)/2;
+  const ftPerPx=(bounds.maxLat-bounds.minLat)*111320*3.28084/DH;
+  const ftToPx=ft=>ft/ftPerPx;
+
+  let s='';
+
+  // ── BACKGROUND + GRID ──
+  s+=`<rect width="${SVG_W}" height="${SVG_H}" fill="#09141f"/>`;
+  s+=`<defs><pattern id="bpg" width="44" height="44" patternUnits="userSpaceOnUse">
+    <path d="M44,0 L0,0 0,44" fill="none" stroke="rgba(60,110,170,.13)" stroke-width=".5"/>
+  </pattern></defs>`;
+  s+=`<rect width="${SVG_W}" height="${SVG_H}" fill="url(#bpg)"/>`;
+
+  // ── BORDERS ──
+  s+=`<rect x="5" y="5" width="${SVG_W-10}" height="${SVG_H-10}" fill="none" stroke="rgba(100,175,255,.55)" stroke-width="1.5"/>`;
+  s+=`<rect x="9" y="9" width="${SVG_W-18}" height="${SVG_H-18}" fill="none" stroke="rgba(100,175,255,.2)" stroke-width=".5"/>`;
+
+  // Draw area frame
+  s+=`<rect x="${DX-5}" y="${DY-5}" width="${DW+10}" height="${DH+10}" fill="rgba(100,150,200,.025)" stroke="rgba(100,175,255,.12)" stroke-width=".5"/>`;
+
+  // ── ZONE REGIONS ──
+  zones.forEach(iz=>{
+    const heads=(iz.heads||[]).filter(h=>h.lat&&h.lng);
+    if(!heads.length) return;
+    const pp=heads.map(h=>proj(h.lat,h.lng));
+    const xs=pp.map(p=>p[0]), ys=pp.map(p=>p[1]);
+    const maxR=ftToPx(Math.max(...heads.map(h=>h.radiusFt||15)));
+    const x1=Math.min(...xs)-maxR*.85, y1=Math.min(...ys)-maxR*.85;
+    const x2=Math.max(...xs)+maxR*.85, y2=Math.max(...ys)+maxR*.85;
+    const w=x2-x1, h=y2-y1, rx=Math.min(maxR*.5,18);
+    const rgb=hexToRgb(iz.color);
+    s+=`<rect x="${x1.toFixed(1)}" y="${y1.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" rx="${rx.toFixed(1)}" fill="rgba(${rgb},.07)" stroke="rgba(${rgb},.5)" stroke-width="1" stroke-dasharray="5,3"/>`;
+    // Zone label
+    s+=`<text x="${((x1+x2)/2).toFixed(1)}" y="${(y1-9).toFixed(1)}" fill="rgba(${rgb},.85)" font-size="9.5" font-family="Inter,sans-serif" font-weight="600" text-anchor="middle" letter-spacing="1.5">${iz.name.toUpperCase()}</text>`;
+    // Dimension annotations
+    const wFt=Math.round(w*ftPerPx), hFt=Math.round(h*ftPerPx);
+    s+=dimLine(x1,y2+10,x2,y2+10,`${wFt}'`,5,`rgba(${rgb},.55)`);
+    s+=dimLine(x2+10,y1,x2+10,y2,`${hFt}'`,5,`rgba(${rgb},.55)`);
+  });
+
+  // ── PIPE ROUTES ──
+  zones.forEach(iz=>{
+    const heads=(iz.heads||[]).filter(h=>h.lat&&h.lng);
+    if(!heads.length) return;
+    const pts=heads.map(h=>proj(h.lat,h.lng));
+    const src=design.water?.srcLat&&design.water?.srcLng?proj(design.water.srcLat,design.water.srcLng):pts[0];
+    // Find nearest head to source
+    let ni=0,nd=Infinity;
+    pts.forEach((p,i)=>{const d=Math.hypot(p[0]-src[0],p[1]-src[1]);if(d<nd){nd=d;ni=i;}});
+    // Main line: source → valve → nearest head
+    s+=`<line x1="${src[0].toFixed(1)}" y1="${src[1].toFixed(1)}" x2="${pts[ni][0].toFixed(1)}" y2="${pts[ni][1].toFixed(1)}" stroke="rgba(140,215,255,.65)" stroke-width="2" stroke-linecap="round"/>`;
+    // Lateral: nearest-neighbor walk
+    const used=new Set([ni]); let cur=ni;
+    while(used.size<pts.length){
+      let nextD=Infinity,next=-1;
+      pts.forEach((p,i)=>{if(used.has(i))return;const d=Math.hypot(pts[cur][0]-p[0],pts[cur][1]-p[1]);if(d<nextD){nextD=d;next=i;}});
+      if(next<0) break;
+      s+=`<line x1="${pts[cur][0].toFixed(1)}" y1="${pts[cur][1].toFixed(1)}" x2="${pts[next][0].toFixed(1)}" y2="${pts[next][1].toFixed(1)}" stroke="rgba(140,215,255,.4)" stroke-width="1.2" stroke-linecap="round"/>`;
+      used.add(next); cur=next;
+    }
+  });
+
+  // ── SPRAY ARCS + HEAD SYMBOLS ──
+  zones.forEach(iz=>{
+    (iz.heads||[]).filter(h=>h.lat&&h.lng).forEach(h=>{
+      const [x,y]=proj(h.lat,h.lng);
+      const r=ftToPx(h.radiusFt||15);
+      const isRotor=h.type==='rotor';
+      // Arc sector
+      if(h.arcDeg>=355){
+        s+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="rgba(100,175,255,.05)" stroke="rgba(100,175,255,.28)" stroke-width=".7" stroke-dasharray="3,3"/>`;
+      } else {
+        const a1=(h.dirDeg-90)*Math.PI/180;
+        const a2=(h.dirDeg+h.arcDeg-90)*Math.PI/180;
+        const x1=(x+r*Math.cos(a1)).toFixed(1), y1=(y+r*Math.sin(a1)).toFixed(1);
+        const x2=(x+r*Math.cos(a2)).toFixed(1), y2=(y+r*Math.sin(a2)).toFixed(1);
+        const lg=h.arcDeg>180?1:0;
+        s+=`<path d="M${x.toFixed(1)},${y.toFixed(1)} L${x1},${y1} A${r.toFixed(1)},${r.toFixed(1)} 0 ${lg},1 ${x2},${y2} Z" fill="rgba(100,175,255,.06)" stroke="rgba(100,175,255,.32)" stroke-width=".7" stroke-dasharray="3,2"/>`;
+      }
+      // Head symbol
+      const or=isRotor?5:4;
+      s+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${or}" fill="#09141f" stroke="rgba(205,235,255,.9)" stroke-width="${isRotor?1.5:1.2}"/>`;
+      s+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${isRotor?2:1.5}" fill="rgba(205,235,255,.9)"/>`;
+      s+=`<text x="${(x+or+3).toFixed(1)}" y="${(y-4).toFixed(1)}" fill="rgba(170,210,255,.6)" font-size="7" font-family="Inter,sans-serif" font-weight="600">${isRotor?'R':'S'}</text>`;
+    });
+  });
+
+  // ── WATER SOURCE ──
+  if(design.water?.srcLat&&design.water?.srcLng){
+    const [sx,sy]=proj(design.water.srcLat,design.water.srcLng);
+    s+=`<circle cx="${sx.toFixed(1)}" cy="${sy.toFixed(1)}" r="11" fill="rgba(240,168,50,.2)" stroke="rgba(240,168,50,.9)" stroke-width="2"/>`;
+    s+=`<circle cx="${sx.toFixed(1)}" cy="${sy.toFixed(1)}" r="4.5" fill="rgba(240,168,50,.9)"/>`;
+    s+=`<text x="${sx.toFixed(1)}" y="${(sy+21).toFixed(1)}" fill="rgba(240,168,50,.9)" font-size="8.5" font-family="Inter,sans-serif" font-weight="700" text-anchor="middle">${design.water.sourceType==='manifold'?'MAIN LINE':'HOSE TAP'}</text>`;
+  }
+
+  // ── NORTH ARROW ──
+  const naX=DX+DW-18, naY=DY+26;
+  s+=`<circle cx="${naX}" cy="${naY}" r="16" fill="rgba(9,20,31,.85)" stroke="rgba(100,175,255,.4)" stroke-width="1"/>`;
+  s+=`<polygon points="${naX},${naY-14} ${naX-5},${naY+7} ${naX},${naY+2} ${naX+5},${naY+7}" fill="rgba(150,210,255,.9)"/>`;
+  s+=`<polygon points="${naX},${naY-14} ${naX-5},${naY+7} ${naX},${naY+2}" fill="rgba(20,60,120,.5)"/>`;
+  s+=`<text x="${naX}" y="${naY-18}" fill="rgba(150,210,255,.9)" font-size="9" font-family="Inter,sans-serif" font-weight="700" text-anchor="middle">N</text>`;
+
+  // ── SCALE BAR ──
+  const scFt=20, scPx=ftToPx(scFt);
+  const sbX=DX+8, sbY=DY+DH+14;
+  s+=`<line x1="${sbX}" y1="${sbY}" x2="${sbX+scPx}" y2="${sbY}" stroke="rgba(150,210,255,.8)" stroke-width="2" stroke-linecap="square"/>`;
+  s+=`<line x1="${sbX}" y1="${sbY-5}" x2="${sbX}" y2="${sbY+5}" stroke="rgba(150,210,255,.8)" stroke-width="1.5"/>`;
+  s+=`<line x1="${sbX+scPx}" y1="${sbY-5}" x2="${sbX+scPx}" y2="${sbY+5}" stroke="rgba(150,210,255,.8)" stroke-width="1.5"/>`;
+  s+=`<text x="${sbX+scPx/2}" y="${sbY+15}" fill="rgba(150,210,255,.8)" font-size="9" font-family="Inter,sans-serif" text-anchor="middle">${scFt} ft</text>`;
+  s+=`<text x="${sbX}" y="${sbY+15}" fill="rgba(100,155,200,.5)" font-size="8" font-family="Inter,sans-serif">0</text>`;
+
+  // ── TITLE BLOCK ──
+  s+=`<rect x="${TB_X}" y="${TB_Y}" width="${TB_W}" height="${TB_H}" fill="rgba(7,14,24,.92)" stroke="rgba(100,175,255,.4)" stroke-width="1"/>`;
+  s+=`<rect x="${TB_X}" y="${TB_Y}" width="${TB_W}" height="28" fill="rgba(100,175,255,.07)"/>`;
+  s+=`<text x="${TB_X+TB_W/2}" y="${TB_Y+19}" fill="rgba(200,230,255,.95)" font-size="11" font-family="Inter,sans-serif" font-weight="700" text-anchor="middle" letter-spacing="3">DRIP ATLAS — RESIDENTIAL IRRIGATION PLAN</text>`;
+  s+=`<line x1="${TB_X+230}" y1="${TB_Y+28}" x2="${TB_X+230}" y2="${TB_Y+TB_H}" stroke="rgba(100,175,255,.2)" stroke-width=".5"/>`;
+  s+=`<line x1="${TB_X+510}" y1="${TB_Y+28}" x2="${TB_X+510}" y2="${TB_Y+TB_H}" stroke="rgba(100,175,255,.2)" stroke-width=".5"/>`;
+
+  const tbRow=(x,y,lbl,val)=>
+    `<text x="${x}" y="${y}"    fill="rgba(100,160,200,.6)" font-size="7.5" font-family="Inter,sans-serif" font-weight="600" letter-spacing=".5">${lbl}</text>`+
+    `<text x="${x}" y="${y+14}" fill="rgba(200,230,255,.9)" font-size="9"   font-family="Inter,sans-serif">${val}</text>`;
+
+  s+=tbRow(TB_X+10, TB_Y+44, 'PROPERTY',     (design.address||'Your Property').substring(0,34));
+  s+=tbRow(TB_X+10, TB_Y+76, 'SYSTEM TYPE',  design.water?.sourceType==='manifold'?'Main Line Manifold':'Hose Tap System');
+  s+=tbRow(TB_X+10, TB_Y+108,'DESIGNED BY',  'Drip Atlas — dripAtlas.com');
+  s+=tbRow(TB_X+240,TB_Y+44, 'ZONES',        `${zones.length} (${zones.filter(z=>!z.isDrip).length} spray, ${zones.filter(z=>z.isDrip).length} drip)`);
+  s+=tbRow(TB_X+240,TB_Y+76, 'TOTAL HEADS',  `${zones.reduce((t,z)=>t+(z.heads?.length||0),0)} heads`);
+  s+=tbRow(TB_X+240,TB_Y+108,'PEAK DEMAND',  `${Math.max(...zones.map(z=>z.totalGpm||0)).toFixed(1)} GPM`);
+  s+=tbRow(TB_X+520,TB_Y+44, 'DATE',         new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}));
+  s+=tbRow(TB_X+520,TB_Y+76, 'PLAN NO.',     'DA-'+Math.random().toString(36).substr(2,6).toUpperCase());
+  s+=tbRow(TB_X+520,TB_Y+108,'SCALE',        `1" = ${Math.round(ftPerPx*60)}'`);
+
+  // ── LEGEND PANEL ──
+  let ly=LEG_Y;
+  s+=`<text x="${LEG_X}" y="${ly+14}" fill="rgba(150,210,255,.9)" font-size="10" font-family="Inter,sans-serif" font-weight="700" letter-spacing="2">LEGEND</text>`;
+  ly+=28;
+
+  const legSymbols=[
+    {fn:(x,y)=>`<circle cx="${x+8}" cy="${y}" r="5" fill="#09141f" stroke="rgba(205,235,255,.9)" stroke-width="1.5"/><circle cx="${x+8}" cy="${y}" r="2" fill="rgba(205,235,255,.9)"/>`, label:'Rotor Head'},
+    {fn:(x,y)=>`<circle cx="${x+8}" cy="${y}" r="4" fill="#09141f" stroke="rgba(205,235,255,.7)" stroke-width="1.2"/><circle cx="${x+8}" cy="${y}" r="1.5" fill="rgba(205,235,255,.7)"/>`, label:'Spray Head'},
+    {fn:(x,y)=>`<line x1="${x+2}" y1="${y}" x2="${x+16}" y2="${y}" stroke="rgba(140,215,255,.65)" stroke-width="2.5"/>`, label:'Main Line'},
+    {fn:(x,y)=>`<line x1="${x+2}" y1="${y}" x2="${x+16}" y2="${y}" stroke="rgba(140,215,255,.4)" stroke-width="1.2"/>`, label:'Lateral Line'},
+    {fn:(x,y)=>`<circle cx="${x+8}" cy="${y}" r="8" fill="rgba(240,168,50,.2)" stroke="rgba(240,168,50,.9)" stroke-width="1.5"/>`, label:'Water Source'},
+  ];
+  legSymbols.forEach(sym=>{
+    s+=sym.fn(LEG_X,ly+4);
+    s+=`<text x="${LEG_X+22}" y="${ly+8}" fill="rgba(180,220,255,.8)" font-size="9" font-family="Inter,sans-serif">${sym.label}</text>`;
+    ly+=22;
+  });
+  ly+=12;
+  s+=`<text x="${LEG_X}" y="${ly}" fill="rgba(100,160,200,.6)" font-size="8.5" font-family="Inter,sans-serif" font-weight="700" letter-spacing="1">ZONES</text>`;
+  ly+=12;
+  zones.forEach(iz=>{
+    const rgb=hexToRgb(iz.color);
+    s+=`<rect x="${LEG_X}" y="${ly}" width="16" height="12" rx="3" fill="rgba(${rgb},.15)" stroke="rgba(${rgb},.7)" stroke-width="1" stroke-dasharray="3,2"/>`;
+    s+=`<text x="${LEG_X+22}" y="${ly+9}" fill="rgba(180,220,255,.8)" font-size="9" font-family="Inter,sans-serif">${iz.name} — ${iz.isDrip?'Drip':`${iz.totalGpm} GPM`}</text>`;
+    ly+=20;
+  });
+
+  // Finalize SVG
+  const svgEl=document.getElementById('blueprint-svg');
+  svgEl.setAttribute('viewBox',`0 0 ${SVG_W} ${SVG_H}`);
+  svgEl.setAttribute('width','100%');
+  svgEl.setAttribute('height','100%');
+  svgEl.innerHTML=s;
+
+  // Update toolbar stats
+  const totalHeads=zones.reduce((t,z)=>t+(z.heads?.length||0),0);
+  document.getElementById('bp-scale-stat').textContent=`Scale 1"=${Math.round(ftPerPx*60)}'`;
+  document.getElementById('bp-heads-stat').textContent=`${totalHeads} heads`;
+  document.getElementById('bp-zones-stat').textContent=`${zones.length} zones`;
+}
+
+function exportBlueprintSVG(){
+  const svgEl=document.getElementById('blueprint-svg');
+  const blob=new Blob([svgEl.outerHTML],{type:'image/svg+xml'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`drip-atlas-plan-${new Date().toISOString().split('T')[0]}.svg`;
+  a.click();
+}
+
+// ═══════════════════════════════════════════════════════════
+// SWAP MODAL
+// ═══════════════════════════════════════════════════════════
+const BRAND_NAMES={rainbird:'Rain Bird',hunter:'Hunter',orbit:'Orbit'};
+
+function openSwap(izId,partKey){
+  const iz=zones.find(z=>z.id===izId); if(!iz) return;
+  const curBrand=getBrand(izId,partKey);
+  const opts=Object.entries(CATALOG).map(([bk,bc])=>{
+    const p=bc[partKey]; if(!p) return null;
+    return {...p,brandKey:bk,brandName:BRAND_NAMES[bk]};
+  }).filter(Boolean);
+  document.getElementById('ss-title').textContent=`Swap: ${CATALOG[curBrand][partKey]?.name||partKey}`;
+  document.getElementById('ss-sub').textContent='Choose an equivalent. Applies to this zone only.';
+  document.getElementById('ss-options').innerHTML=opts.map(opt=>{
+    const cur=opt.brandKey===curBrand;
+    return `<div class="swap-option ${cur?'current':''}">
+      ${cur?'<div class="so-badge">Current</div>':''}
+      <div class="so-brand">${opt.brandName}</div>
+      <div class="so-name">${opt.name}</div>
+      <div class="so-sku">${opt.sku}</div>
+      <div class="so-price">${fmt(opt.price)}/ea</div>
+      <button class="so-use" onclick="applySwap('${izId}','${partKey}','${opt.brandKey}')">
+        ${cur?'✓ Using This':'Use This'}
+      </button>
+    </div>`;
+  }).join('');
+  document.getElementById('swap-backdrop').classList.add('show');
+}
+
+function openManifoldSwap(){
+  document.getElementById('ss-title').textContent='Swap: Zone Valves';
+  document.getElementById('ss-sub').textContent='Changes all zone valves to the selected brand.';
+  document.getElementById('ss-options').innerHTML=Object.entries(CATALOG).map(([bk,bc])=>{
+    const cur=bk===brand;
+    return `<div class="swap-option ${cur?'current':''}">
+      ${cur?'<div class="so-badge">Current</div>':''}
+      <div class="so-brand">${BRAND_NAMES[bk]}</div>
+      <div class="so-name">${bc.valve.name}</div>
+      <div class="so-sku">${bc.valve.sku}</div>
+      <div class="so-price">${fmt(bc.valve.price)}/ea</div>
+      <button class="so-use" onclick="setBrand('${bk}');document.getElementById('swap-backdrop').classList.remove('show')">Use This</button>
+    </div>`;
+  }).join('');
+  document.getElementById('swap-backdrop').classList.add('show');
+}
+
+function applySwap(izId,partKey,newBrand){
+  overrides[`${izId}::${partKey}`]=newBrand;
+  document.getElementById('swap-backdrop').classList.remove('show');
+  renderZonesParts();
+}
+
+function closeSwap(e){
+  if(e&&e.target!==document.getElementById('swap-backdrop')) return;
+  document.getElementById('swap-backdrop').classList.remove('show');
+}
+document.getElementById('swap-sheet').addEventListener('click',e=>e.stopPropagation());
+
+// ═══════════════════════════════════════════════════════════
+// KIT UPGRADE MODAL
+// ═══════════════════════════════════════════════════════════
+let orderPlaced = false;
+const ORDER_NUM = 'DA-' + Math.random().toString(36).substr(2,6).toUpperCase();
+
+function openKitModal(){
+  const zoneDesc=zones.length===1?'1 zone':`${zones.length} zones`;
+  const ctrlZones=zones.length<=4?'4-zone':zones.length<=6?'6-zone':zones.length<=8?'8-zone':'12-zone';
+  document.getElementById('km-zone-count').textContent=zoneDesc;
+  document.getElementById('km-zone-ctrl').textContent=ctrlZones;
+  // Reset CTA
+  const cta=document.querySelector('.km-cta');
+  cta.textContent='Order this Kit — $949';
+  cta.disabled=false;
+  document.getElementById('kit-backdrop').classList.add('show');
+  document.getElementById('kit-modal').scrollTop=0;
+}
+function closeKitModal(){
+  document.getElementById('kit-backdrop').classList.remove('show');
+}
+function handleKitBackdrop(e){
+  if(e.target===document.getElementById('kit-backdrop')) closeKitModal();
+}
+function orderKit(){
+  const paySelect=document.getElementById('km-payment-select');
+  if(paySelect.value==='new-card'){
+    window.location.href='checkout.html?plan=kit&amount=949';
+    return;
+  }
+  // Charge card on file — animate then upgrade
+  const cta=document.querySelector('.km-cta');
+  cta.textContent='Processing…';
+  cta.disabled=true;
+  setTimeout(()=>{
+    closeKitModal();
+    upgradeToKit();
+  },1100);
+}
+
+function upgradeToKit(){
+  orderPlaced=true;
+  // Upgrade plan badge
+  const badge=document.querySelector('.sb-plan-badge');
+  badge.textContent='Complete Kit';
+  badge.classList.add('kit');
+  // Upgrade topbar kit button
+  const kitBtn=document.querySelector('.tb-kit-btn');
+  kitBtn.textContent='✓ Kit Ordered';
+  kitBtn.style.background='var(--lime)';
+  kitBtn.style.color='var(--green)';
+  kitBtn.onclick=null;
+  // Show new nav tabs
+  document.querySelectorAll('.kit-only').forEach(el=>el.style.display='flex');
+  // Show toast
+  showToast('✓ Order placed! Your kit is being prepared.');
+  // Navigate to Track tab
+  setTimeout(()=>setTab('track'),400);
+}
+
+function showToast(msg){
+  const t=document.getElementById('order-toast');
+  document.getElementById('toast-msg').textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3800);
+}
+
+// ── TRACK ORDER ──
+function renderTrackOrder(){
+  const today=new Date();
+  const fmt=d=>d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+  const addDays=(d,n)=>{const r=new Date(d);r.setDate(r.getDate()+n);return r;};
+  const shipDate=addDays(today,3);
+  const eta=addDays(today,7);
+  const TRACKING_NUM='1Z8F4A200391287644';
+
+  // currentStep: 0=packaging, 1=shipped, 2=arrived
+  const currentStep=0;
+
+  const steps=[
+    {
+      icon:'📦',
+      title:'Buying & Packaging Your Order',
+      desc:'We\'re sourcing and assembling every part on your materials list — counted, labeled by zone, and double-checked against your blueprint.',
+      time:'In progress · Est. ready '+fmt(shipDate),
+      state: currentStep===0 ? 'active' : currentStep>0 ? 'done' : 'pending',
+    },
+    {
+      icon:'🚚',
+      title:'Shipped',
+      desc: currentStep>=1
+        ? `Your kit is on its way via UPS Ground.`
+        : 'Your kit will ship via UPS Ground once packed.',
+      time: currentStep>=1 ? 'Shipped '+fmt(shipDate) : 'Est. '+fmt(shipDate),
+      state: currentStep===1 ? 'active' : currentStep>1 ? 'done' : 'pending',
+      tracking: currentStep>=1 ? TRACKING_NUM : null,
+    },
+    {
+      icon:'✅',
+      title:'Arrived',
+      desc:'Box at your door and ready to install. Your irrigation pro will follow up to schedule the walkthrough call.',
+      time:'Est. '+fmt(eta),
+      state: currentStep===2 ? 'active' : currentStep>2 ? 'done' : 'pending',
+    },
+  ];
+
+  document.getElementById('track-content').innerHTML=`
+    <div class="order-confirm-card">
+      <div class="occ-check">✓</div>
+      <div class="occ-text">
+        <div class="occ-title">Order Confirmed</div>
+        <div class="occ-sub">Thank you — we're on it. Check back here for live updates.</div>
+      </div>
+      <div class="occ-num">
+        <div class="occ-num-label">Order</div>
+        <div class="occ-num-val">${ORDER_NUM}</div>
+      </div>
+    </div>
+
+    <div class="track-timeline">
+      <div class="tt-title">Order Status</div>
+      <div class="tt-steps">
+        ${steps.map(s=>`
+        <div class="tt-step ${s.state}">
+          <div class="tt-dot-wrap">
+            <div class="tt-dot">${s.state==='done'?'✓':s.state==='active'?'':''}
+            </div>
+            <div class="tt-line"></div>
+          </div>
+          <div class="tt-body">
+            <div class="tt-step-title"><span class="tt-step-icon">${s.icon}</span>${s.title}</div>
+            <div class="tt-step-desc">${s.desc}</div>
+            ${s.tracking ? `<div class="tt-tracking-badge">
+              <span class="tt-tracking-label">UPS Tracking</span>
+              <span class="tt-tracking-num">${s.tracking}</span>
+              <a class="tt-tracking-link" href="#">Track on UPS →</a>
+            </div>` : ''}
+            <div class="tt-step-time">${s.time}</div>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>
+
+    <div class="delivery-eta-card">
+      <div class="dec-icon">🚚</div>
+      <div>
+        <div class="dec-title">Estimated Delivery</div>
+        <div class="dec-date">${fmt(eta)}</div>
+        <div class="dec-sub">UPS Ground · Signature not required</div>
+      </div>
+      <div class="dec-tracking">
+        <div class="dec-tracking-label">Tracking</div>
+        <div class="dec-tracking-num">${currentStep>=1 ? TRACKING_NUM : 'Available once shipped'}</div>
+      </div>
+    </div>`;
+}
+
+// ── MY IRRIGATION PRO ──
+function renderMyPro(){
+  document.getElementById('pro-content').innerHTML=`
+    <div class="pro-profile-card">
+      <div class="pro-avatar">👷</div>
+      <div class="pro-info">
+        <div class="pro-info-name">Marcus T.</div>
+        <div class="pro-info-title">Assigned to your project</div>
+        <div class="pro-credentials">
+          <span class="pro-cred">Licensed Irrigation Contractor</span>
+          <span class="pro-cred">IA Certified</span>
+          <span class="pro-cred">12 yrs experience</span>
+          <span class="pro-cred">Residential specialist</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="pro-contact-card">
+      <div class="pcc-title">Upcoming Call</div>
+      <div class="pcc-call-banner">
+        <div class="pcc-call-icon">📞</div>
+        <div class="pcc-call-text">
+          <strong>Marcus will call you within 24 hours.</strong><br>
+          He'll review your blueprint, confirm your water pressure, and answer any questions before your kit ships. The call typically takes 15–20 minutes.
+        </div>
+      </div>
+      <div class="pcc-rows">
+        <div class="pcc-row">
+          <span class="pcc-row-icon">📋</span>
+          <span class="pcc-row-label">Plan access</span>
+          <span class="pcc-row-val">Full blueprint + materials list</span>
+        </div>
+        <div class="pcc-row">
+          <span class="pcc-row-icon">🔑</span>
+          <span class="pcc-row-label">Order</span>
+          <span class="pcc-row-val">${ORDER_NUM}</span>
+        </div>
+        <div class="pcc-row">
+          <span class="pcc-row-icon">⏱</span>
+          <span class="pcc-row-label">Response time</span>
+          <span class="pcc-row-val">Within 24 hours</span>
+        </div>
+        <div class="pcc-row">
+          <span class="pcc-row-icon">📍</span>
+          <span class="pcc-row-label">Support</span>
+          <span class="pcc-row-val">Included through installation</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="pro-notes-card">
+      <div class="pnc-header">Leave a note for Marcus</div>
+      <div class="pnc-info">
+        <span class="pnc-info-icon">ℹ️</span>
+        Marcus has access to your full design. Leave any notes about your property, water source, or preferences and he'll have them ready for the call.
+      </div>
+      <textarea class="pnc-textarea" placeholder="e.g. Our water pressure is on the lower end. The back gate is always locked — front access only…"></textarea>
+      <div class="pnc-footer">
+        <button class="pnc-send" onclick="this.textContent='Sent ✓';this.style.background='#5db85d'">Send to Marcus</button>
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// TAB / BRAND / PIPE SWITCHES
+// ═══════════════════════════════════════════════════════════
+const TAB_TITLES={
+  zones:'Zone Parts', schedule:'Water Schedule',
+  manifold:'Manifold Assembly', blueprint:'Blueprint',
+  track:'Track My Order', pro:'My Irrigation Pro'
+};
+
+function setTab(tab){
+  activeTab=tab;
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.tab===tab));
+  document.getElementById('tb-title').textContent=TAB_TITLES[tab];
+  if(tab==='schedule')  renderSchedule();
+  if(tab==='manifold')  renderManifold();
+  if(tab==='blueprint') renderBlueprint();
+  if(tab==='track')     renderTrackOrder();
+  if(tab==='pro')       renderMyPro();
+}
+
+function setBrand(b){
+  brand=b;
+  document.querySelectorAll('.brand-btn').forEach(btn=>btn.classList.toggle('active',btn.dataset.brand===b));
+  renderZonesParts();
+  if(activeTab==='manifold') renderManifold();
+}
+
+function setPipe(p){
+  pipeType=p;
+  renderZonesParts();
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+document.getElementById('sb-address').textContent=design.address||'Your Property';
+renderZonesParts();
+</script>
+</body>
+</html>

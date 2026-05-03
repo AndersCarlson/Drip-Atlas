@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Drip Atlas — Water Source</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --forest:#253319;--forest-md:#2e4020;--lime:#c8e670;
+      --cream:#f1ebe2;--cream-dk:#e6dfd5;--white:#fff;
+      --charcoal:#1c1c1a;--gray:#7a7a72;--border:rgba(37,51,25,.12);
+      --pill:100px;--teal:#7dd9d9;
+    }
+    html,body{height:100%;font-family:'Inter',sans-serif;background:var(--cream);
+      color:var(--charcoal);-webkit-font-smoothing:antialiased}
+
+    /* ── NAV ── */
+    nav{position:sticky;top:0;z-index:200;background:var(--white);
+      border-bottom:1px solid var(--border);height:60px;
+      display:flex;align-items:center;padding:0 32px;gap:14px}
+    .nav-logo img{height:28px}
+    .nav-addr{font-size:13px;color:var(--gray);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .nav-back{font-size:13px;font-weight:500;color:var(--gray);text-decoration:none;
+      display:flex;align-items:center;gap:5px;transition:color .2s}
+    .nav-back:hover{color:var(--forest)}
+
+    /* ── PROGRESS ── */
+    .prog-bar{height:3px;background:var(--border)}
+    .prog-fill{height:100%;background:var(--forest);transition:width .5s cubic-bezier(.4,0,.2,1)}
+
+    /* ── STEP STEPS ── */
+    .step-dots{display:flex;align-items:center;justify-content:center;gap:6px;padding:20px 0 0}
+    .sdot{width:7px;height:7px;border-radius:50%;background:var(--border);transition:background .3s}
+    .sdot.done{background:var(--forest)}
+    .sdot.active{background:var(--forest);width:20px;border-radius:4px}
+
+    /* ── MAIN ── */
+    .main{display:flex;align-items:center;justify-content:center;
+      min-height:calc(100vh - 63px);padding:32px 20px}
+    .screen{display:none;width:100%;max-width:540px;animation:fadeUp .3s ease both}
+    .screen.active{display:block}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+    .step-lbl{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+      color:var(--gray);margin-bottom:12px}
+    .question{font-family:'Playfair Display',serif;font-size:clamp(26px,4vw,38px);
+      font-weight:700;color:var(--forest);line-height:1.15;margin-bottom:10px}
+    .sub{font-size:15px;color:var(--gray);line-height:1.7;margin-bottom:32px}
+
+    /* ── OPTION CARDS ── */
+    .option-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px}
+    .opt-card{
+      border:2px solid var(--border);border-radius:16px;padding:24px 20px;
+      cursor:pointer;transition:border-color .2s,background .2s,transform .15s;
+      text-align:left;background:var(--white);
+    }
+    .opt-card:hover{border-color:rgba(37,51,25,.3);transform:translateY(-2px)}
+    .opt-card.selected{border-color:var(--forest);background:rgba(37,51,25,.04)}
+    .opt-icon{font-size:32px;margin-bottom:12px;display:block}
+    .opt-title{font-size:15px;font-weight:700;color:var(--forest);margin-bottom:6px}
+    .opt-desc{font-size:13px;color:var(--gray);line-height:1.55}
+    .opt-check{
+      width:18px;height:18px;border-radius:50%;border:2px solid var(--border);
+      margin-left:auto;margin-top:12px;display:flex;align-items:center;justify-content:center;
+      transition:all .2s;
+    }
+    .opt-card.selected .opt-check{background:var(--forest);border-color:var(--forest);color:#fff;font-size:10px}
+    .opt-check::after{content:'✓';display:none}
+    .opt-card.selected .opt-check::after{display:block}
+
+    /* ── LEARN LINK ── */
+    .learn-link{
+      display:inline-flex;align-items:center;gap:6px;
+      font-size:13px;font-weight:600;color:var(--forest);
+      background:rgba(37,51,25,.07);border:1px solid rgba(37,51,25,.15);
+      padding:8px 16px;border-radius:var(--pill);cursor:pointer;
+      transition:background .2s;text-decoration:none;margin-bottom:28px;
+    }
+    .learn-link:hover{background:rgba(37,51,25,.12)}
+
+    /* ── BUTTONS ── */
+    .btn-primary{
+      display:block;width:100%;background:var(--forest);color:var(--white);
+      font-size:15px;font-weight:600;padding:16px;border-radius:10px;
+      border:none;cursor:pointer;text-align:center;font-family:'Inter',sans-serif;
+      transition:background .2s,transform .15s;margin-bottom:10px;
+    }
+    .btn-primary:hover{background:var(--forest-md);transform:translateY(-1px)}
+    .btn-primary:disabled{opacity:.35;cursor:not-allowed;transform:none}
+    .btn-secondary{
+      display:block;width:100%;background:transparent;color:var(--charcoal);
+      font-size:14px;font-weight:500;padding:13px;border-radius:10px;
+      border:1.5px solid var(--border);cursor:pointer;font-family:'Inter',sans-serif;
+      transition:border-color .2s;margin-bottom:10px;
+    }
+    .btn-secondary:hover{border-color:var(--forest)}
+    .btn-ghost{
+      display:block;width:100%;background:none;border:none;
+      font-size:13px;color:var(--gray);cursor:pointer;padding:8px;
+      font-family:'Inter',sans-serif;transition:color .2s;
+    }
+    .btn-ghost:hover{color:var(--forest)}
+
+    /* ── FLOW STEP ── */
+    .flow-toggle{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px}
+    .flow-opt{
+      border:2px solid var(--border);border-radius:12px;padding:16px;
+      cursor:pointer;background:var(--white);text-align:center;
+      font-size:13px;font-weight:600;color:var(--gray);transition:all .2s;
+    }
+    .flow-opt:hover{border-color:rgba(37,51,25,.3)}
+    .flow-opt.selected{border-color:var(--forest);color:var(--forest);background:rgba(37,51,25,.04)}
+    .flow-opt .fo-icon{font-size:22px;margin-bottom:6px;display:block}
+
+    .input-group{margin-bottom:20px}
+    .input-lbl{font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+      color:var(--gray);margin-bottom:8px}
+    .num-wrap{display:flex;align-items:center;gap:0;
+      background:var(--white);border:1.5px solid var(--border);border-radius:10px;overflow:hidden;
+      transition:border-color .2s}
+    .num-wrap:focus-within{border-color:var(--forest)}
+    .num-inp{
+      flex:1;padding:14px 16px;font-size:22px;font-weight:700;color:var(--forest);
+      border:none;outline:none;font-family:'Playfair Display',serif;background:transparent;
+    }
+    .num-unit{padding:0 18px;font-size:14px;font-weight:600;color:var(--gray);
+      border-left:1px solid var(--border);align-self:stretch;display:flex;align-items:center}
+
+    .notice-chip{
+      display:flex;gap:10px;align-items:flex-start;
+      background:rgba(200,230,112,.15);border:1px solid rgba(200,230,112,.4);
+      border-radius:10px;padding:12px 14px;margin-bottom:20px;
+    }
+    .notice-chip-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+    .notice-chip p{font-size:13px;color:var(--forest);line-height:1.55}
+
+    .warning-chip{
+      display:flex;gap:10px;align-items:flex-start;
+      background:rgba(220,150,50,.1);border:1px solid rgba(220,150,50,.3);
+      border-radius:10px;padding:12px 14px;margin-bottom:20px;
+    }
+    .warning-chip p{font-size:13px;color:#7a4a10;line-height:1.55}
+
+    /* ── MAP SCREEN ── */
+    #screen-place{max-width:100%;padding:0}
+    .place-layout{display:flex;height:calc(100vh - 63px)}
+    .place-sidebar{
+      width:320px;flex-shrink:0;background:var(--white);
+      border-right:1px solid var(--border);padding:28px 24px;
+      display:flex;flex-direction:column;overflow-y:auto;
+    }
+    .place-map-wrap{flex:1;position:relative}
+    #place-map{width:100%;height:100%}
+
+    /* source type toggle on map */
+    .src-toggle{
+      position:absolute;top:14px;left:50%;transform:translateX(-50%);
+      display:flex;background:rgba(28,28,26,.9);backdrop-filter:blur(8px);
+      border:1px solid rgba(255,255,255,.15);border-radius:var(--pill);
+      padding:4px;gap:4px;z-index:1000;
+    }
+    .src-btn{
+      font-size:12px;font-weight:600;padding:7px 16px;border-radius:var(--pill);
+      border:none;cursor:pointer;color:rgba(255,255,255,.55);background:transparent;
+      font-family:'Inter',sans-serif;transition:all .2s;display:flex;align-items:center;gap:6px;
+    }
+    .src-btn.active{background:var(--forest);color:var(--lime)}
+
+    /* leaflet overrides */
+    .leaflet-control-container{display:none}
+
+    .place-hint{
+      position:absolute;bottom:36px;left:50%;transform:translateX(-50%);
+      background:rgba(28,28,26,.88);backdrop-filter:blur(6px);
+      border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.8);
+      font-size:12px;font-weight:500;padding:8px 18px;border-radius:var(--pill);
+      z-index:1000;white-space:nowrap;pointer-events:none;font-family:'Inter',sans-serif;
+      transition:opacity .3s;
+    }
+
+    .map-zoom-btns{position:absolute;bottom:60px;right:14px;z-index:900;display:flex;flex-direction:column;gap:2px}
+    .mz-btn{width:30px;height:30px;background:rgba(28,28,26,.9);backdrop-filter:blur(4px);
+      border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.75);font-size:16px;
+      border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+    .mz-btn:hover{background:rgba(255,255,255,.12)}
+
+    /* water source marker */
+    .wsrc-marker{display:flex;flex-direction:column;align-items:center;gap:0;cursor:pointer}
+    .wsrc-bubble{
+      background:var(--forest);color:var(--lime);font-size:16px;
+      width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+      box-shadow:0 3px 10px rgba(0,0,0,.5);border:2px solid rgba(200,230,112,.4);
+    }
+    .wsrc-stem{width:2px;height:8px;background:var(--forest)}
+    .wsrc-dot{width:5px;height:5px;border-radius:50%;background:var(--forest)}
+
+    /* ── EDUCATIONAL DRAWER ── */
+    .drawer-bg{
+      position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(3px);
+      z-index:500;opacity:0;pointer-events:none;transition:opacity .3s;
+    }
+    .drawer-bg.open{opacity:1;pointer-events:all}
+    .drawer{
+      position:fixed;top:0;right:0;bottom:0;width:min(480px,100vw);
+      background:var(--white);z-index:600;
+      transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);
+      display:flex;flex-direction:column;
+      box-shadow:-8px 0 40px rgba(0,0,0,.15);
+    }
+    .drawer.open{transform:translateX(0)}
+    .drawer-head{
+      padding:20px 24px 16px;border-bottom:1px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+    }
+    .drawer-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--forest)}
+    .drawer-close{
+      width:32px;height:32px;border-radius:50%;border:1.5px solid var(--border);
+      background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
+      font-size:16px;color:var(--gray);transition:all .2s;
+    }
+    .drawer-close:hover{border-color:var(--forest);color:var(--forest)}
+    .drawer-body{flex:1;overflow-y:auto;padding:24px}
+    .drawer-body h3{font-size:15px;font-weight:700;color:var(--forest);margin-bottom:8px;margin-top:22px}
+    .drawer-body h3:first-child{margin-top:0}
+    .drawer-body p{font-size:14px;color:var(--gray);line-height:1.7;margin-bottom:12px}
+    .drawer-body ul{padding-left:18px;margin-bottom:14px}
+    .drawer-body ul li{font-size:14px;color:var(--gray);line-height:1.7;padding:2px 0}
+    .pro-con{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+    .pro-box,.con-box{border-radius:10px;padding:14px}
+    .pro-box{background:rgba(37,51,25,.06);border:1px solid rgba(37,51,25,.12)}
+    .con-box{background:rgba(220,100,50,.05);border:1px solid rgba(220,100,50,.12)}
+    .pc-hd{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+    .pro-box .pc-hd{color:#4a7a30}
+    .con-box .pc-hd{color:#b04020}
+    .pc-item{font-size:13px;line-height:1.55;color:var(--gray);padding:2px 0}
+    .step-block{background:var(--cream);border-radius:10px;padding:16px;margin-bottom:12px;
+      display:flex;gap:12px;align-items:flex-start}
+    .step-num{width:24px;height:24px;border-radius:50%;background:var(--forest);color:#fff;
+      font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .step-block p{font-size:13px;color:var(--charcoal);line-height:1.6;margin:0}
+    .drawer-foot{padding:16px 24px;border-top:1px solid var(--border);flex-shrink:0}
+    .btn-drawer-close{
+      width:100%;background:var(--forest);color:#fff;font-size:14px;font-weight:600;
+      padding:13px;border-radius:9px;border:none;cursor:pointer;font-family:'Inter',sans-serif;
+      transition:background .2s;
+    }
+    .btn-drawer-close:hover{background:var(--forest-md)}
+
+    @media(max-width:700px){
+      .option-cards{grid-template-columns:1fr}
+      .place-layout{flex-direction:column}
+      .place-sidebar{width:100%;height:auto;border-right:none;border-bottom:1px solid var(--border)}
+      #place-map{min-height:320px}
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo"><img src="file:///Users/andersmacbookpro/Downloads/drip-atlas-assets/Drip Atlas Logo_Forest Green.png" alt="Drip Atlas"/></div>
+  <span class="nav-addr" id="nav-addr">Your Property</span>
+  <a class="nav-back" href="javascript:history.back()">← Landscape</a>
+</nav>
+
+<!-- PROGRESS -->
+<div class="prog-bar"><div class="prog-fill" id="prog" style="width:38%"></div></div>
+
+<!-- STEP DOTS -->
+<div class="step-dots">
+  <div class="sdot done"></div>
+  <div class="sdot done"></div>
+  <div class="sdot active" id="dot-0"></div>
+  <div class="sdot" id="dot-1"></div>
+  <div class="sdot" id="dot-2"></div>
+  <div class="sdot"></div>
+  <div class="sdot"></div>
+</div>
+
+<!-- ── SCREENS ── -->
+<div class="main" id="main-wrap">
+
+  <!-- Step 3 — Water source type -->
+  <div class="screen active" id="s-source">
+    <div class="step-lbl">Step 3 of 7 — Water Source</div>
+    <h1 class="question">Where's your water coming from?</h1>
+    <p class="sub">This determines how your system connects and what parts you'll need.</p>
+
+    <div class="option-cards">
+      <div class="opt-card" id="opt-hose" onclick="selectSource('hose')">
+        <span class="opt-icon">🚿</span>
+        <div class="opt-title">Hose Tap</div>
+        <p class="opt-desc">Connects to a standard outdoor spigot. Easiest to install—no digging required for the connection.</p>
+        <div class="opt-check"></div>
+      </div>
+      <div class="opt-card" id="opt-manifold" onclick="selectSource('manifold')">
+        <span class="opt-icon">🔧</span>
+        <div class="opt-title">Main Line Manifold</div>
+        <p class="opt-desc">Taps directly into your home's water supply underground. Higher flow, supports more zones.</p>
+        <div class="opt-check"></div>
+      </div>
+    </div>
+
+    <a class="learn-link" onclick="openDrawer('source')">
+      📖 What's the difference? Learn more
+    </a>
+
+    <button class="btn-primary" id="btn-source-next" disabled onclick="goFlow()">Continue →</button>
+  </div>
+
+  <!-- Step 4 — GPM / Pressure -->
+  <div class="screen" id="s-flow">
+    <div class="step-lbl">Step 4 of 7 — Flow & Pressure</div>
+    <h1 class="question">Do you know your flow rate?</h1>
+    <p class="sub">This helps us design zones that won't overload your water supply.</p>
+
+    <div class="flow-toggle">
+      <div class="flow-opt selected" id="fo-gpm" onclick="setFlowMode('gpm')">
+        <span class="fo-icon">💧</span>I know my GPM
+      </div>
+      <div class="flow-opt" id="fo-psi" onclick="setFlowMode('psi')">
+        <span class="fo-icon">🔢</span>I know my PSI
+      </div>
+    </div>
+
+    <!-- GPM input -->
+    <div class="input-group" id="gpm-group">
+      <div class="input-lbl">Gallons per Minute (GPM)</div>
+      <div class="num-wrap">
+        <input class="num-inp" id="inp-gpm" type="number" min="1" max="30" placeholder="0" oninput="onFlowInput()"/>
+        <div class="num-unit">GPM</div>
+      </div>
+    </div>
+
+    <!-- PSI input -->
+    <div class="input-group" id="psi-group" style="display:none">
+      <div class="input-lbl">Water Pressure (PSI)</div>
+      <div class="num-wrap">
+        <input class="num-inp" id="inp-psi" type="number" min="20" max="120" placeholder="0" oninput="onFlowInput()"/>
+        <div class="num-unit">PSI</div>
+      </div>
+    </div>
+
+    <a class="learn-link" onclick="openDrawer('flow')" style="margin-bottom:20px">
+      📖 How do I find my GPM or PSI?
+    </a>
+
+    <!-- Warning when continuing without measurement -->
+    <div class="warning-chip" id="flow-warning" style="display:none">
+      <span style="font-size:16px">⚠️</span>
+      <p>No problem — we'll continue designing your system. You'll need to come back and add this before purchasing your kit, so we can size the zones correctly.</p>
+    </div>
+
+    <button class="btn-primary" onclick="goPlace()">Continue →</button>
+    <button class="btn-ghost" onclick="skipFlow()">I don't know — skip for now</button>
+  </div>
+
+  <!-- Step 5 — Place on map (full screen, outside .main) -->
+</div><!-- /.main -->
+
+<!-- Step 5 is full-screen, lives outside the centered wrapper -->
+<div id="s-place" style="display:none">
+  <div class="place-layout">
+
+    <!-- Sidebar -->
+    <div class="place-sidebar">
+      <div class="step-lbl">Step 5 of 7 — Water Source Location</div>
+      <h2 style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--forest);margin-bottom:10px;line-height:1.2">
+        Where is your water source?
+      </h2>
+      <p style="font-size:14px;color:var(--gray);line-height:1.65;margin-bottom:24px">
+        Click anywhere on the map to place your water source. You can move it by clicking a new spot.
+      </p>
+
+      <!-- Source type toggle for placement -->
+      <div style="margin-bottom:20px">
+        <div class="input-lbl" style="margin-bottom:8px">Source Type</div>
+        <div style="display:flex;gap:8px">
+          <button class="src-btn active" id="sb-hose" style="background:var(--forest);color:var(--lime);border:1px solid transparent;padding:8px 16px;border-radius:var(--pill);font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif" onclick="setSrcType('hose')">🚿 Hose Tap</button>
+          <button class="src-btn" id="sb-manifold" style="background:transparent;color:var(--gray);border:1px solid var(--border);padding:8px 16px;border-radius:var(--pill);font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif" onclick="setSrcType('manifold')">🔧 Manifold</button>
+        </div>
+      </div>
+
+      <!-- Placed summary -->
+      <div id="src-placed-summary" style="display:none;background:rgba(37,51,25,.06);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:20px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--gray);margin-bottom:6px">Placed Source</div>
+        <div style="font-size:14px;font-weight:600;color:var(--forest)" id="src-placed-label">—</div>
+        <div style="font-size:12px;color:var(--gray);margin-top:3px" id="src-placed-coords">Click map to place</div>
+      </div>
+
+      <div style="margin-top:auto">
+        <button class="btn-primary" id="btn-place-save" disabled onclick="saveFinal()">Save &amp; Continue →</button>
+        <button class="btn-ghost" onclick="skipPlace()">Skip — place later</button>
+      </div>
+    </div>
+
+    <!-- Map -->
+    <div class="place-map-wrap">
+      <div id="place-map"></div>
+      <div class="place-hint" id="place-hint">Click the map to drop your water source</div>
+      <div class="map-zoom-btns">
+        <button class="mz-btn" onclick="placeMap.zoomIn()">+</button>
+        <button class="mz-btn" onclick="placeMap.zoomOut()">−</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── EDUCATIONAL DRAWER ── -->
+<div class="drawer-bg" id="drawer-bg" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div class="drawer-title" id="drawer-title">Learn</div>
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+  <div class="drawer-foot">
+    <button class="btn-drawer-close" onclick="closeDrawer()">Got it →</button>
+  </div>
+</div>
+
+<!-- DRAWER CONTENT TEMPLATES -->
+<template id="tmpl-source">
+  <h3>Hose Tap System</h3>
+  <p>A hose tap system connects directly to your outdoor spigot — the same one you use for a garden hose. No underground tapping required, making it the easiest installation option.</p>
+  <div class="pro-con">
+    <div class="pro-box"><div class="pc-hd">✓ Pros</div>
+      <div class="pc-item">No plumbing required</div>
+      <div class="pc-item">Easiest DIY install</div>
+      <div class="pc-item">Lower upfront cost</div>
+      <div class="pc-item">Easy to move or modify</div>
+    </div>
+    <div class="con-box"><div class="pc-hd">✗ Cons</div>
+      <div class="pc-item">Lower flow rate (GPM)</div>
+      <div class="pc-item">Limited zone count</div>
+      <div class="pc-item">Uses outdoor spigot</div>
+      <div class="pc-item">Pressure varies</div>
+    </div>
+  </div>
+  <h3>Main Line Manifold</h3>
+  <p>A manifold taps directly into your home's main water line underground, typically near the meter or where it enters the house. It provides higher, more consistent flow and pressure.</p>
+  <div class="pro-con">
+    <div class="pro-box"><div class="pc-hd">✓ Pros</div>
+      <div class="pc-item">Higher GPM &amp; pressure</div>
+      <div class="pc-item">Supports more zones</div>
+      <div class="pc-item">Consistent performance</div>
+      <div class="pc-item">Professional-grade</div>
+    </div>
+    <div class="con-box"><div class="pc-hd">✗ Cons</div>
+      <div class="pc-item">Requires digging</div>
+      <div class="pc-item">More complex install</div>
+      <div class="pc-item">Higher material cost</div>
+      <div class="pc-item">May need permits</div>
+    </div>
+  </div>
+  <h3>Which should I choose?</h3>
+  <p>For most lawns under 5,000 sq ft with 1–3 zones, a hose tap works great. For larger yards, multiple zones, or drip + spray combined systems, a main line manifold is the better long-term investment.</p>
+</template>
+
+<template id="tmpl-flow">
+  <h3>How to measure your GPM</h3>
+  <p>GPM (Gallons Per Minute) tells us how much water your source can deliver. It's the most important number for designing your zones correctly.</p>
+  <div class="step-block"><div class="step-num">1</div><p>Grab a 5-gallon bucket and a stopwatch (your phone works).</p></div>
+  <div class="step-block"><div class="step-num">2</div><p>Turn your hose tap fully open and fill the bucket, timing how many seconds it takes.</p></div>
+  <div class="step-block"><div class="step-num">3</div><p>Divide 300 by the seconds it took. That's your GPM. <strong>Example: 300 ÷ 45 sec = 6.7 GPM.</strong></p></div>
+
+  <h3>How to check your PSI</h3>
+  <p>PSI (pounds per square inch) is your water pressure. Most homes run 40–80 PSI.</p>
+  <div class="step-block"><div class="step-num">1</div><p>Buy a simple water pressure gauge at any hardware store — they're under $15 and screw onto any hose bib.</p></div>
+  <div class="step-block"><div class="step-num">2</div><p>Screw the gauge onto your outdoor hose tap and turn the water on fully.</p></div>
+  <div class="step-block"><div class="step-num">3</div><p>Read the gauge needle. That's your static PSI. Note: dynamic (flowing) pressure will be slightly lower.</p></div>
+
+  <h3>What if I skip this?</h3>
+  <p>You can continue designing now and we'll estimate based on your source type. You'll need to return with real measurements before placing a kit order — otherwise zones may be under or over-watered.</p>
+</template>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="map-config.js"></script>
+<script src="irrigation-rules.js"></script>
+<script>
+// ── State ──
+const ld = JSON.parse(sessionStorage.getItem('drip_landscape') || '{}');
+let sourceType = null; // 'hose' | 'manifold'
+let flowMode   = 'gpm';
+let flowVal    = null;
+let flowUnit   = 'gpm';
+let srcPlaced  = false;
+let placeMap   = null;
+let srcMarker  = null;
+let placedSrcType = 'hose';
+
+// Populate address
+const addr = ld.address || new URLSearchParams(location.search).get('address') || 'Your Property';
+document.getElementById('nav-addr').textContent = addr;
+
+// ── STEP 3: Source ──
+function selectSource(type) {
+  sourceType = type;
+  document.getElementById('opt-hose').classList.toggle('selected', type === 'hose');
+  document.getElementById('opt-manifold').classList.toggle('selected', type === 'manifold');
+  document.getElementById('btn-source-next').disabled = false;
+  // pre-set the placement toggle
+  setSrcType(type);
+}
+
+function goFlow() {
+  if (!sourceType) return;
+  showScreen('s-flow');
+  setProgress(50, 1);
+}
+
+// ── STEP 4: Flow ──
+function setFlowMode(mode) {
+  flowMode = mode;
+  document.getElementById('fo-gpm').classList.toggle('selected', mode === 'gpm');
+  document.getElementById('fo-psi').classList.toggle('selected', mode === 'psi');
+  document.getElementById('gpm-group').style.display = mode === 'gpm' ? '' : 'none';
+  document.getElementById('psi-group').style.display = mode === 'psi' ? '' : 'none';
+  document.getElementById('flow-warning').style.display = 'none';
+}
+
+function onFlowInput() {
+  const id  = flowMode === 'gpm' ? 'inp-gpm' : 'inp-psi';
+  flowVal   = parseFloat(document.getElementById(id).value) || null;
+  flowUnit  = flowMode;
+  const warn = document.getElementById('flow-warning');
+  warn.style.display = 'none';
+  if (flowVal !== null) {
+    const R = IRRIGATION_RULES.pressure;
+    if (flowMode === 'gpm' && flowVal > R.typicalGpm.max) {
+      warn.querySelector('p').textContent =
+        `${flowVal} GPM is unusually high for a residential system (typical max is ${R.typicalGpm.max} GPM). Double-check your measurement.`;
+      warn.style.display = '';
+    } else if (flowMode === 'psi' && flowVal < R.lowPressureWarnPsi) {
+      warn.querySelector('p').textContent =
+        `${flowVal} PSI is low — heads may not operate correctly below ${R.lowPressureWarnPsi} PSI. Consider a booster pump or fewer zones.`;
+      warn.style.display = '';
+    } else if (flowMode === 'psi' && flowVal > R.highPressureWarnPsi) {
+      warn.querySelector('p').textContent =
+        `${flowVal} PSI is high — a pressure regulator is recommended to protect heads and fittings above ${R.highPressureWarnPsi} PSI.`;
+      warn.style.display = '';
+    }
+  }
+}
+
+function skipFlow() {
+  flowVal = null;
+  document.getElementById('flow-warning').style.display = '';
+  setTimeout(() => goPlace(), 1200);
+}
+
+function goPlace() {
+  showScreen('s-place');
+  setProgress(65, 2);
+  setTimeout(initPlaceMap, 80);
+}
+
+// ── STEP 5: Place ──
+function initPlaceMap() {
+  if (placeMap) return;
+  const lat = ld.lat || 42.3601;
+  const lng = ld.lng || -71.0589;
+
+  placeMap = L.map('place-map', { zoomControl:false, attributionControl:false });
+  initMapLayers(placeMap);
+  placeMap.setView([lat, lng], 19);
+
+  // Draw saved zones
+  if (ld.zones) {
+    const ZONE_COLORS = {
+      lawn:'#5db85d', garden:'#c8a050', shrubs:'#2d8b57',
+      driveway:'#9eaab8', path:'#d4aa6a', nowater:'#e05555',
+    };
+    ld.zones.forEach(z => {
+      L.polygon(z.latlngs, {
+        color: ZONE_COLORS[z.type] || '#5db85d',
+        fillColor: ZONE_COLORS[z.type] || '#5db85d',
+        fillOpacity: 0.22, weight: 1.5, interactive: false,
+      }).addTo(placeMap).bindTooltip(z.name, { permanent:true, direction:'center', className:'z-lbl' });
+    });
+  }
+
+  // Draw saved plants
+  if (ld.plants) {
+    const PLANT_COLORS = { tree:'#2d6e3a', shrub:'#4a8a4a', grass:'#8a9a3a' };
+    const PLANT_ICONS  = { tree:'🌳', shrub:'🌿', grass:'🌾' };
+    ld.plants.forEach(p => {
+      L.circle([p.lat, p.lng], {
+        radius: p.radiusFt * 0.3048,
+        color: PLANT_COLORS[p.type] || '#2d6e3a',
+        fillColor: PLANT_COLORS[p.type] || '#2d6e3a',
+        fillOpacity: 0.2, weight: 1.5, interactive: false,
+      }).addTo(placeMap);
+      L.marker([p.lat, p.lng], {
+        icon: L.divIcon({ html:`<span style="font-size:16px">${PLANT_ICONS[p.type]||'🌳'}</span>`, className:'', iconSize:[20,20], iconAnchor:[10,10] }),
+        interactive: false,
+      }).addTo(placeMap);
+    });
+  }
+
+  // Click to place source
+  placeMap.on('click', e => dropSource(e.latlng));
+}
+
+function makeSrcIcon(type) {
+  const emoji = type === 'hose' ? '🚿' : '🔧';
+  return L.divIcon({
+    html: `<div class="wsrc-marker">
+      <div class="wsrc-bubble">${emoji}</div>
+      <div class="wsrc-stem"></div>
+      <div class="wsrc-dot"></div>
+    </div>`,
+    className: '', iconSize:[36,50], iconAnchor:[18,50],
+  });
+}
+
+function dropSource(latlng) {
+  if (srcMarker) placeMap.removeLayer(srcMarker);
+  srcMarker = L.marker(latlng, { icon: makeSrcIcon(placedSrcType), draggable: true }).addTo(placeMap);
+  srcMarker.on('drag', e => updateSrcSummary(e.target.getLatLng()));
+  updateSrcSummary(latlng);
+  document.getElementById('src-placed-summary').style.display = '';
+  document.getElementById('btn-place-save').disabled = false;
+  document.getElementById('place-hint').style.opacity = '0';
+}
+
+function updateSrcSummary(latlng) {
+  const label = placedSrcType === 'hose' ? '🚿 Hose Tap' : '🔧 Main Line Manifold';
+  document.getElementById('src-placed-label').textContent  = label;
+  document.getElementById('src-placed-coords').textContent = `${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}`;
+}
+
+function setSrcType(type) {
+  placedSrcType = type;
+  document.getElementById('sb-hose').style.background     = type==='hose'     ? 'var(--forest)' : 'transparent';
+  document.getElementById('sb-hose').style.color          = type==='hose'     ? 'var(--lime)'   : 'var(--gray)';
+  document.getElementById('sb-hose').style.borderColor    = type==='hose'     ? 'transparent'   : 'var(--border)';
+  document.getElementById('sb-manifold').style.background = type==='manifold' ? 'var(--forest)' : 'transparent';
+  document.getElementById('sb-manifold').style.color      = type==='manifold' ? 'var(--lime)'   : 'var(--gray)';
+  document.getElementById('sb-manifold').style.borderColor= type==='manifold' ? 'transparent'   : 'var(--border)';
+  // update placed marker if exists
+  if (srcMarker) {
+    srcMarker.setIcon(makeSrcIcon(type));
+    updateSrcSummary(srcMarker.getLatLng());
+  }
+}
+
+function saveFinal() {
+  const waterData = {
+    sourceType,
+    flowVal, flowUnit,
+    srcLat:  srcMarker ? srcMarker.getLatLng().lat : null,
+    srcLng:  srcMarker ? srcMarker.getLatLng().lng : null,
+    srcType: placedSrcType,
+  };
+  const full = { ...ld, water: waterData };
+  sessionStorage.setItem('drip_design', JSON.stringify(full));
+  window.location.href = 'zones.html';
+}
+
+function skipPlace() {
+  saveFinal();
+}
+
+// ── SCREEN ROUTING ──
+function showScreen(id) {
+  // Hide main wrap for the map step
+  if (id === 's-place') {
+    document.getElementById('main-wrap').style.display = 'none';
+    document.getElementById('s-place').style.display   = '';
+  } else {
+    document.getElementById('main-wrap').style.display = '';
+    document.getElementById('s-place').style.display   = 'none';
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const el = document.getElementById(id);
+    el.classList.remove('active');
+    void el.offsetWidth;
+    el.classList.add('active');
+  }
+}
+
+function setProgress(pct, dotIdx) {
+  document.getElementById('prog').style.width = pct + '%';
+  document.querySelectorAll('.sdot').forEach((d, i) => {
+    d.classList.toggle('done',   i < dotIdx);
+    d.classList.toggle('active', i === dotIdx);
+  });
+}
+
+// ── DRAWER ──
+const DRAWER_CONTENT = { source: 'tmpl-source', flow: 'tmpl-flow' };
+const DRAWER_TITLES  = { source: 'Hose Tap vs. Main Line Manifold', flow: 'How to find your GPM & PSI' };
+
+function openDrawer(key) {
+  document.getElementById('drawer-title').textContent = DRAWER_TITLES[key];
+  const tmpl = document.getElementById(DRAWER_CONTENT[key]);
+  document.getElementById('drawer-body').innerHTML = tmpl.innerHTML;
+  document.getElementById('drawer-bg').classList.add('open');
+  document.getElementById('drawer').classList.add('open');
+}
+
+function closeDrawer() {
+  document.getElementById('drawer-bg').classList.remove('open');
+  document.getElementById('drawer').classList.remove('open');
+}
+
+// Keyboard close
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeDrawer();
+});
+</script>
+</body>
+</html>

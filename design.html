@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Drip Atlas — Design Your System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --forest:   #253319;
+      --forest-md:#2e4020;
+      --lime:     #c8e670;
+      --cream:    #f1ebe2;
+      --white:    #ffffff;
+      --charcoal: #1c1c1a;
+      --gray:     #7a7a72;
+      --border:   rgba(37,51,25,.12);
+      --pill:     100px;
+      --error:    #c0392b;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Inter', sans-serif;
+      background: var(--cream);
+      color: var(--charcoal);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── LAYOUT ── */
+    .page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── NAV ── */
+    .nav {
+      height: 60px;
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 32px;
+      flex-shrink: 0;
+    }
+    .nav-logo img { height: 28px; }
+    .nav-back {
+      margin-left: auto;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--gray);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color .2s;
+    }
+    .nav-back:hover { color: var(--forest); }
+
+    /* ── STEP INDICATOR ── */
+    .step-bar {
+      height: 3px;
+      background: var(--border);
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .step-bar-fill {
+      height: 100%;
+      background: var(--forest);
+      transition: width .5s cubic-bezier(.4,0,.2,1);
+    }
+
+    /* ── MAIN CONTENT ── */
+    .main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+    }
+
+    /* ── SCREENS ── */
+    .screen {
+      display: none;
+      width: 100%;
+      max-width: 560px;
+      animation: fadeUp .35s ease both;
+    }
+    .screen.active { display: block; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* step label */
+    .step-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--gray);
+      margin-bottom: 12px;
+    }
+
+    /* question heading */
+    .question {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(28px, 4vw, 40px);
+      font-weight: 700;
+      color: var(--forest);
+      line-height: 1.15;
+      margin-bottom: 10px;
+    }
+
+    .hint {
+      font-size: 15px;
+      color: var(--gray);
+      margin-bottom: 36px;
+      line-height: 1.6;
+    }
+
+    /* ── ADDRESS INPUT ── */
+    .input-wrap {
+      position: relative;
+      margin-bottom: 16px;
+    }
+    .addr-input {
+      width: 100%;
+      padding: 18px 56px 18px 20px;
+      font-size: 16px;
+      font-family: 'Inter', sans-serif;
+      color: var(--charcoal);
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .addr-input:focus {
+      border-color: var(--forest);
+      box-shadow: 0 0 0 4px rgba(37,51,25,.07);
+    }
+    .addr-input::placeholder { color: var(--gray); }
+    .addr-input.error { border-color: var(--error); }
+    .addr-input.open  { border-radius: 12px 12px 0 0; border-bottom-color: transparent; }
+
+    .addr-suggestions {
+      display: none;
+      position: absolute;
+      top: 100%; left: 0; right: 0;
+      background: var(--white);
+      border: 1.5px solid var(--forest);
+      border-top: none;
+      border-radius: 0 0 12px 12px;
+      box-shadow: 0 8px 28px rgba(0,0,0,.10);
+      z-index: 200;
+      overflow: hidden;
+    }
+    .addr-suggestions.visible { display: block; }
+    .addr-suggestion {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 11px 18px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border);
+      transition: background .12s;
+    }
+    .addr-suggestion:last-child { border-bottom: none; }
+    .addr-suggestion:hover,
+    .addr-suggestion.kbd-focus { background: var(--cream); }
+    .addr-suggestion-pin { flex-shrink:0; font-size:15px; margin-top:1px; opacity:.6; }
+    .addr-suggestion-main { font-size:14px; font-weight:500; color:var(--charcoal); line-height:1.3; }
+    .addr-suggestion-sub  { font-size:12px; color:var(--gray); margin-top:1px; line-height:1.3; }
+
+    .input-icon {
+      position: absolute;
+      right: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 20px;
+      pointer-events: none;
+    }
+
+    .error-msg {
+      font-size: 13px;
+      color: var(--error);
+      margin-top: -8px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .error-msg.show { display: block; }
+
+    /* ── BUTTONS ── */
+    .btn-primary {
+      display: block;
+      width: 100%;
+      background: var(--forest);
+      color: var(--white);
+      font-size: 16px;
+      font-weight: 600;
+      padding: 17px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      transition: background .2s, transform .15s;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-primary:hover { background: var(--forest-md); transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      display: block;
+      width: 100%;
+      background: transparent;
+      color: var(--charcoal);
+      font-size: 15px;
+      font-weight: 500;
+      padding: 14px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      transition: border-color .2s, background .2s;
+      font-family: 'Inter', sans-serif;
+      margin-top: 10px;
+    }
+    .btn-secondary:hover {
+      border-color: var(--forest);
+      background: rgba(37,51,25,.04);
+    }
+
+    .btn-text-link {
+      display: block;
+      text-align: center;
+      color: var(--gray);
+      font-size: 14px;
+      font-weight: 500;
+      margin-top: 16px;
+      cursor: pointer;
+      transition: color .2s;
+      background: none;
+      border: none;
+      font-family: 'Inter', sans-serif;
+      width: 100%;
+    }
+    .btn-text-link:hover { color: var(--forest); }
+
+    /* ── LOADING SCREEN ── */
+    #screen-loading {
+      text-align: center;
+      max-width: 420px;
+    }
+
+    .loader-ring {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 32px;
+      position: relative;
+    }
+    .loader-ring::before,
+    .loader-ring::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 3px solid transparent;
+    }
+    .loader-ring::before {
+      border-top-color: var(--forest);
+      border-right-color: var(--forest);
+      animation: spin 1s linear infinite;
+    }
+    .loader-ring::after {
+      border-bottom-color: rgba(37,51,25,.15);
+      border-left-color: rgba(37,51,25,.15);
+      animation: spin 1s linear infinite reverse;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--forest);
+      margin-bottom: 10px;
+    }
+    .loading-sub {
+      font-size: 15px;
+      color: var(--gray);
+      margin-bottom: 20px;
+    }
+    .loading-addr {
+      display: inline-block;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--pill);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--charcoal);
+      padding: 7px 16px;
+    }
+
+    /* loading dots */
+    .dot-anim span {
+      display: inline-block;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--forest);
+      margin: 0 3px;
+      animation: dot-bounce .9s ease-in-out infinite;
+    }
+    .dot-anim span:nth-child(2) { animation-delay: .15s; }
+    .dot-anim span:nth-child(3) { animation-delay: .3s; }
+    @keyframes dot-bounce {
+      0%, 80%, 100% { transform: translateY(0); opacity: .4; }
+      40% { transform: translateY(-8px); opacity: 1; }
+    }
+
+    /* ── CONFIRM SCREEN ── */
+    #screen-confirm { max-width: 600px; }
+
+    .sat-container {
+      width: 100%;
+      height: 340px;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      margin-bottom: 28px;
+      position: relative;
+      background: #2a3d1a;
+    }
+    #confirm-map {
+      width: 100%; height: 100%;
+    }
+    #confirm-map .leaflet-control-attribution { display: none; }
+    .sat-loading {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: #2a3d1a; color: rgba(255,255,255,.4);
+      font-size: 13px; font-weight: 500;
+      pointer-events: none;
+    }
+    .map-addr-chip {
+      position: absolute;
+      bottom: 14px; left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255,255,255,.95);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(0,0,0,.1);
+      border-radius: var(--pill);
+      font-size: 12px; font-weight: 600;
+      color: var(--charcoal);
+      padding: 6px 16px; white-space: nowrap;
+      z-index: 2; max-width: calc(100% - 32px);
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    .confirm-question {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(22px, 3vw, 32px);
+      font-weight: 700; color: var(--forest); margin-bottom: 6px;
+    }
+    .confirm-sub { font-size: 14px; color: var(--gray); margin-bottom: 24px; }
+    .confirm-actions { display: flex; flex-direction: column; gap: 0; }
+
+    /* ── OPTION CARDS (source type) ── */
+    #screen-source { max-width: 560px; }
+    .option-cards {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 14px; margin-bottom: 24px;
+    }
+    .opt-card {
+      border: 2px solid var(--border); border-radius: 16px;
+      padding: 24px 20px; cursor: pointer; text-align: left;
+      background: var(--white);
+      transition: border-color .2s, background .2s, transform .15s;
+    }
+    .opt-card:hover { border-color: rgba(37,51,25,.3); transform: translateY(-2px); }
+    .opt-card.selected { border-color: var(--forest); background: rgba(37,51,25,.04); }
+    .opt-icon { font-size: 32px; margin-bottom: 12px; display: block; }
+    .opt-title { font-size: 15px; font-weight: 700; color: var(--forest); margin-bottom: 6px; }
+    .opt-desc { font-size: 13px; color: var(--gray); line-height: 1.55; }
+    .opt-check {
+      width: 18px; height: 18px; border-radius: 50%;
+      border: 2px solid var(--border);
+      margin-left: auto; margin-top: 12px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .2s;
+    }
+    .opt-card.selected .opt-check { background: var(--forest); border-color: var(--forest); color: #fff; font-size: 10px; }
+    .opt-check::after { content: '✓'; display: none; }
+    .opt-card.selected .opt-check::after { display: block; }
+
+    /* ── FLOW RATE ── */
+    #screen-flow { max-width: 520px; }
+    .flow-toggle {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px; margin-bottom: 24px;
+    }
+    .flow-opt {
+      border: 2px solid var(--border); border-radius: 12px; padding: 16px;
+      cursor: pointer; background: var(--white); text-align: center;
+      font-size: 13px; font-weight: 600; color: var(--gray); transition: all .2s;
+    }
+    .flow-opt:hover { border-color: rgba(37,51,25,.3); }
+    .flow-opt.selected { border-color: var(--forest); color: var(--forest); background: rgba(37,51,25,.04); }
+    .flow-opt .fo-icon { font-size: 22px; margin-bottom: 6px; display: block; }
+    .input-group { margin-bottom: 20px; }
+    .input-lbl {
+      font-size: 12px; font-weight: 700; letter-spacing: .07em;
+      text-transform: uppercase; color: var(--gray); margin-bottom: 8px;
+    }
+    .num-wrap {
+      display: flex; align-items: center;
+      background: var(--white); border: 1.5px solid var(--border);
+      border-radius: 10px; overflow: hidden; transition: border-color .2s;
+    }
+    .num-wrap:focus-within { border-color: var(--forest); }
+    .num-inp {
+      flex: 1; padding: 14px 16px; font-size: 22px; font-weight: 700;
+      color: var(--forest); border: none; outline: none;
+      font-family: 'Playfair Display', serif; background: transparent;
+    }
+    .num-unit {
+      padding: 0 18px; font-size: 14px; font-weight: 600; color: var(--gray);
+      border-left: 1px solid var(--border); align-self: stretch;
+      display: flex; align-items: center;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 480px) {
+      .main { padding: 24px 16px; align-items: flex-start; }
+      #screen-confirm { max-width: 100%; }
+      .map-container { height: 260px; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-logo">
+      <img src="file:///Users/andersmacbookpro/Downloads/drip-atlas-assets/Drip Atlas Logo_Forest Green.png" alt="Drip Atlas" />
+    </div>
+    <a href="index.html" class="nav-back">← Back to home</a>
+  </nav>
+
+  <!-- PROGRESS BAR -->
+  <div class="step-bar">
+    <div class="step-bar-fill" id="progress-bar" style="width: 14%"></div>
+  </div>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- ── SCREEN 1: ADDRESS ── -->
+    <div class="screen active" id="screen-address">
+      <div class="step-label">Step 1 of 7 — Your Property</div>
+      <h1 class="question">What's your home address?</h1>
+      <p class="hint">We'll pull up a satellite view of your property so you can see exactly what we're working with.</p>
+
+      <div class="input-wrap">
+        <input
+          class="addr-input"
+          type="text"
+          id="address-input"
+          placeholder="123 Main St, Springfield, IL"
+          autocomplete="off"
+          autofocus
+        />
+        <span class="input-icon">📍</span>
+        <div id="addr-suggestions" class="addr-suggestions"></div>
+      </div>
+      <p class="error-msg" id="addr-error">We couldn't find that address. Please try again with a full street address.</p>
+
+      <button class="btn-primary" id="btn-find" onclick="findProperty()">
+        Find My Property →
+      </button>
+    </div>
+
+    <!-- ── SCREEN 2: LOADING ── -->
+    <div class="screen" id="screen-loading">
+      <div class="loader-ring"></div>
+      <div class="loading-title">One moment…</div>
+      <p class="loading-sub">Finding your property on the map</p>
+      <div class="loading-addr" id="loading-addr-display"></div>
+      <div class="dot-anim" style="margin-top:20px">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+
+    <!-- ── SCREEN 3: CONFIRM ── -->
+    <div class="screen" id="screen-confirm">
+      <div class="sat-container">
+        <div class="sat-loading" id="sat-loading">Loading satellite view…</div>
+        <div id="confirm-map"></div>
+        <div class="map-addr-chip" id="map-addr-chip"></div>
+      </div>
+
+      <div class="confirm-question">Does this look right?</div>
+      <p class="confirm-sub" id="confirm-addr-text"></p>
+
+      <div class="confirm-actions">
+        <button class="btn-primary" onclick="goSource()">Yes, that's my property →</button>
+        <button class="btn-secondary" onclick="changeAddress()">Change Address</button>
+      </div>
+    </div>
+
+    <!-- ── SCREEN 4: WATER SOURCE ── -->
+    <div class="screen" id="screen-source">
+      <div class="step-label">Step 3 of 7 — Water Source</div>
+      <h1 class="question">Where's your water coming from?</h1>
+      <p class="hint">This determines how your system connects and what parts you'll need.</p>
+
+      <div class="option-cards">
+        <div class="opt-card" id="opt-hose" onclick="selectSource('hose')">
+          <span class="opt-icon">🚿</span>
+          <div class="opt-title">Hose Tap</div>
+          <p class="opt-desc">Connects to a standard outdoor spigot. Easiest to install — no digging required.</p>
+          <div class="opt-check"></div>
+        </div>
+        <div class="opt-card" id="opt-manifold" onclick="selectSource('manifold')">
+          <span class="opt-icon">🔧</span>
+          <div class="opt-title">Main Line Manifold</div>
+          <p class="opt-desc">Taps directly into your home's water supply underground. Higher flow, more zones.</p>
+          <div class="opt-check"></div>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="btn-source-next" disabled onclick="goFlow()">Continue →</button>
+      <button class="btn-secondary" onclick="showScreen('screen-confirm')">← Back</button>
+    </div>
+
+    <!-- ── SCREEN 5: FLOW RATE ── -->
+    <div class="screen" id="screen-flow">
+      <div class="step-label">Step 4 of 7 — Flow Rate</div>
+      <h1 class="question">Do you know your flow rate?</h1>
+      <p class="hint">This helps us size your zones so they won't overload your water supply.</p>
+
+      <div class="flow-toggle">
+        <div class="flow-opt selected" id="fo-gpm" onclick="setFlowMode('gpm')">
+          <span class="fo-icon">💧</span>I know my GPM
+        </div>
+        <div class="flow-opt" id="fo-psi" onclick="setFlowMode('psi')">
+          <span class="fo-icon">🔢</span>I know my PSI
+        </div>
+      </div>
+
+      <div class="input-group" id="gpm-group">
+        <div class="input-lbl">Gallons per Minute (GPM)</div>
+        <div class="num-wrap">
+          <input class="num-inp" id="inp-gpm" type="number" min="1" max="30" placeholder="0" oninput="onFlowInput()"/>
+          <div class="num-unit">GPM</div>
+        </div>
+      </div>
+
+      <div class="input-group" id="psi-group" style="display:none">
+        <div class="input-lbl">Water Pressure (PSI)</div>
+        <div class="num-wrap">
+          <input class="num-inp" id="inp-psi" type="number" min="20" max="120" placeholder="0" oninput="onFlowInput()"/>
+          <div class="num-unit">PSI</div>
+        </div>
+      </div>
+
+      <button class="btn-primary" onclick="goDesigner()">Open Designer →</button>
+      <button class="btn-text-link" onclick="skipFlow()">I don't know — skip for now</button>
+      <button class="btn-secondary" onclick="showScreen('screen-source')" style="margin-top:6px">← Back</button>
+    </div>
+
+  </main>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="map-config.js"></script>
+<script>
+  let currentCoords = null;
+  let confirmMap    = null;
+  let sourceType    = null;
+  let flowMode      = 'gpm';
+  let flowVal       = null;
+  let flowUnit      = 'gpm';
+
+  const screens = ['screen-address','screen-loading','screen-confirm','screen-source','screen-flow'];
+  const progressByScreen = {
+    'screen-address': 14, 'screen-loading': 14,
+    'screen-confirm': 28, 'screen-source': 50, 'screen-flow': 72,
+  };
+
+  function showScreen(id) {
+    screens.forEach(s => document.getElementById(s).classList.remove('active'));
+    const next = document.getElementById(id);
+    next.classList.remove('active');
+    void next.offsetWidth;
+    next.classList.add('active');
+    document.getElementById('progress-bar').style.width = (progressByScreen[id] || 14) + '%';
+  }
+
+  // ── STEP 1: Address autocomplete + geocoding (ArcGIS) ──
+
+  const _GEO_BASE   = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer';
+  let _suggestTimer = null;
+  let _kbdIndex     = -1;
+  let _suggestions  = [];   // current suggestion objects {text, magicKey}
+
+  function closeSuggestions() {
+    const box   = document.getElementById('addr-suggestions');
+    const input = document.getElementById('address-input');
+    box.classList.remove('visible');
+    input.classList.remove('open');
+    _kbdIndex   = -1;
+    _suggestions = [];
+  }
+
+  function renderSuggestions(items) {
+    const box = document.getElementById('addr-suggestions');
+    if (!items.length) { closeSuggestions(); return; }
+    _suggestions = items;
+    _kbdIndex    = -1;
+    box.innerHTML = items.map((s, i) => {
+      const parts = s.text.split(',');
+      const main  = parts[0].trim();
+      const sub   = parts.slice(1).join(',').trim();
+      return `<div class="addr-suggestion" data-i="${i}" onmousedown="pickSuggestion(${i})">
+        <span class="addr-suggestion-pin">📍</span>
+        <div>
+          <div class="addr-suggestion-main">${main}</div>
+          ${sub ? `<div class="addr-suggestion-sub">${sub}</div>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+    box.classList.add('visible');
+    document.getElementById('address-input').classList.add('open');
+  }
+
+  function fetchSuggestions(text) {
+    if (!ARCGIS_API_KEY || text.length < 3) { closeSuggestions(); return; }
+    const params = new URLSearchParams({
+      text, f: 'json', maxSuggestions: 6,
+      token: ARCGIS_API_KEY, category: 'Address,Postal',
+    });
+    fetch(`${_GEO_BASE}/suggest?${params}`)
+      .then(r => r.json())
+      .then(d => renderSuggestions(d.suggestions || []))
+      .catch(() => closeSuggestions());
+  }
+
+  function pickSuggestion(i) {
+    const s = _suggestions[i];
+    if (!s) return;
+    document.getElementById('address-input').value = s.text;
+    closeSuggestions();
+    geocodeAndConfirm(s.text, s.magicKey);
+  }
+
+  function geocodeAndConfirm(text, magicKey) {
+    const input = document.getElementById('address-input');
+    const errEl = document.getElementById('addr-error');
+    input.classList.remove('error');
+    errEl.classList.remove('show');
+    document.getElementById('loading-addr-display').textContent = text;
+    showScreen('screen-loading');
+
+    const params = new URLSearchParams({
+      SingleLine: text, f: 'json', outFields: '*',
+      token: ARCGIS_API_KEY || '',
+      ...(magicKey ? { magicKey } : {}),
+    });
+    fetch(`${_GEO_BASE}/findAddressCandidates?${params}`)
+      .then(r => r.json())
+      .then(d => {
+        const c = (d.candidates || [])[0];
+        if (!c) throw new Error('Not found');
+        currentCoords = { lat: c.location.y, lng: c.location.x };
+        const displayAddr = c.attributes?.LongLabel || c.address || text;
+        setTimeout(() => showConfirm(currentCoords, displayAddr), 700);
+      })
+      .catch(() => {
+        showScreen('screen-address');
+        input.classList.add('error');
+        errEl.textContent = "We couldn't find that address. Try including your city and state.";
+        errEl.classList.add('show');
+      });
+  }
+
+  function findProperty() {
+    const raw = document.getElementById('address-input').value.trim();
+    const errEl = document.getElementById('addr-error');
+    const input = document.getElementById('address-input');
+    if (!raw) {
+      input.classList.add('error');
+      errEl.classList.add('show');
+      errEl.textContent = 'Please enter your street address to continue.';
+      return;
+    }
+    closeSuggestions();
+    geocodeAndConfirm(raw, null);
+  }
+
+  // ── STEP 2: Confirm with satellite image ──
+  function showConfirm(coords, displayAddr) {
+    document.getElementById('map-addr-chip').textContent     = displayAddr;
+    document.getElementById('confirm-addr-text').textContent = displayAddr;
+    showScreen('screen-confirm');
+
+    // Wait one frame for display:block to take effect so Leaflet can measure the container
+    requestAnimationFrame(() => setTimeout(() => {
+      if (confirmMap) {
+        confirmMap.invalidateSize();
+        confirmMap.setView([coords.lat, coords.lng], 19);
+      } else {
+        confirmMap = L.map('confirm-map', {
+          zoomControl: false, attributionControl: false,
+          dragging: false, scrollWheelZoom: false, doubleClickZoom: false,
+        });
+        initMapLayers(confirmMap);
+        confirmMap.setView([coords.lat, coords.lng], 19);
+      }
+      document.getElementById('sat-loading').style.display = 'none';
+    }, 50));
+  }
+
+  function changeAddress() {
+    showScreen('screen-address');
+    document.getElementById('address-input').focus();
+  }
+
+  // ── STEP 3: Source type ──
+  function goSource() {
+    showScreen('screen-source');
+  }
+
+  function selectSource(type) {
+    sourceType = type;
+    document.getElementById('opt-hose').classList.toggle('selected', type === 'hose');
+    document.getElementById('opt-manifold').classList.toggle('selected', type === 'manifold');
+    document.getElementById('btn-source-next').disabled = false;
+  }
+
+  function goFlow() {
+    if (!sourceType) return;
+    showScreen('screen-flow');
+  }
+
+  // ── STEP 4: Flow rate ──
+  function setFlowMode(mode) {
+    flowMode = mode;
+    document.getElementById('fo-gpm').classList.toggle('selected', mode === 'gpm');
+    document.getElementById('fo-psi').classList.toggle('selected', mode === 'psi');
+    document.getElementById('gpm-group').style.display = mode === 'gpm' ? '' : 'none';
+    document.getElementById('psi-group').style.display = mode === 'psi' ? '' : 'none';
+  }
+
+  function onFlowInput() {
+    const id = flowMode === 'gpm' ? 'inp-gpm' : 'inp-psi';
+    flowVal  = parseFloat(document.getElementById(id).value) || null;
+    flowUnit = flowMode;
+  }
+
+  function skipFlow() { flowVal = null; goDesigner(); }
+
+  function goDesigner() {
+    if (!currentCoords) return;
+    const addr = document.getElementById('confirm-addr-text').textContent;
+    const data = {
+      address: addr,
+      lat: currentCoords.lat, lng: currentCoords.lng,
+      water: { sourceType, flowVal, flowUnit, srcLat: null, srcLng: null },
+    };
+    sessionStorage.setItem('drip_design', JSON.stringify(data));
+    window.location.href = `designer.html?lat=${currentCoords.lat}&lng=${currentCoords.lng}&address=${encodeURIComponent(addr)}`;
+  }
+
+  // Pre-fill from landing page URL param
+  (function prefill() {
+    const a = new URLSearchParams(window.location.search).get('address');
+    if (a) document.getElementById('address-input').value = decodeURIComponent(a);
+  })();
+
+  // Address input events
+  const _addrInput = document.getElementById('address-input');
+
+  _addrInput.addEventListener('input', () => {
+    clearTimeout(_suggestTimer);
+    _suggestTimer = setTimeout(() => fetchSuggestions(_addrInput.value.trim()), 250);
+  });
+
+  _addrInput.addEventListener('keydown', e => {
+    const items = document.querySelectorAll('.addr-suggestion');
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      _kbdIndex = Math.min(_kbdIndex + 1, items.length - 1);
+      items.forEach((el, i) => el.classList.toggle('kbd-focus', i === _kbdIndex));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      _kbdIndex = Math.max(_kbdIndex - 1, -1);
+      items.forEach((el, i) => el.classList.toggle('kbd-focus', i === _kbdIndex));
+    } else if (e.key === 'Enter') {
+      if (_kbdIndex >= 0 && _suggestions[_kbdIndex]) {
+        pickSuggestion(_kbdIndex);
+      } else {
+        findProperty();
+      }
+    } else if (e.key === 'Escape') {
+      closeSuggestions();
+    }
+  });
+
+  // Close suggestions when clicking outside
+  document.addEventListener('mousedown', e => {
+    if (!e.target.closest('.input-wrap')) closeSuggestions();
+  });
+</script>
+</body>
+</html>
