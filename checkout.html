@@ -22,8 +22,7 @@
       padding:18px 40px;border-bottom:1px solid var(--border);
       background:var(--cream);
     }
-    .logo{font-family:'Playfair Display',serif;font-size:22px;color:var(--green);
-      text-decoration:none;}
+    .logo{display:flex;align-items:center;text-decoration:none}
     .logo span{color:var(--green);opacity:.55;font-size:18px;margin:0 6px}
     .logo-step{font-size:13px;color:var(--muted);font-family:'Inter',sans-serif;font-weight:500}
     .secure{margin-left:auto;display:flex;align-items:center;gap:6px;
@@ -148,7 +147,7 @@
 <body>
 
 <header>
-  <a class="logo" href="index.html">🌿 Drip Atlas</a>
+  <a class="logo" href="index.html"><img src="file:///Users/andersmacbookpro/Downloads/drip-atlas-assets/Drip Atlas Logo_Forest Green.png" alt="Drip Atlas" style="height:28px;display:block"/></a>
   <span class="logo" style="opacity:.3;font-size:14px;font-family:Inter">›</span>
   <span class="logo-step">Complete Order</span>
   <div class="secure">
@@ -324,7 +323,7 @@
     const btn = document.getElementById('pay-btn');
     btn.classList.add('loading');
     btn.querySelector('.btn-label').textContent = 'Processing…';
-    setTimeout(() => { window.location.href = 'materials.html'; }, 1400);
+    setTimeout(() => { window.location.href = 'materials.html?upgraded=plan'; }, 1400);
   }
 
   // Enter key submits

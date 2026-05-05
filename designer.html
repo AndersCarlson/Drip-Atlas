@@ -13,26 +13,16 @@
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     :root{
       --forest:#253319;--lime:#c8e670;--teal:#7dd9d9;--cream:#f1ebe2;
-      --white:#fff;--charcoal:#1c1c1a;--gray:#7a7a72;--border:rgba(37,51,25,.12);
-      --ui:#1e1e1c;--ui2:#272725;--ui3:#303030;--muted:rgba(255,255,255,.45);
-      --tb:52px;--panel:268px;--topbar:52px;
+      --white:#fff;--charcoal:#1c1c1a;--gray:#7a7a72;--border:#d8d0c4;
+      --ui:#ffffff;--ui2:#f1ebe2;--ui3:#e8e0d4;--muted:rgba(28,28,26,.45);
+      --panel:340px;--topbar:52px;
     }
-    html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:#0e1a0a;-webkit-font-smoothing:antialiased}
+    html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:var(--cream);-webkit-font-smoothing:antialiased}
 
-    /* ── TOP BAR ── */
-    .topbar{
-      position:fixed;top:0;left:0;right:0;height:var(--topbar);
-      background:var(--charcoal);border-bottom:1px solid rgba(255,255,255,.08);
-      display:flex;align-items:center;padding:0 14px;gap:10px;z-index:2000;
-    }
-    .tb-logo img{height:22px;opacity:.85;display:block}
-    .tb-div{width:1px;height:22px;background:rgba(255,255,255,.12);flex-shrink:0}
-    .tb-addr{font-size:13px;font-weight:500;color:rgba(255,255,255,.65);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .tb-step{font-size:11px;color:rgba(255,255,255,.3);white-space:nowrap}
-    .tb-back{font-size:12px;color:rgba(255,255,255,.4);text-decoration:none;display:flex;align-items:center;gap:4px;transition:color .2s;flex-shrink:0}
-    .tb-back:hover{color:rgba(255,255,255,.8)}
+    /* ── TOP BAR (hidden — designer runs embedded only) ── */
+    .topbar{display:none!important}
     .btn-save{
-      background:var(--lime);color:var(--forest);font-size:13px;font-weight:700;
+      background:var(--forest);color:#f1ebe2;font-size:13px;font-weight:700;
       padding:7px 16px;border-radius:6px;border:none;cursor:pointer;
       font-family:'Inter',sans-serif;transition:opacity .15s;flex-shrink:0;
     }
@@ -41,35 +31,84 @@
 
     /* ── LAYOUT ── */
     .app{
-      position:fixed;top:var(--topbar);bottom:0;left:0;right:0;
+      position:fixed;top:0;bottom:0;left:0;right:0;
       display:flex;
     }
 
-    /* ── TOOLBAR ── */
-    .toolbar{
-      width:var(--tb);background:var(--ui);border-right:1px solid rgba(255,255,255,.07);
-      display:flex;flex-direction:column;align-items:center;padding:10px 0;gap:2px;
-      z-index:1000;flex-shrink:0;
-    }
-    .tool{
-      width:36px;height:36px;border-radius:7px;border:none;
-      background:transparent;color:var(--muted);cursor:pointer;
-      display:flex;align-items:center;justify-content:center;
-      transition:background .12s,color .12s;position:relative;flex-shrink:0;
-    }
-    .tool:hover{background:rgba(255,255,255,.08);color:rgba(255,255,255,.9)}
-    .tool.active{background:var(--forest);color:var(--lime)}
-    .tool svg{width:17px;height:17px;display:block}
-    .tool-sep{width:26px;height:1px;background:rgba(255,255,255,.09);margin:5px 0;flex-shrink:0}
-    /* tooltip */
-    .tool::after{
-      content:attr(data-tip);position:absolute;left:calc(100% + 9px);top:50%;
-      transform:translateY(-50%);background:var(--charcoal);color:rgba(255,255,255,.85);
-      font-size:11px;font-weight:500;padding:4px 9px;border-radius:5px;
-      white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .12s;
-      border:1px solid rgba(255,255,255,.1);z-index:9999;
-    }
-    .tool:hover::after{opacity:1}
+    /* ── TOOL PANEL ── */
+    .panel{width:var(--panel);background:var(--white);border-left:1px solid var(--border);
+      display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
+
+    /* kept for backwards-compat references in JS (openSect still exists) */
+    .tp-arrow{font-size:9px;color:var(--gray);transition:transform .18s;flex-shrink:0;line-height:1}
+    .tp-badge{font-size:10px;font-weight:700;background:var(--cream);color:var(--gray);
+      padding:2px 6px;border-radius:10px;flex-shrink:0}
+
+    /* flow step indicator */
+    .flow-steps{display:flex;align-items:center;padding:16px 14px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
+    .fs-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;flex-shrink:0}
+    .fs-dot{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);background:var(--white);color:var(--gray);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all .2s}
+    .fs-item.active .fs-dot{background:var(--forest);border-color:var(--forest);color:#f1ebe2}
+    .fs-item.done .fs-dot{background:var(--cream);border-color:var(--forest);color:var(--forest)}
+    .fs-lbl{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gray);white-space:nowrap}
+    .fs-item.active .fs-lbl{color:var(--forest)}
+    .fs-line{flex:1;height:2px;background:var(--border);margin:0 4px;margin-bottom:14px}
+
+    /* panel panes */
+    .panel-panes{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px}
+    .step-pane{display:flex;flex-direction:column;gap:12px}
+    .step-head{margin-bottom:8px}
+    .step-head-title{font-family:'Playfair Display',serif;font-size:28px;font-weight:600;color:var(--forest);line-height:1.2}
+    .step-head-sub{font-size:13px;color:var(--gray);margin-top:5px;line-height:1.55}
+
+    /* landscape type buttons */
+    .ls-type-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+    .ls-type-btn{padding:12px 8px;border-radius:9px;border:1.5px solid var(--border);background:var(--cream);color:var(--charcoal);font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .14s;display:flex;align-items:center;justify-content:center;gap:7px;text-align:left;line-height:1.3}
+    .ls-type-btn:hover{border-color:var(--forest);color:var(--forest)}
+    .ls-type-btn.active{background:var(--forest);border-color:var(--forest);color:#f1ebe2}
+    .ls-type-btn span{font-size:18px;flex-shrink:0}
+
+    /* plants sub-section */
+    .ls-sub-sect{border:1px solid var(--border);border-radius:9px;overflow:hidden}
+    .ls-sub-hd{display:flex;align-items:center;gap:8px;padding:9px 12px;cursor:pointer;background:var(--cream);user-select:none;transition:background .12s}
+    .ls-sub-hd:hover{background:#eae3d9}
+    .ls-sub-hd .tp-arrow{font-size:9px;color:var(--gray);transition:transform .18s}
+    .ls-sub-hd.open .tp-arrow{transform:rotate(90deg)}
+    .ls-sub-title{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gray);flex:1}
+    .ls-sub-body{display:none;padding:10px 12px;flex-direction:column;gap:8px}
+    .ls-sub-body.open{display:flex}
+
+    /* sticky CTA */
+    .panel-cta{padding:12px 14px;border-top:1px solid var(--border);flex-shrink:0;background:var(--white)}
+    .cta-btn{width:100%;padding:15px 20px;background:var(--forest);color:#f1ebe2;border:none;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:background .15s,transform .12s;letter-spacing:.01em}
+    .cta-btn:hover{background:#2e4020;transform:translateY(-1px)}
+    .cta-btn:active{transform:none}
+
+    /* draw tool buttons */
+    .draw-btns{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+    .draw-btn{padding:7px 8px;border-radius:7px;border:1.5px solid var(--border);
+      background:transparent;color:var(--charcoal);font-size:11px;font-weight:600;
+      cursor:pointer;font-family:'Inter',sans-serif;transition:all .14s;
+      display:flex;align-items:center;justify-content:center;gap:5px}
+    .draw-btn:hover{border-color:var(--forest);color:var(--forest);background:rgba(37,51,25,.03)}
+    .draw-btn.active{background:var(--forest);border-color:var(--forest);color:#f1ebe2}
+    .draw-btn.full{grid-column:1/-1}
+    .draw-btn.danger{border-color:rgba(180,40,40,.2);color:#a03030}
+    .draw-btn.danger:hover{background:rgba(180,40,40,.06);border-color:#a03030}
+    .draw-btn svg{flex-shrink:0}
+
+    /* selected-item props card */
+    .tp-props{background:var(--cream);border-radius:8px;padding:10px;
+      display:flex;flex-direction:column;gap:8px;border:1px solid var(--border)}
+    .tp-props-lbl{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+      color:var(--forest);margin-bottom:2px}
+
+    /* water plan rows */
+    .wp-row{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:12px;
+      border-bottom:1px solid var(--border)}
+    .wp-row:last-child{border-bottom:none}
+    .wp-row-name{flex:1;font-weight:600;color:var(--charcoal)}
+    .wp-row-head{font-size:11px;color:var(--gray)}
 
     /* ── MAP ── */
     .map-wrap{flex:1;position:relative;overflow:hidden}
@@ -78,86 +117,71 @@
     /* cursor states */
     .map-wrap.mode-polygon #map,.map-wrap.mode-rect #map{cursor:crosshair}
     .map-wrap.mode-select #map{cursor:default}
+    .map-wrap.zone-hover #map{cursor:pointer!important}
 
     /* map zoom */
     .map-zoom{position:absolute;bottom:36px;right:14px;z-index:900;display:flex;flex-direction:column;gap:2px}
     .zoom-btn{
-      width:30px;height:30px;background:rgba(28,28,26,.9);backdrop-filter:blur(4px);
-      border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.75);
+      width:30px;height:30px;background:rgba(255,255,255,.92);backdrop-filter:blur(4px);
+      border:1px solid var(--border);color:var(--charcoal);
       font-size:16px;border-radius:5px;cursor:pointer;display:flex;align-items:center;
       justify-content:center;transition:background .12s;line-height:1;
+      box-shadow:0 1px 4px rgba(0,0,0,.12);
     }
-    .zoom-btn:hover{background:rgba(255,255,255,.12)}
+    .zoom-btn:hover{background:var(--white)}
 
     /* status bar */
     .statusbar{
       position:absolute;bottom:0;left:0;right:0;height:26px;
-      background:rgba(20,20,18,.88);backdrop-filter:blur(6px);
-      border-top:1px solid rgba(255,255,255,.07);
+      background:rgba(241,235,226,.92);backdrop-filter:blur(6px);
+      border-top:1px solid var(--border);
       display:flex;align-items:center;padding:0 14px;gap:20px;z-index:900;
     }
-    .sb-item{font-size:10px;color:rgba(255,255,255,.35);letter-spacing:.02em}
-    .sb-item span{color:rgba(255,255,255,.65);font-weight:500}
+    .sb-item{font-size:10px;color:var(--gray);letter-spacing:.02em}
+    .sb-item span{color:var(--charcoal);font-weight:500}
 
     /* ── PROPERTIES PANEL ── */
-    .panel{
-      width:var(--panel);background:var(--ui);border-left:1px solid rgba(255,255,255,.07);
-      display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;
-    }
-    .panel-hd{
-      padding:12px 14px 10px;font-size:10px;font-weight:700;
-      letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.3);
-      border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0;
-    }
-    .panel-empty{
-      padding:28px 16px;text-align:center;
-      font-size:12px;color:rgba(255,255,255,.25);line-height:1.65;
-    }
-    .panel-empty-icon{font-size:26px;margin-bottom:10px}
-    .panel-body{padding:14px;display:flex;flex-direction:column;gap:12px;overflow-y:auto}
-    .prop-lbl{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:5px}
+    .prop-lbl{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--gray);margin-bottom:5px}
     .prop-sel,.prop-inp{
-      width:100%;background:var(--ui3);border:1px solid rgba(255,255,255,.1);
-      border-radius:7px;color:#fff;font-size:13px;font-weight:500;
+      width:100%;background:var(--cream);border:1px solid var(--border);
+      border-radius:7px;color:var(--charcoal);font-size:13px;font-weight:500;
       padding:8px 10px;font-family:'Inter',sans-serif;outline:none;
       transition:border-color .15s;
     }
     .prop-sel{appearance:none;-webkit-appearance:none;cursor:pointer}
-    .prop-sel:focus,.prop-inp:focus{border-color:rgba(200,230,112,.5)}
-    .prop-inp::placeholder{color:rgba(255,255,255,.25)}
+    .prop-sel:focus,.prop-inp:focus{border-color:var(--forest)}
+    .prop-inp::placeholder{color:var(--gray)}
     .stat-box{background:var(--ui2);border-radius:8px;padding:11px 12px}
-    .stat-val{font-size:20px;font-weight:700;color:var(--lime);font-family:'Playfair Display',serif}
-    .stat-unit{font-size:11px;color:rgba(255,255,255,.35);margin-top:2px}
+    .stat-val{font-size:20px;font-weight:700;color:var(--forest);font-family:'Playfair Display',serif}
+    .stat-unit{font-size:11px;color:var(--gray);margin-top:2px}
     .btn-del{
-      width:100%;background:rgba(200,50,50,.12);border:1px solid rgba(200,50,50,.22);
-      color:rgba(255,140,140,.85);font-size:12px;font-weight:600;padding:9px;
+      width:100%;background:rgba(200,50,50,.07);border:1px solid rgba(200,50,50,.18);
+      color:#b03030;font-size:12px;font-weight:600;padding:9px;
       border-radius:7px;cursor:pointer;font-family:'Inter',sans-serif;transition:background .12s;
     }
-    .btn-del:hover{background:rgba(200,50,50,.22)}
+    .btn-del:hover{background:rgba(200,50,50,.14)}
 
-    /* shapes list */
-    .shapes-sect{border-top:1px solid rgba(255,255,255,.07);flex-shrink:0}
-    .shapes-hd{padding:10px 14px 6px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.3)}
-    .shapes-scroll{max-height:180px;overflow-y:auto;padding:0 6px 8px}
+    /* item lists inside tool panel */
+    .tp-list{max-height:150px;overflow-y:auto;display:flex;flex-direction:column;gap:1px}
     .shape-row{
       display:flex;align-items:center;gap:8px;padding:6px 8px;
       border-radius:6px;cursor:pointer;transition:background .1s;
     }
-    .shape-row:hover{background:rgba(255,255,255,.05)}
-    .shape-row.sel{background:rgba(200,230,112,.08)}
+    .shape-row:hover{background:var(--cream)}
+    .shape-row.sel{background:rgba(37,51,25,.07)}
     .shape-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
-    .shape-name{font-size:12px;color:rgba(255,255,255,.65);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .shape-area{font-size:10px;color:rgba(255,255,255,.3);flex-shrink:0}
+    .shape-name{font-size:12px;color:var(--charcoal);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .shape-area{font-size:10px;color:var(--gray);flex-shrink:0}
 
     /* ── LOT CONFIRM MODAL ── */
     .modal-bg{
-      position:fixed;inset:0;background:rgba(0,0,0,.55);
+      position:fixed;inset:0;background:rgba(0,0,0,.4);
       backdrop-filter:blur(5px);z-index:3000;
       display:flex;align-items:center;justify-content:center;padding:20px;
     }
     .modal{
-      background:#fff;border-radius:18px;padding:32px;
-      max-width:460px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.4);
+      background:var(--white);border-radius:18px;padding:32px;
+      max-width:460px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.25);
     }
     .modal-eyebrow{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gray);margin-bottom:10px}
     .modal-title{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--forest);line-height:1.2;margin-bottom:14px}
@@ -183,25 +207,25 @@
 
     /* ── LOADING OVERLAY ── */
     .loader{
-      position:fixed;inset:0;background:rgba(14,26,10,.95);
+      position:fixed;inset:0;background:rgba(241,235,226,.96);
       z-index:4000;display:flex;flex-direction:column;
       align-items:center;justify-content:center;gap:18px;
     }
     .loader-ring{
       width:48px;height:48px;border-radius:50%;
-      border:3px solid rgba(200,230,112,.15);
-      border-top-color:var(--lime);
+      border:3px solid rgba(37,51,25,.12);
+      border-top-color:var(--forest);
       animation:spin 1s linear infinite;
     }
     @keyframes spin{to{transform:rotate(360deg)}}
-    .loader p{font-size:14px;color:rgba(255,255,255,.5)}
+    .loader p{font-size:14px;color:var(--gray)}
 
     /* ── MAP OVERLAYS ── */
     /* Leaflet tooltip overrides */
     .lf-zone-lbl{
-      background:rgba(0,0,0,.62)!important;backdrop-filter:blur(4px)!important;
-      border:none!important;box-shadow:none!important;
-      color:#fff!important;font-size:11px!important;font-weight:700!important;
+      background:rgba(255,255,255,.88)!important;backdrop-filter:blur(4px)!important;
+      border:1px solid rgba(37,51,25,.15)!important;box-shadow:0 1px 6px rgba(0,0,0,.1)!important;
+      color:var(--forest)!important;font-size:11px!important;font-weight:700!important;
       padding:3px 8px!important;border-radius:4px!important;
       font-family:'Inter',sans-serif!important;pointer-events:none!important;
     }
@@ -210,101 +234,102 @@
     /* hint toast */
     #hint{
       position:fixed;bottom:36px;left:50%;transform:translateX(-50%);
-      background:rgba(20,20,18,.92);backdrop-filter:blur(8px);
-      border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.8);
+      background:rgba(255,255,255,.95);backdrop-filter:blur(8px);
+      border:1px solid var(--border);color:var(--charcoal);
       font-size:12px;font-weight:500;padding:8px 18px;border-radius:100px;
       z-index:2500;transition:opacity .3s;pointer-events:none;
       font-family:'Inter',sans-serif;white-space:nowrap;opacity:0;
+      box-shadow:0 2px 12px rgba(0,0,0,.1);
     }
 
     /* plant markers */
     .plant-ic{font-size:20px;line-height:1;display:block;text-align:center;
-      cursor:pointer;user-select:none;filter:drop-shadow(0 1px 3px rgba(0,0,0,.6));
+      cursor:pointer;user-select:none;filter:drop-shadow(0 1px 3px rgba(0,0,0,.3));
       transition:filter .15s}
-    .plant-ic.selected{filter:drop-shadow(0 0 6px rgba(200,230,112,.9)) drop-shadow(0 1px 3px rgba(0,0,0,.6))}
-    .plant-handle{width:11px;height:11px;background:rgba(200,230,112,.95);
-      border:2px solid rgba(37,51,25,.6);border-radius:50%;cursor:ew-resize;
-      box-shadow:0 1px 5px rgba(0,0,0,.6)}
+    .plant-ic.selected{filter:drop-shadow(0 0 6px rgba(37,51,25,.6)) drop-shadow(0 1px 3px rgba(0,0,0,.3))}
+    .plant-handle{width:11px;height:11px;background:var(--forest);
+      border:2px solid rgba(255,255,255,.8);border-radius:50%;cursor:ew-resize;
+      box-shadow:0 1px 5px rgba(0,0,0,.3)}
     /* plant type selector chip in panel */
     .plant-type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
     .ptype-btn{
-      background:var(--ui3);border:1.5px solid rgba(255,255,255,.1);border-radius:8px;
-      color:rgba(255,255,255,.6);font-size:11px;font-weight:600;padding:8px 4px;
+      background:var(--cream);border:1.5px solid var(--border);border-radius:8px;
+      color:var(--gray);font-size:11px;font-weight:600;padding:8px 4px;
       cursor:pointer;text-align:center;transition:all .12s;font-family:'Inter',sans-serif;
     }
-    .ptype-btn:hover{border-color:rgba(255,255,255,.3);color:#fff}
-    .ptype-btn.active{border-color:var(--lime);background:rgba(200,230,112,.12);color:var(--lime)}
+    .ptype-btn:hover{border-color:var(--forest);color:var(--charcoal)}
+    .ptype-btn.active{border-color:var(--forest);background:rgba(37,51,25,.08);color:var(--forest)}
     .ptype-icon{font-size:18px;display:block;margin-bottom:3px}
     /* size slider */
     .size-row{display:flex;align-items:center;gap:8px}
     .size-slider{flex:1;-webkit-appearance:none;height:4px;border-radius:2px;
-      background:var(--ui3);outline:none;cursor:pointer}
+      background:var(--border);outline:none;cursor:pointer}
     .size-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;
-      border-radius:50%;background:var(--lime);cursor:pointer}
-    .size-val{font-size:12px;color:var(--lime);font-weight:600;min-width:36px;text-align:right}
+      border-radius:50%;background:var(--forest);cursor:pointer}
+    .size-val{font-size:12px;color:var(--forest);font-weight:600;min-width:36px;text-align:right}
 
-    /* ── WATER SOURCE PLACEMENT OVERLAY ── */
-    .ws-overlay{
-      position:fixed;top:var(--topbar);left:0;right:0;bottom:0;
-      z-index:3000;display:flex;pointer-events:none;
+    /* ── WATER SOURCE PANEL SECTION ── */
+    .ws-sect{border-top:1px solid var(--border);flex-shrink:0}
+    .ws-sect-hd{
+      display:flex;align-items:center;padding:10px 14px 8px;
+      font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gray);
     }
-    .ws-overlay.active{pointer-events:all}
-    .ws-panel{
-      width:300px;flex-shrink:0;
-      background:var(--charcoal);border-right:1px solid rgba(255,255,255,.1);
-      padding:28px 22px;display:flex;flex-direction:column;gap:0;
-      transform:translateX(-100%);transition:transform .35s cubic-bezier(.4,0,.2,1);
+    .ws-help-btn{
+      margin-left:auto;width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border);
+      background:transparent;color:var(--gray);font-size:11px;font-weight:700;
+      cursor:pointer;display:flex;align-items:center;justify-content:center;
+      transition:border-color .12s,color .12s;flex-shrink:0;
     }
-    .ws-overlay.active .ws-panel{transform:translateX(0)}
-    .ws-map-shield{
-      flex:1;cursor:crosshair;
-      background:transparent;
-      pointer-events:none;
-    }
-    .ws-overlay.active .ws-map-shield{pointer-events:all}
-    .ws-step-lbl{font-size:10px;font-weight:700;letter-spacing:.12em;
-      text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:14px}
-    .ws-title{font-family:'Playfair Display',serif;font-size:21px;font-weight:700;
-      color:var(--lime);line-height:1.2;margin-bottom:10px}
-    .ws-desc{font-size:13px;color:rgba(255,255,255,.5);line-height:1.65;margin-bottom:24px}
-    .ws-type-lbl{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
-      color:rgba(255,255,255,.35);margin-bottom:8px}
-    .ws-type-row{display:flex;gap:8px;margin-bottom:22px}
+    .ws-help-btn:hover{border-color:var(--forest);color:var(--forest)}
+    .ws-sect-body{padding:0 10px 12px;display:flex;flex-direction:column;gap:8px}
+    .ws-type-row{display:flex;gap:6px}
     .ws-type-btn{
-      flex:1;padding:9px 10px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;
-      text-align:center;border:1.5px solid rgba(255,255,255,.12);
-      background:transparent;color:rgba(255,255,255,.4);
-      font-family:'Inter',sans-serif;transition:all .2s;
+      flex:1;padding:7px 8px;border-radius:7px;cursor:pointer;font-size:11px;font-weight:600;
+      text-align:center;border:1.5px solid var(--border);
+      background:transparent;color:var(--gray);
+      font-family:'Inter',sans-serif;transition:all .15s;
     }
-    .ws-type-btn.active{background:var(--forest);border-color:var(--lime);color:var(--lime)}
-    .ws-placed{
-      background:rgba(200,230,112,.1);border:1px solid rgba(200,230,112,.25);
-      border-radius:10px;padding:12px 14px;margin-bottom:18px;display:none;
+    .ws-type-btn.active{background:var(--forest);border-color:var(--forest);color:#f1ebe2}
+    .ws-status{
+      font-size:12px;color:var(--gray);padding:7px 10px;
+      background:var(--cream);border-radius:7px;display:flex;align-items:center;gap:6px;
     }
-    .ws-placed-lbl{font-size:10px;font-weight:700;letter-spacing:.08em;
-      text-transform:uppercase;color:var(--lime);margin-bottom:4px}
-    .ws-placed-val{font-size:13px;font-weight:600;color:rgba(255,255,255,.8)}
-    .ws-hint-bar{
-      position:absolute;bottom:32px;left:50%;transform:translateX(-50%);
-      background:rgba(28,28,26,.9);backdrop-filter:blur(6px);
-      border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.8);
-      font-size:12px;font-weight:500;padding:8px 20px;border-radius:100px;
-      pointer-events:none;white-space:nowrap;font-family:'Inter',sans-serif;
-      z-index:3001;transition:opacity .3s;
+    .ws-status.placed{background:rgba(37,51,25,.07);color:var(--forest);font-weight:600}
+    .ws-place-btn{
+      width:100%;padding:8px;border-radius:7px;border:1.5px dashed var(--border);
+      background:transparent;color:var(--gray);font-size:12px;font-weight:600;
+      cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;text-align:center;
     }
-    .ws-btn{
-      width:100%;padding:13px;background:var(--lime);color:var(--forest);
-      font-size:14px;font-weight:700;border:none;border-radius:9px;cursor:pointer;
-      font-family:'Inter',sans-serif;transition:opacity .15s;margin-top:auto;
+    .ws-place-btn:hover,.ws-place-btn.active{
+      border-color:var(--forest);border-style:solid;color:var(--forest);background:rgba(37,51,25,.04);
     }
-    .ws-btn:disabled{opacity:.3;cursor:not-allowed}
-    .ws-btn:not(:disabled):hover{opacity:.85}
-    .ws-skip{
-      width:100%;padding:9px;background:none;border:none;
-      color:rgba(255,255,255,.28);font-size:12px;cursor:pointer;
-      font-family:'Inter',sans-serif;margin-top:6px;transition:color .2s;
+    .ws-place-btn.active{background:rgba(37,51,25,.08)}
+
+    /* ── HELP DRAWER ── */
+    #help-drawer{
+      position:fixed;top:0;right:0;bottom:0;width:300px;
+      background:var(--white);border-left:1px solid var(--border);
+      box-shadow:-8px 0 32px rgba(0,0,0,.1);
+      z-index:4000;transform:translateX(100%);
+      transition:transform .28s cubic-bezier(.4,0,.2,1);
+      display:flex;flex-direction:column;overflow:hidden;
     }
-    .ws-skip:hover{color:rgba(255,255,255,.55)}
+    #help-drawer.open{transform:translateX(0)}
+    .hd-header{
+      padding:16px 18px 12px;border-bottom:1px solid var(--border);
+      display:flex;align-items:center;gap:10px;flex-shrink:0;
+    }
+    .hd-title{font-size:13px;font-weight:700;color:var(--forest);flex:1}
+    .hd-close{
+      width:26px;height:26px;border-radius:6px;border:none;background:var(--cream);
+      color:var(--gray);font-size:14px;cursor:pointer;display:flex;align-items:center;
+      justify-content:center;transition:background .12s;flex-shrink:0;
+    }
+    .hd-close:hover{background:var(--border)}
+    .hd-body{flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:14px}
+    .hd-rule{display:flex;gap:10px;align-items:flex-start;font-size:12px;color:var(--gray);line-height:1.55}
+    .hd-rule-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+    .hd-rule strong{color:var(--charcoal)}
   </style>
 </head>
 <body>
@@ -317,7 +342,7 @@
 
 <!-- Top bar -->
 <div class="topbar">
-  <div class="tb-logo"><img src="file:///Users/andersmacbookpro/Downloads/drip-atlas-assets/Drip Atlas Logo_White.png" alt="Drip Atlas"/></div>
+  <div class="tb-logo"><img src="file:///Users/andersmacbookpro/Downloads/drip-atlas-assets/Drip Atlas Logo_Forest Green.png" alt="Drip Atlas" style="height:26px;display:block"/></div>
   <div class="tb-div"></div>
   <div class="tb-addr" id="tb-addr">Your Property</div>
   <div class="tb-step" id="tb-step">Step 1 of 7 — Place Water Source</div>
@@ -329,31 +354,6 @@
 <!-- App layout -->
 <div class="app">
 
-  <!-- Toolbar -->
-  <div class="toolbar" id="toolbar">
-    <button class="tool active" id="tool-select" data-tool="select" data-tip="Select  V" onclick="setTool('select')">
-      <svg viewBox="0 0 18 18" fill="none"><path d="M4 2l10 7-5 1.5L11 16l-2.5-1.5L7 18 4 2z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
-    </button>
-    <button class="tool" id="tool-polygon" data-tool="polygon" data-tip="Draw Zone  P" onclick="setTool('polygon')">
-      <svg viewBox="0 0 18 18" fill="none"><polygon points="9,2 16,7 13,15 5,15 2,7" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
-    </button>
-    <button class="tool" id="tool-rect" data-tool="rect" data-tip="Draw Rectangle  R" onclick="setTool('rect')">
-      <svg viewBox="0 0 18 18" fill="none"><rect x="2.5" y="4.5" width="13" height="9" rx="1.5" stroke="currentColor" stroke-width="1.4"/></svg>
-    </button>
-    <div class="tool-sep"></div>
-    <button class="tool" id="tool-edit" data-tool="edit" data-tip="Edit Vertices  E" onclick="setTool('edit')">
-      <svg viewBox="0 0 18 18" fill="none"><path d="M3 13.5V15h1.5l6.5-6.5-1.5-1.5L3 13.5zM14.7 5.3a1 1 0 000-1.4l-1.6-1.6a1 1 0 00-1.4 0l-1.2 1.2 3 3 1.2-1.2z" fill="currentColor"/></svg>
-    </button>
-    <button class="tool" id="tool-delete" data-tool="delete" data-tip="Delete  ⌫" onclick="deleteSelected()">
-      <svg viewBox="0 0 18 18" fill="none"><path d="M3 5h12M7 5V3h4v2M6 5l.5 10h5L12 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
-    <div class="tool-sep"></div>
-    <div class="tool-sep"></div>
-    <button class="tool" id="tool-plant" data-tool="plant" data-tip="Place Plant  L" onclick="setTool('plant')">
-      <svg viewBox="0 0 18 18" fill="none"><circle cx="9" cy="7" r="4.5" fill="currentColor" fill-opacity=".25" stroke="currentColor" stroke-width="1.3"/><line x1="9" y1="11.5" x2="9" y2="16" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><line x1="6.5" y1="14" x2="9" y2="12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-    </button>
-  </div>
-
   <!-- Map -->
   <div class="map-wrap mode-select" id="map-wrap">
     <div id="map"></div>
@@ -362,103 +362,189 @@
       <button class="zoom-btn" onclick="map.zoomOut()">−</button>
     </div>
     <div class="statusbar">
-      <div class="sb-item">Zoom <span id="sb-zoom">19</span></div>
-      <div class="sb-item">Tool <span id="sb-tool">Select</span></div>
+      <div class="sb-item">Zoom <span id="sb-zoom">20</span></div>
       <div class="sb-item">Zones <span id="sb-zones">0</span></div>
-      <div class="sb-item">Total area <span id="sb-area">0 sqft</span></div>
+      <div class="sb-item">Area <span id="sb-area">0 sqft</span></div>
     </div>
   </div>
 
-  <!-- Properties panel -->
+  <!-- Tool Panel -->
   <div class="panel">
-    <div class="panel-hd">Properties</div>
-    <div id="panel-empty" class="panel-empty">
-      <div class="panel-empty-icon">✏️</div>
-      Draw lawn areas, garden beds, and other zones using the polygon tool.<br/><br/>
-      <small style="color:rgba(255,255,255,.18)">V select · P polygon · R rect · E edit · ⌫ delete</small>
-    </div>
-    <div id="panel-body" class="panel-body" style="display:none">
-      <div>
-        <div class="prop-lbl">Zone Type</div>
-        <select class="prop-sel" id="prop-type" onchange="updateType(this.value)">
-          <option value="lawn">🌿  Lawn</option>
-          <option value="garden">🌸  Garden Bed</option>
-          <option value="shrubs">🌳  Shrubs / Trees</option>
-          <option value="driveway">🚗  Driveway</option>
-          <option value="path">👣  Walkway / Path</option>
-          <option value="nowater">⛔  No-Water Zone</option>
-        </select>
+
+    <!-- Step progress indicator -->
+    <div class="flow-steps">
+      <div class="fs-item active" id="fs-ws" onclick="showStep('ws')">
+        <div class="fs-dot">1</div>
+        <div class="fs-lbl">Water Source</div>
       </div>
-      <div>
-        <div class="prop-lbl">Label</div>
-        <input class="prop-inp" id="prop-name" type="text" placeholder="e.g. Front Lawn" oninput="updateName(this.value)"/>
+      <div class="fs-line"></div>
+      <div class="fs-item" id="fs-landscape" onclick="showStep('landscape')">
+        <div class="fs-dot">2</div>
+        <div class="fs-lbl">Landscape</div>
       </div>
-      <div class="stat-box">
-        <div class="stat-val" id="prop-area">—</div>
-        <div class="stat-unit">Square feet</div>
+      <div class="fs-line"></div>
+      <div class="fs-item" id="fs-water" onclick="showStep('water')">
+        <div class="fs-dot">3</div>
+        <div class="fs-lbl">Water Plan</div>
       </div>
-      <button class="btn-del" onclick="deleteSelected()">Delete Zone</button>
-    </div>
-    <!-- Plant properties (shown when a plant is selected) -->
-    <div id="plant-body" class="panel-body" style="display:none">
-      <div>
-        <div class="prop-lbl">Plant Type</div>
-        <div class="plant-type-grid">
-          <button class="ptype-btn active" id="ptype-tree"   onclick="setPlantType('tree')">  <span class="ptype-icon">🌳</span>Tree</button>
-          <button class="ptype-btn"        id="ptype-shrub"  onclick="setPlantType('shrub')"> <span class="ptype-icon">🌿</span>Shrub</button>
-          <button class="ptype-btn"        id="ptype-grass"  onclick="setPlantType('grass')"> <span class="ptype-icon">🌾</span>Grasses</button>
-        </div>
-      </div>
-      <div>
-        <div class="prop-lbl">Label</div>
-        <input class="prop-inp" id="plant-name-inp" type="text" placeholder="e.g. Oak Tree" oninput="updatePlantName(this.value)"/>
-      </div>
-      <div>
-        <div class="prop-lbl">Canopy Diameter — <span id="plant-size-lbl" style="color:var(--lime)">—</span></div>
-        <div class="size-row">
-          <input class="size-slider" id="plant-size-slider" type="range" min="2" max="60" value="16" oninput="updatePlantRadius(this.value)"/>
-          <span class="size-val" id="plant-size-val">16 ft</span>
-        </div>
-      </div>
-      <button class="btn-del" onclick="deletePlant()">Delete Plant</button>
     </div>
 
-    <div class="shapes-sect" id="shapes-sect">
-      <div class="shapes-hd">Zones (<span id="zone-count">0</span>)</div>
-      <div class="shapes-scroll" id="shapes-scroll"></div>
+    <!-- Scrollable content -->
+    <div class="panel-panes">
+
+      <!-- Step 1: Water Source -->
+      <div class="step-pane" id="pane-ws">
+        <div class="step-head">
+          <div class="step-head-title">Place Your Water Source</div>
+          <div class="step-head-sub">Choose your connection type and place it on the map.</div>
+        </div>
+        <div class="ws-type-row">
+          <button class="ws-type-btn active" id="wt-hose" onclick="setWsType('hose')">🚿 Hose Tap</button>
+          <button class="ws-type-btn" id="wt-manifold" onclick="setWsType('manifold')">🔧 Manifold</button>
+        </div>
+        <div class="ws-status" id="ws-status">⬤ Hover the map and click to place</div>
+
+        <div style="margin-top:12px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <div class="prop-lbl" style="margin-bottom:0">Flow Rate</div>
+            <button onclick="openGpmDrawer()" style="padding:3px 9px;font-size:11px;font-weight:600;border-radius:5px;border:1.5px solid var(--border);background:transparent;color:var(--gray);cursor:pointer;font-family:'Inter',sans-serif;transition:border-color .12s,color .12s" onmouseover="this.style.borderColor='var(--forest)';this.style.color='var(--forest)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--gray)'">? What is GPM</button>
+          </div>
+          <div style="display:flex;align-items:center;background:var(--white);border:1.5px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color .2s" id="gpm-wrap">
+            <input id="ws-gpm" type="number" min="1" max="100" step="0.5" placeholder="0"
+              oninput="saveWsToSession(null);document.getElementById('gpm-wrap').style.borderColor='var(--forest)'"
+              style="flex:1;padding:14px 16px;font-size:28px;font-weight:700;color:var(--forest);
+                border:none;outline:none;font-family:'Playfair Display',serif;background:transparent"/>
+            <div style="padding:0 16px;font-size:13px;font-weight:600;color:var(--gray);
+              border-left:1px solid var(--border);align-self:stretch;display:flex;align-items:center;
+              white-space:nowrap">gal / min</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Landscape -->
+      <div class="step-pane" id="pane-landscape" style="display:none">
+        <div class="step-head">
+          <div class="step-head-title">Landscape</div>
+          <div class="step-head-sub">Select a zone type, then draw it on the map.</div>
+        </div>
+
+        <!-- Zone type buttons -->
+        <div class="ls-type-grid">
+          <button class="ls-type-btn active" data-zone="lawn"     onclick="setActiveZoneType('lawn')"><span>🌿</span>Lawn</button>
+          <button class="ls-type-btn"        data-zone="garden"   onclick="setActiveZoneType('garden')"><span>🌸</span>Garden Bed</button>
+          <button class="ls-type-btn"        data-zone="shrubs"   onclick="setActiveZoneType('shrubs')"><span>🌳</span>Shrubs</button>
+          <button class="ls-type-btn"        data-zone="driveway" onclick="setActiveZoneType('driveway')"><span>🚗</span>Driveway</button>
+          <button class="ls-type-btn"        data-zone="path"     onclick="setActiveZoneType('path')"><span>👣</span>Walkway</button>
+          <button class="ls-type-btn"        data-zone="nowater"  onclick="setActiveZoneType('nowater')"><span>⛔</span>No-Water</button>
+        </div>
+
+        <!-- Draw tool buttons -->
+        <!-- Zone count badge -->
+        <div style="font-size:11px;color:var(--gray)">Zones: <strong id="tp-zone-count" style="color:var(--forest)">0</strong></div>
+
+        <!-- Selected zone props card -->
+        <div class="tp-props" id="zone-props" style="display:none">
+          <div class="tp-props-lbl">Selected Zone</div>
+          <div>
+            <div class="prop-lbl">Label</div>
+            <input class="prop-inp" id="prop-name" type="text" placeholder="e.g. Front Lawn" oninput="updateName(this.value)"/>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val" id="prop-area">—</div>
+            <div class="stat-unit">Square feet</div>
+          </div>
+          <div class="draw-btns">
+            <button class="draw-btn danger full" onclick="deleteSelected()">
+              <svg viewBox="0 0 16 16" fill="none" width="13" height="13"><path d="M2 4h12M6 4V2h4v2M5 4l.4 9h5.2L11 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Delete Zone
+            </button>
+          </div>
+        </div>
+
+        <!-- Zone list -->
+        <div class="tp-list" id="shapes-scroll"></div>
+
+        <!-- Plants sub-section -->
+        <div class="ls-sub-sect">
+          <div class="ls-sub-hd" id="ls-sub-hd-plants" onclick="toggleLsSub('plants')">
+            <span class="tp-arrow">▶</span>
+            <span class="ls-sub-title">Plants</span>
+            <span class="tp-badge" id="tp-plant-count">0</span>
+          </div>
+          <div class="ls-sub-body" id="ls-sub-body-plants">
+            <button class="draw-btn full" id="tool-plant" data-tool="plant" onclick="setTool('plant')">
+              <svg viewBox="0 0 16 16" fill="none" width="13" height="13"><circle cx="8" cy="6" r="4" fill="currentColor" fill-opacity=".2" stroke="currentColor" stroke-width="1.3"/><line x1="8" y1="10" x2="8" y2="15" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><line x1="5.5" y1="13" x2="8" y2="11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+              Place Plant on Map
+            </button>
+            <!-- Selected plant props -->
+            <div class="tp-props" id="plant-props" style="display:none">
+              <div class="tp-props-lbl">Selected Plant</div>
+              <div>
+                <div class="prop-lbl">Type</div>
+                <div class="plant-type-grid">
+                  <button class="ptype-btn active" id="ptype-tree"  onclick="setPlantType('tree')"><span class="ptype-icon">🌳</span>Tree</button>
+                  <button class="ptype-btn"        id="ptype-shrub" onclick="setPlantType('shrub')"><span class="ptype-icon">🌿</span>Shrub</button>
+                  <button class="ptype-btn"        id="ptype-grass" onclick="setPlantType('grass')"><span class="ptype-icon">🌾</span>Grasses</button>
+                </div>
+              </div>
+              <div>
+                <div class="prop-lbl">Label</div>
+                <input class="prop-inp" id="plant-name-inp" type="text" placeholder="e.g. Oak Tree" oninput="updatePlantName(this.value)"/>
+              </div>
+              <div>
+                <div class="prop-lbl">Canopy — <span id="plant-size-lbl">—</span></div>
+                <div class="size-row">
+                  <input class="size-slider" id="plant-size-slider" type="range" min="2" max="60" value="16" oninput="updatePlantRadius(this.value)"/>
+                  <span class="size-val" id="plant-size-val">16 ft</span>
+                </div>
+              </div>
+              <button class="draw-btn danger full" onclick="deletePlant()">
+                <svg viewBox="0 0 16 16" fill="none" width="13" height="13"><path d="M2 4h12M6 4V2h4v2M5 4l.4 9h5.2L11 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Delete Plant
+              </button>
+            </div>
+            <!-- Plant list -->
+            <div class="tp-list" id="plants-scroll"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Water Plan -->
+      <div class="step-pane" id="pane-water" style="display:none">
+        <div class="step-head">
+          <div class="step-head-title">Water Plan</div>
+          <div class="step-head-sub">Generate your irrigation layout and head placement.</div>
+        </div>
+        <span class="tp-badge" id="tp-head-count" style="display:none;align-self:flex-start"></span>
+        <div id="water-plan-empty" style="font-size:12px;color:var(--gray);line-height:1.65">
+          Draw your zones first, then generate the water plan to see sprinkler head placement and pipe routing.
+        </div>
+        <div id="water-plan-list"></div>
+        <div id="water-plan-summary" style="display:none;font-size:11px;color:var(--gray);
+          background:var(--cream);border-radius:7px;padding:8px 10px;line-height:1.7"></div>
+        <button id="btn-clear-layer" onclick="clearIrrigationLayer()"
+          style="display:none;width:100%;margin-top:4px;padding:8px;border-radius:7px;
+          border:1.5px solid var(--border);background:transparent;color:var(--gray);
+          font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">
+          Clear Layer
+        </button>
+      </div>
+
+    </div><!-- /.panel-panes -->
+
+    <!-- Sticky CTA -->
+    <div class="panel-cta">
+      <button class="cta-btn" id="flow-cta" onclick="flowNext()">Continue →</button>
     </div>
-    <div class="shapes-sect" id="plants-sect">
-      <div class="shapes-hd">Plants (<span id="plant-count">0</span>)</div>
-      <div class="shapes-scroll" id="plants-scroll"></div>
-    </div>
+
   </div>
 </div>
 
-<!-- Water Source Placement Overlay -->
-<div class="ws-overlay" id="ws-overlay">
-  <div class="ws-panel">
-    <div class="ws-step-lbl">Step 1 of 7 — Water Source</div>
-    <div class="ws-title">Where is your water source?</div>
-    <p class="ws-desc" id="ws-desc">Click anywhere on the map to drop your water source. You can move it by clicking a new spot. This is where your irrigation pipes will route from.</p>
-
-    <div class="ws-type-lbl">Source Type</div>
-    <div class="ws-type-row">
-      <button class="ws-type-btn active" id="wt-hose" onclick="setWsType('hose')">🚿 Hose Tap</button>
-      <button class="ws-type-btn" id="wt-manifold" onclick="setWsType('manifold')">🔧 Manifold</button>
-    </div>
-
-    <div class="ws-placed" id="ws-placed">
-      <div class="ws-placed-lbl">Source Placed ✓</div>
-      <div class="ws-placed-val" id="ws-placed-val">—</div>
-    </div>
-
-    <button class="ws-btn" id="ws-continue-btn" disabled onclick="dismissWsOverlay()">Continue to Design →</button>
-    <div id="ws-rules-summary" style="margin-top:18px;border-top:1px solid rgba(255,255,255,.08);padding-top:16px;display:flex;flex-direction:column;gap:8px"></div>
-    <button class="ws-skip" onclick="skipWsPlacement()">Skip — place later</button>
+<!-- Help Drawer -->
+<div id="help-drawer">
+  <div class="hd-header">
+    <span class="hd-title" id="hd-title">💧 Flow Rate (GPM)</span>
+    <button class="hd-close" onclick="closeHelpDrawer()">✕</button>
   </div>
-  <div class="ws-map-shield" id="ws-map-shield" onclick="wsMapClick(event)">
-    <div class="ws-hint-bar" id="ws-hint-bar">Click the map to place your water source</div>
-  </div>
+  <div class="hd-body" id="help-drawer-body"></div>
 </div>
 
 
@@ -495,14 +581,31 @@ let _coords    = null;
 let wsMarker  = null;
 let wsType    = 'hose';
 
+// Flow step state
+let currentStep   = 'ws';
+let activeZoneType = 'lawn';
+
+// ─────────────────────────────────────────
+// EMBEDDED MODE (shown inside materials.html iframe)
+// ─────────────────────────────────────────
+const _embedded = window.self !== window.top;
+
 // ─────────────────────────────────────────
 // BOOT
 // ─────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', async () => {
+  // Read params from URL or fall back to sessionStorage
   const p   = new URLSearchParams(location.search);
-  const lat = parseFloat(p.get('lat'))  || 42.3601;
-  const lng = parseFloat(p.get('lng'))  || -71.0589;
-  const addr = decodeURIComponent(p.get('address') || 'Your Property');
+  let lat = parseFloat(p.get('lat'));
+  let lng = parseFloat(p.get('lng'));
+  let addr = p.get('address') ? decodeURIComponent(p.get('address')) : null;
+  if (!lat || !lng) {
+    const saved = JSON.parse(sessionStorage.getItem('drip_design') || '{}');
+    lat  = saved.lat  || 42.3601;
+    lng  = saved.lng  || -71.0589;
+    addr = addr || saved.address || 'Your Property';
+  }
+  addr = addr || 'Your Property';
   _coords = { lat, lng };
 
   document.getElementById('tb-addr').textContent = addr;
@@ -512,30 +615,32 @@ window.addEventListener('DOMContentLoaded', async () => {
   initMapLayers(map);
 
   drawnItems = new L.FeatureGroup().addTo(map);
-  map.setView([lat, lng], 19);
+  map.setView([lat, lng], 20);
 
   map.on('zoomend', () => document.getElementById('sb-zoom').textContent = map.getZoom().toFixed(1));
   map.on(L.Draw.Event.CREATED, onShapeCreated);
   map.on('click', () => { if (currentTool === 'select') deselect(); });
 
+
   document.getElementById('loader').style.display = 'none';
 
-  // Pre-select source type from design data, then show water source overlay
+  // Restore saved state
   const savedDesign = JSON.parse(sessionStorage.getItem('drip_design') || '{}');
-  if (savedDesign.water?.sourceType) setWsType(savedDesign.water.sourceType);
+  if (savedDesign.water?.srcType) setWsType(savedDesign.water.srcType);
+  if (savedDesign.water?.srcLat && savedDesign.water?.srcLng) {
+    dropWsMarker(L.latLng(savedDesign.water.srcLat, savedDesign.water.srcLng));
+  }
 
-  // Populate rules summary from IRRIGATION_RULES
+  // Populate help drawer with irrigation rules
   const R = IRRIGATION_RULES;
-  document.getElementById('ws-rules-summary').innerHTML = [
+  document.getElementById('help-drawer-body').innerHTML = [
     { icon:'💧', text:`Supply default: <strong>${R.pressure.typicalGpm.default} GPM</strong> / <strong>${R.pressure.typicalPsi.default} PSI</strong>` },
     { icon:'📏', text:`Head spacing: <strong>radius = spacing</strong> (${Math.round(R.coverage.spacingFactor * 100)}% head-to-head)` },
     { icon:'⚠️', text:`Warn if zone exceeds <strong>${Math.round(R.zones.maxZoneGpmFactor * 100)}%</strong> of supply GPM` },
     { icon:'🚫', text:`Don't mix rotor + spray — precip rates differ (<strong>${R.heads.rotor.precipIn_hr}"</strong> vs <strong>${R.heads.spray.precipIn_hr}"</strong>/hr)` },
-  ].map(r => `<div style="display:flex;gap:8px;align-items:flex-start;font-size:11px;color:rgba(255,255,255,.45);line-height:1.5">
-    <span style="flex-shrink:0">${r.icon}</span><span>${r.text}</span>
-  </div>`).join('');
+  ].map(r => `<div class="hd-rule"><span class="hd-rule-icon">${r.icon}</span><span>${r.text}</span></div>`).join('');
 
-  document.getElementById('ws-overlay').classList.add('active');
+  hint('Click to add zone corners, double-click to finish the shape', 4000);
 });
 
 // ─────────────────────────────────────────
@@ -564,7 +669,7 @@ function setTool(tool) {
   currentTool = tool;
 
   // Toolbar active state
-  document.querySelectorAll('.tool[data-tool]').forEach(b =>
+  document.querySelectorAll('[data-tool]').forEach(b =>
     b.classList.toggle('active', b.dataset.tool === tool)
   );
 
@@ -573,21 +678,24 @@ function setTool(tool) {
   const cursorMode = (tool === 'polygon' || tool === 'rect' || tool === 'plant') ? tool : 'select';
   mw.className = 'map-wrap mode-' + cursorMode;
 
-  document.getElementById('sb-tool').textContent =
-    { select:'Select', polygon:'Draw Zone', rect:'Draw Rect', edit:'Edit', plant:'Place Plant' }[tool] || tool;
-
   // Re-wire zone interactions
   shapes.forEach(({ layer }, id) => {
-    layer.off('click').off('mousedown');
-    if (tool === 'select') {
-      layer.on('click',     e => { L.DomEvent.stopPropagation(e); selectShape(id); });
-      layer.on('mousedown', e => startDrag(e, id));
-    }
+    layer.off('click').off('mousedown').off('mouseover').off('mouseout');
+    layer.on('mouseover', () => {
+      const el = layer.getElement(); if (el) el.style.cursor = 'grab';
+      if (drawHandler) try { drawHandler.disable(); } catch(_){}
+    });
+    layer.on('mouseout', () => {
+      const el = layer.getElement(); if (el) el.style.cursor = '';
+      if (drawHandler) try { drawHandler.enable(); } catch(_){}
+    });
+    layer.on('click', e => { e.originalEvent.stopPropagation(); e.originalEvent.stopImmediatePropagation(); selectShape(id); });
+    layer.on('mousedown', e => { e.originalEvent.stopPropagation(); startDrag(e, id); });
   });
 
   // Draw zone handlers
   if (tool === 'polygon' || tool === 'rect') {
-    const z = ZONES[document.getElementById('prop-type').value || 'lawn'];
+    const z = ZONES[activeZoneType];
     const opts = { shapeOptions:{ color:z.color, fillColor:z.fill, fillOpacity:0.28, weight:2 } };
     drawHandler = tool === 'polygon'
       ? new L.Draw.Polygon(map, { ...opts, allowIntersection:false })
@@ -618,7 +726,7 @@ function onPlantClick(e) {
 // ─────────────────────────────────────────
 function onShapeCreated(e) {
   const layer = e.layer;
-  const type  = document.getElementById('prop-type').value || 'lawn';
+  const type  = activeZoneType;
   const z     = ZONES[type];
 
   layer.setStyle({ color:z.color, fillColor:z.fill, fillOpacity:0.28, weight:2 });
@@ -634,14 +742,22 @@ function onShapeCreated(e) {
     permanent:true, direction:'center', className:'lf-zone-lbl'
   });
 
-  layer.on('click',     ev => { L.DomEvent.stopPropagation(ev); selectShape(id); });
-  layer.on('mousedown', ev => startDrag(ev, id));
+  layer.on('mouseover', () => {
+    const el = layer.getElement(); if (el) el.style.cursor = 'grab';
+    if (drawHandler) try { drawHandler.disable(); } catch(_){}
+  });
+  layer.on('mouseout', () => {
+    const el = layer.getElement(); if (el) el.style.cursor = '';
+    if (drawHandler) try { drawHandler.enable(); } catch(_){}
+  });
+  layer.on('click',     ev => { ev.originalEvent.stopPropagation(); ev.originalEvent.stopImmediatePropagation(); selectShape(id); });
+  layer.on('mousedown', ev => { ev.originalEvent.stopPropagation(); startDrag(ev, id); });
 
   updateList();
   selectShape(id);
   updateSaveBtn();
 
-  // Re-arm tool so user can draw again
+  // Re-arm tool so user can draw another zone immediately
   setTimeout(() => { if (currentTool === 'polygon' || currentTool === 'rect') setTool(currentTool); }, 40);
 }
 
@@ -655,19 +771,18 @@ function selectShape(id) {
   if (!s) return;
 
   s.layer.setStyle({ weight:3, opacity:1 });
-  document.getElementById('panel-empty').style.display = 'none';
-  document.getElementById('panel-body').style.display  = '';
-  document.getElementById('prop-type').value  = s.type;
+  document.getElementById('zone-props').style.display = '';
   document.getElementById('prop-name').value  = s.name;
   document.getElementById('prop-area').textContent = Math.round(s.area).toLocaleString();
+  document.querySelectorAll('.ls-type-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.zone === s.type)
+  );
 
   document.querySelectorAll('.shape-row').forEach(r =>
     r.classList.toggle('sel', r.dataset.id == id)
   );
 
-  if (currentTool === 'edit' && s.layer.editing) {
-    try { s.layer.editing.enable(); } catch(_){}
-  }
+  if (s.layer.editing) try { s.layer.editing.enable(); } catch(_){}
 }
 
 function deselect(reset = true) {
@@ -680,8 +795,7 @@ function deselect(reset = true) {
   }
   if (reset) {
     selectedId = null;
-    document.getElementById('panel-empty').style.display = '';
-    document.getElementById('panel-body').style.display  = 'none';
+    document.getElementById('zone-props').style.display = 'none';
     document.querySelectorAll('.shape-row').forEach(r => r.classList.remove('sel'));
   }
 }
@@ -690,11 +804,13 @@ function deselect(reset = true) {
 // DRAG TO MOVE
 // ─────────────────────────────────────────
 function startDrag(e, id) {
-  if (currentTool !== 'select') return;
   L.DomEvent.stopPropagation(e);
   const s = shapes.get(id);
   if (!s) return;
   map.dragging.disable();
+  const el = s.layer.getElement();
+  if (el) el.style.cursor = 'grabbing';
+  map.getContainer().style.cursor = 'grabbing';
   const orig = s.layer.getLatLngs()[0].map(ll => ({ lat:ll.lat, lng:ll.lng }));
   dragState = { id, start:e.latlng, orig };
   map.on('mousemove', onDragMove);
@@ -713,9 +829,14 @@ function onDragMove(e) {
 
 function onDragEnd() {
   if (!dragState) return;
-  // Recalculate area after move
   const s = shapes.get(dragState.id);
-  if (s) { s.area = calcArea(s.layer.getLatLngs()[0]); updateList(); }
+  if (s) {
+    s.area = calcArea(s.layer.getLatLngs()[0]);
+    updateList();
+    const el = s.layer.getElement();
+    if (el) el.style.cursor = 'grab';
+  }
+  map.getContainer().style.cursor = '';
   dragState = null;
   map.dragging.enable();
   map.off('mousemove', onDragMove);
@@ -754,8 +875,7 @@ function deleteSelected() {
   drawnItems.removeLayer(s.layer);
   shapes.delete(selectedId);
   selectedId = null;
-  document.getElementById('panel-empty').style.display = '';
-  document.getElementById('panel-body').style.display  = 'none';
+  document.getElementById('zone-props').style.display = 'none';
   updateList();
   updateSaveBtn();
 }
@@ -766,8 +886,8 @@ function deleteSelected() {
 function updateList() {
   const scroll = document.getElementById('shapes-scroll');
   const count  = shapes.size;
-  document.getElementById('zone-count').textContent = count;
-  document.getElementById('sb-zones').textContent   = count;
+  document.getElementById('tp-zone-count').textContent = count;
+  document.getElementById('sb-zones').textContent      = count;
 
   let total = 0;
   scroll.innerHTML = '';
@@ -785,6 +905,7 @@ function updateList() {
   });
 
   document.getElementById('sb-area').textContent = Math.round(total).toLocaleString() + ' sqft';
+  renderWaterPlan();
 }
 
 // ─────────────────────────────────────────
@@ -818,7 +939,7 @@ function saveDesign() {
   const existing = JSON.parse(sessionStorage.getItem('drip_design') || '{}');
   const data = {
     ...existing,
-    address: document.getElementById('tb-addr').textContent,
+    address: JSON.parse(sessionStorage.getItem('drip_design')||'{}').address || '',
     lat: parseFloat(p.get('lat')) || _coords?.lat,
     lng: parseFloat(p.get('lng')) || _coords?.lng,
     zones: [],
@@ -834,29 +955,26 @@ function saveDesign() {
     data.plants.push({ type: s.type, name: s.name, radiusFt: s.radiusFt, lat: s.lat, lng: s.lng });
   });
   sessionStorage.setItem('drip_design', JSON.stringify(data));
-  window.location.href = 'zones.html';
+  if (_embedded) {
+    window.parent.postMessage({ type: 'goToPartslist' }, '*');
+  } else {
+    window.location.href = 'materials.html?tab=zones';
+  }
 }
 
 // ─────────────────────────────────────────
-// WATER SOURCE PLACEMENT OVERLAY
+// WATER SOURCE
 // ─────────────────────────────────────────
-function wsMapClick(event) {
-  const rect = map.getContainer().getBoundingClientRect();
-  const latlng = map.containerPointToLatLng(
-    L.point(event.clientX - rect.left, event.clientY - rect.top)
-  );
-  dropWsMarker(latlng);
-}
 
 function makeWsIcon(type) {
-  const emoji = type === 'hose' ? '🚿' : '🔧';
+  const emoji = '💧';
   return L.divIcon({
     html: `<div style="display:flex;flex-direction:column;align-items:center">
-      <div style="background:#253319;color:#c8e670;font-size:16px;width:34px;height:34px;
+      <div style="background:#c8e670;color:#253319;font-size:16px;width:34px;height:34px;
         border-radius:50%;display:flex;align-items:center;justify-content:center;
-        box-shadow:0 3px 10px rgba(0,0,0,.55);border:2px solid rgba(200,230,112,.45)">${emoji}</div>
-      <div style="width:2px;height:8px;background:#253319"></div>
-      <div style="width:5px;height:5px;border-radius:50%;background:#253319"></div>
+        box-shadow:0 3px 10px rgba(0,0,0,.35);border:3px solid #fff">${emoji}</div>
+      <div style="width:2px;height:8px;background:#c8e670"></div>
+      <div style="width:5px;height:5px;border-radius:50%;background:#c8e670"></div>
     </div>`,
     className: '', iconSize: [34, 52], iconAnchor: [17, 52],
   });
@@ -865,16 +983,60 @@ function makeWsIcon(type) {
 function dropWsMarker(latlng) {
   if (wsMarker) map.removeLayer(wsMarker);
   wsMarker = L.marker(latlng, { icon: makeWsIcon(wsType), draggable: true }).addTo(map);
-  wsMarker.on('drag', e => updateWsPlaced(e.target.getLatLng()));
-  updateWsPlaced(latlng);
+  wsMarker.on('drag', e => saveWsToSession(e.target.getLatLng()));
+  wsMarker.on('dragend', e => saveWsToSession(e.target.getLatLng()));
+  updateWsStatus();
+  saveWsToSession(latlng);
+  // Exit placing mode after drop
+  stopWsGhost();
 }
 
-function updateWsPlaced(latlng) {
-  const label = wsType === 'hose' ? '🚿 Hose Tap' : '🔧 Main Line Manifold';
-  document.getElementById('ws-placed-val').textContent  = label;
-  document.getElementById('ws-placed').style.display    = '';
-  document.getElementById('ws-hint-bar').style.opacity  = '0';
-  document.getElementById('ws-continue-btn').disabled   = false;
+function updateWsStatus() {
+  const el = document.getElementById('ws-status');
+  if (!el) return;
+  if (wsMarker) {
+    const label = wsType === 'hose' ? '🚿 Hose Tap' : '🔧 Manifold';
+    el.textContent = '✓ ' + label + ' — drag to move';
+    el.className = 'ws-status placed';
+  } else {
+    el.textContent = '⬤ Hover the map and click to place';
+    el.className = 'ws-status';
+  }
+}
+
+function saveWsToSession(latlng) {
+  const design = JSON.parse(sessionStorage.getItem('drip_design') || '{}');
+  if (!design.water) design.water = {};
+  design.water.srcType = wsType;
+  const gpmEl = document.getElementById('ws-gpm');
+  if (gpmEl && gpmEl.value) design.water.gpm = parseFloat(gpmEl.value);
+  if (latlng) { design.water.srcLat = latlng.lat; design.water.srcLng = latlng.lng; }
+  sessionStorage.setItem('drip_design', JSON.stringify(design));
+}
+
+let _wsGhost = null;
+
+function _onWsGhostMove(e) {
+  if (_wsGhost) _wsGhost.setLatLng(e.latlng);
+}
+function _onWsGhostClick(e) {
+  stopWsGhost();
+  dropWsMarker(e.latlng);
+}
+function startWsGhost() {
+  if (wsMarker || _wsGhost) return;
+  _wsGhost = L.marker(map.getCenter(), {
+    icon: makeWsIcon(wsType), interactive: false,
+  }).addTo(map);
+  map.getContainer().style.cursor = 'none';
+  map.on('mousemove', _onWsGhostMove);
+  map.on('click', _onWsGhostClick);
+}
+function stopWsGhost() {
+  if (_wsGhost) { map.removeLayer(_wsGhost); _wsGhost = null; }
+  map.off('mousemove', _onWsGhostMove);
+  map.off('click', _onWsGhostClick);
+  map.getContainer().style.cursor = '';
 }
 
 function setWsType(type) {
@@ -883,31 +1045,471 @@ function setWsType(type) {
   document.getElementById('wt-manifold').classList.toggle('active', type === 'manifold');
   if (wsMarker) {
     wsMarker.setIcon(makeWsIcon(type));
-    updateWsPlaced(wsMarker.getLatLng());
+    saveWsToSession(wsMarker.getLatLng());
+    updateWsStatus();
   }
 }
 
-function dismissWsOverlay() {
-  const design = JSON.parse(sessionStorage.getItem('drip_design') || '{}');
-  if (!design.water) design.water = {};
-  design.water.srcType = wsType;
+// ─────────────────────────────────────────
+// HELP DRAWER
+// ─────────────────────────────────────────
+function openHelpDrawer() {
+  document.getElementById('help-drawer').classList.add('open');
+}
+function openGpmDrawer() {
+  document.getElementById('hd-title').textContent = '💧 Flow Rate (GPM)';
+  document.getElementById('help-drawer-body').innerHTML = [
+    { icon:'💧', title:'What is GPM?', body:'Gallons per minute — the volume of water your supply line can deliver. Your irrigation system can\'t exceed this limit across all active zones.' },
+    { icon:'🪣', title:'Bucket test', body:'Time how long it takes to fill a 5-gallon bucket at your outdoor tap. Divide 5 by the seconds, then multiply by 60. Example: 30 sec → 5 ÷ 30 × 60 = <strong>10 GPM</strong>.' },
+    { icon:'🏠', title:'Typical residential', body:'Most homes run <strong>8–15 GPM</strong> at the tap. City water tends toward the higher end; well systems can be lower.' },
+    { icon:'⚠️', title:'Why it matters', body:'Each zone uses GPM based on the number of heads. If your zones demand more than your supply, pressure drops and coverage suffers. Enter your GPM and the plan will keep each zone within budget.' },
+  ].map(r => `<div class="hd-rule"><span class="hd-rule-icon">${r.icon}</span><div><strong style="color:var(--charcoal);display:block;margin-bottom:3px">${r.title}</strong>${r.body}</div></div>`).join('');
+  document.getElementById('help-drawer').classList.add('open');
+}
+function closeHelpDrawer() {
+  document.getElementById('help-drawer').classList.remove('open');
+}
+
+// ─────────────────────────────────────────
+// TOOL PANEL — COLLAPSIBLE SECTIONS
+// ─────────────────────────────────────────
+function openSect(name) {
+  const hd   = document.getElementById('hd-' + name);
+  const body = document.getElementById('body-' + name);
+  if (!hd || !body) return;
+  hd.classList.add('open');
+  body.classList.add('open');
+}
+
+function toggleSect(name) {
+  const hd   = document.getElementById('hd-' + name);
+  const body = document.getElementById('body-' + name);
+  if (!hd || !body) return;
+  const isOpen = body.classList.contains('open');
+  hd.classList.toggle('open', !isOpen);
+  body.classList.toggle('open', !isOpen);
+}
+
+// ─────────────────────────────────────────
+// FLOW STEP NAVIGATION
+// ─────────────────────────────────────────
+function showStep(name) {
+  currentStep = name;
+
+  // Hide all panes
+  ['ws', 'landscape', 'water'].forEach(n => {
+    const pane = document.getElementById('pane-' + n);
+    if (pane) pane.style.display = 'none';
+  });
+
+  // Show target pane
+  const target = document.getElementById('pane-' + name);
+  if (target) target.style.display = 'flex';
+
+  // Update step indicator dots
+  const order = ['ws', 'landscape', 'water'];
+  const idx   = order.indexOf(name);
+  order.forEach((n, i) => {
+    const item = document.getElementById('fs-' + n);
+    if (!item) return;
+    item.classList.remove('active', 'done');
+    if (i < idx)       item.classList.add('done');
+    else if (i === idx) item.classList.add('active');
+  });
+
+  // Step-specific side effects
+  if (name === 'ws') {
+    // Disable any active drawing tool so zones can't be drawn on the WS step
+    if (drawHandler) { try { drawHandler.disable(); } catch(e){} drawHandler = null; }
+    currentTool = 'select';
+    document.getElementById('map-wrap').className = 'map-wrap mode-select';
+    startWsGhost();
+  } else {
+    stopWsGhost();
+    if (name === 'landscape') setTool('polygon');
+  }
+
+  // Update CTA button
+  const cta = document.getElementById('flow-cta');
+  if (!cta) return;
+  if (name === 'ws') {
+    cta.textContent = 'Draw My Landscape →';
+    cta.onclick = flowNext;
+  } else if (name === 'landscape') {
+    cta.textContent = 'Generate Water Plan →';
+    cta.onclick = flowNext;
+  } else if (name === 'water') {
+    cta.textContent = 'See Parts List →';
+    cta.onclick = saveDesign;
+  }
+}
+
+function setActiveZoneType(type) {
+  activeZoneType = type;
+  document.querySelectorAll('.ls-type-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.zone === type)
+  );
+  if (selectedId !== null) updateType(type);
+  setTool('polygon');
+}
+
+function toggleLsSub(name) {
+  const hd   = document.getElementById('ls-sub-hd-'   + name);
+  const body = document.getElementById('ls-sub-body-' + name);
+  if (!hd || !body) return;
+  const isOpen = body.classList.contains('open');
+  hd.classList.toggle('open', !isOpen);
+  body.classList.toggle('open', !isOpen);
+}
+
+function flowNext() {
+  if (currentStep === 'ws')        showStep('landscape');
+  else if (currentStep === 'landscape') generateWaterPlan();
+  else if (currentStep === 'water')     saveDesign();
+}
+
+// ─────────────────────────────────────────
+// WATER PLAN
+// ─────────────────────────────────────────
+const HEAD_REC = {
+  lawn:     { head:'Rotor heads',   pipe:'¾" main → ½" lateral', icon:'💦' },
+  garden:   { head:'Drip emitters', pipe:'½" drip tubing',        icon:'💧' },
+  shrubs:   { head:'Drip emitters', pipe:'½" drip tubing',        icon:'💧' },
+  driveway: { head:'—',             pipe:'—',                      icon:'⛔' },
+  path:     { head:'—',             pipe:'—',                      icon:'⛔' },
+  nowater:  { head:'—',             pipe:'—',                      icon:'⛔' },
+};
+
+function renderWaterPlan() {
+  const list  = document.getElementById('water-plan-list');
+  const empty = document.getElementById('water-plan-empty');
+  if (!list) return;
+  if (shapes.size === 0) {
+    list.innerHTML = '';
+    if (empty) empty.style.display = '';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  const rows = [];
+  shapes.forEach(s => {
+    const rec  = HEAD_REC[s.type] || HEAD_REC.lawn;
+    const zone = ZONES[s.type]   || ZONES.lawn;
+    rows.push(`<div class="wp-row">
+      <span style="font-size:14px">${zone.icon}</span>
+      <div class="wp-row-name">${s.name || zone.label}</div>
+      <div style="text-align:right">
+        <div style="font-size:11px;font-weight:600;color:var(--forest)">${rec.head}</div>
+        <div style="font-size:10px;color:var(--gray)">${rec.pipe}</div>
+      </div>
+    </div>`);
+  });
+  list.innerHTML = rows.join('');
+}
+
+// ─────────────────────────────────────────
+// IRRIGATION LAYER — coordinate utilities
+// ─────────────────────────────────────────
+const M_PER_FT = 0.3048;
+
+function degPerFtLat()         { return M_PER_FT / 111320; }
+function degPerFtLng(latDeg)   { return M_PER_FT / (111320 * Math.cos(latDeg * Math.PI / 180)); }
+
+/** Shoelace area of a [[lat,lng]…] polygon in square feet */
+function calcAreaSqFt(latlngs) {
+  let area = 0;
+  const n = latlngs.length;
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n;
+    area += latlngs[i][1] * latlngs[j][0];
+    area -= latlngs[j][1] * latlngs[i][0];
+  }
+  area = Math.abs(area) / 2;
+  const cLat = latlngs.reduce((s, p) => s + p[0], 0) / n;
+  return Math.round(area * 111320 * 111320 * Math.cos(cLat * Math.PI / 180) * 10.7639);
+}
+
+/** Ray-cast point-in-polygon. poly = [[lat,lng], …] */
+function ptInPolygon(pt, poly) {
+  const [y, x] = pt;
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const [yi, xi] = poly[i], [yj, xj] = poly[j];
+    if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) inside = !inside;
+  }
+  return inside;
+}
+
+function polyBounds(latlngs) {
+  let minLat =  90, maxLat = -90, minLng =  180, maxLng = -180;
+  latlngs.forEach(([la, lo]) => {
+    if (la < minLat) minLat = la; if (la > maxLat) maxLat = la;
+    if (lo < minLng) minLng = lo; if (lo > maxLng) maxLng = lo;
+  });
+  return { minLat, maxLat, minLng, maxLng };
+}
+
+function polyCentroid(latlngs) {
+  const n = latlngs.length;
+  const lat = latlngs.reduce((s, p) => s + p[0], 0) / n;
+  const lng = latlngs.reduce((s, p) => s + p[1], 0) / n;
+  return [lat, lng];
+}
+
+/** Return polygon approximating a spray-arc sector */
+function arcSectorLatLngs(centerLat, centerLng, radiusFt, startDeg, endDeg) {
+  const pts    = [[centerLat, centerLng]];
+  const steps  = Math.max(6, Math.round(Math.abs(endDeg - startDeg) / 10));
+  const dLat   = degPerFtLat();
+  const dLng   = degPerFtLng(centerLat);
+  for (let i = 0; i <= steps; i++) {
+    const ang = (startDeg + (endDeg - startDeg) * i / steps) * Math.PI / 180;
+    pts.push([centerLat + Math.cos(ang) * radiusFt * dLat,
+              centerLng + Math.sin(ang) * radiusFt * dLng]);
+  }
+  pts.push([centerLat, centerLng]);
+  return pts;
+}
+
+/** Place heads in a triangular-offset grid inside a zone polygon */
+function placeHeadsInZone(latlngs, spacingFt) {
+  const b      = polyBounds(latlngs);
+  const dLat   = degPerFtLat();
+  const dLng   = degPerFtLng((b.minLat + b.maxLat) / 2);
+  const rowH   = spacingFt * dLat * Math.sin(Math.PI / 3);   // ~0.866 × spacing
+  const colW   = spacingFt * dLng;
+  const heads  = [];
+  let row = 0;
+  for (let la = b.minLat + rowH / 2; la <= b.maxLat; la += rowH, row++) {
+    const offset = (row % 2) * colW / 2;
+    for (let lo = b.minLng + offset + colW / 2; lo <= b.maxLng; lo += colW) {
+      if (ptInPolygon([la, lo], latlngs)) heads.push([la, lo]);
+    }
+  }
+  return heads;
+}
+
+/** Determine spray arc angle for a head based on proximity to zone boundary */
+function headArc(headPt, latlngs) {
+  const centroid  = polyCentroid(latlngs);
+  // rough distance to centroid in feet
+  const dLat = degPerFtLat(), dLng = degPerFtLng(headPt[0]);
+  const distFt = Math.hypot((headPt[0] - centroid[0]) / dLat,
+                             (headPt[1] - centroid[1]) / dLng);
+  const b      = polyBounds(latlngs);
+  const diagFt = Math.hypot((b.maxLat - b.minLat) / dLat,
+                             (b.maxLng - b.minLng) / dLng);
+  const ratio  = distFt / (diagFt / 2 + 0.0001);
+  if (ratio > 0.75) return 90;    // corner
+  if (ratio > 0.45) return 180;   // edge
+  return 360;                      // interior
+}
+
+let irrigationLayer = null;
+
+function clearIrrigationLayer() {
+  if (irrigationLayer) { irrigationLayer.clearLayers(); irrigationLayer = null; }
+  document.getElementById('btn-clear-layer').style.display = 'none';
+  const badge = document.getElementById('tp-head-count');
+  if (badge) { badge.textContent = ''; badge.style.display = 'none'; }
+  const summ = document.getElementById('water-plan-summary');
+  if (summ) summ.style.display = 'none';
+}
+
+const HEAD_CONFIG = {
+  lawn:   { radiusFt: 15, spacingFt: 20, type: 'Rotor',   color: '#2980e8' },
+  garden: { radiusFt:  5, spacingFt:  8, type: 'Drip',    color: '#27ae60' },
+  shrubs: { radiusFt:  5, spacingFt:  8, type: 'Drip',    color: '#27ae60' },
+};
+
+function generateWaterPlan() {
+  if (shapes.size === 0) { hint('Draw at least one zone first.'); return; }
+
+  clearIrrigationLayer();
+  irrigationLayer = L.layerGroup().addTo(map);
+
+  // ── water source position ──────────────────────────
+  let wsLat = null, wsLng = null;
   if (wsMarker) {
-    const ll = wsMarker.getLatLng();
-    design.water.srcLat = ll.lat;
-    design.water.srcLng = ll.lng;
+    const p = wsMarker.getLatLng();
+    wsLat = p.lat; wsLng = p.lng;
   }
-  sessionStorage.setItem('drip_design', JSON.stringify(design));
-  document.getElementById('ws-overlay').classList.remove('active');
-  document.getElementById('tb-step').textContent = 'Step 2 of 7 — Outline Your Landscape';
-  setTool('polygon');
-  hint('Draw zones with the polygon tool — click to add points, double-click to close', 4000);
-}
 
-function skipWsPlacement() {
-  document.getElementById('ws-overlay').classList.remove('active');
-  document.getElementById('tb-step').textContent = 'Step 2 of 7 — Outline Your Landscape';
-  setTool('polygon');
-  hint('Draw zones with the polygon tool — click to add points, double-click to close', 4000);
+  let totalHeads = 0;
+  let totalPipeFt = 0;
+  const zoneCentroids = [];   // for main-supply pipe routing
+
+  shapes.forEach(s => {
+    const cfg = HEAD_CONFIG[s.type];
+    if (!cfg) return;   // driveway / path / nowater — skip
+
+    const latlngs = s.layer.getLatLngs()[0].map(p => [p.lat, p.lng]);
+
+    // ── place heads ──────────────────────────────────
+    const heads = placeHeadsInZone(latlngs, cfg.spacingFt);
+    totalHeads += heads.length;
+
+    // ── spray arcs ───────────────────────────────────
+    heads.forEach(([hLat, hLng]) => {
+      const arcDeg = headArc([hLat, hLng], latlngs);
+
+      // Direction: bearing from head toward centroid
+      const cen = polyCentroid(latlngs);
+      const bearingRad = Math.atan2(hLng - cen[1], hLat - cen[0]);
+      const bearingDeg = bearingRad * 180 / Math.PI;
+      const half       = arcDeg / 2;
+      const startDeg   = bearingDeg - half + 90;   // rotate so 0° = East on map
+      const endDeg     = bearingDeg + half + 90;
+
+      if (arcDeg < 360) {
+        const sector = arcSectorLatLngs(hLat, hLng, cfg.radiusFt, startDeg, endDeg);
+        L.polygon(sector, {
+          color: cfg.color, fillColor: cfg.color,
+          fillOpacity: 0.12, weight: 0.5, opacity: 0.5,
+        }).addTo(irrigationLayer);
+      } else {
+        // full circle for interior heads
+        const dLat = degPerFtLat(), dLng = degPerFtLng(hLat);
+        const rLat = cfg.radiusFt * dLat, rLng = cfg.radiusFt * dLng;
+        L.ellipse ? L.ellipse([hLat, hLng], [rLat * 111320, rLng * 111320], 0, {
+          color: cfg.color, fillColor: cfg.color, fillOpacity: 0.1, weight: 0.5,
+        }).addTo(irrigationLayer) : L.circle([hLat, hLng], {
+          radius: cfg.radiusFt * M_PER_FT,
+          color: cfg.color, fillColor: cfg.color, fillOpacity: 0.1, weight: 0.5,
+        }).addTo(irrigationLayer);
+      }
+
+      // head dot
+      L.circleMarker([hLat, hLng], {
+        radius: 4, color: '#fff', fillColor: cfg.color,
+        fillOpacity: 1, weight: 1.5,
+      }).addTo(irrigationLayer);
+    });
+
+    // ── lateral pipes (thin dashed lines connecting heads) ───
+    const approxPipeFt = heads.length * cfg.spacingFt * 0.9;
+    totalPipeFt += approxPipeFt;
+    if (heads.length > 1) {
+      // simple nearest-neighbour chain
+      const visited = new Set();
+      const chain   = [heads[0]];
+      visited.add(0);
+      while (chain.length < heads.length) {
+        const cur = chain[chain.length - 1];
+        let best = -1, bestD = Infinity;
+        heads.forEach((h, i) => {
+          if (visited.has(i)) return;
+          const d = Math.hypot(h[0] - cur[0], h[1] - cur[1]);
+          if (d < bestD) { bestD = d; best = i; }
+        });
+        if (best === -1) break;
+        chain.push(heads[best]);
+        visited.add(best);
+      }
+      L.polyline(chain, {
+        color: cfg.color, weight: 1.5,
+        dashArray: '4 4', opacity: 0.7,
+      }).addTo(irrigationLayer);
+    }
+
+    const cen = polyCentroid(latlngs);
+    zoneCentroids.push(cen);
+  });
+
+  // ── main supply pipes (water source → zone centroids) ────
+  if (wsLat !== null && zoneCentroids.length > 0) {
+    // simple star topology: one pipe per zone from water source
+    zoneCentroids.forEach(cen => {
+      const dLat = degPerFtLat(), dLng = degPerFtLng(wsLat);
+      const pipeFt = Math.hypot((wsLat - cen[0]) / dLat, (wsLng - cen[1]) / dLng);
+      totalPipeFt += pipeFt;
+      L.polyline([[wsLat, wsLng], cen], {
+        color: '#253319', weight: 3, opacity: 0.85,
+      }).addTo(irrigationLayer);
+    });
+    // pulse marker at water source
+    L.circleMarker([wsLat, wsLng], {
+      radius: 7, color: '#fff', fillColor: '#253319',
+      fillOpacity: 1, weight: 2,
+    }).bindTooltip('Water Source', { permanent: false, direction: 'top' })
+      .addTo(irrigationLayer);
+  } else if (wsLat === null && zoneCentroids.length > 0) {
+    hint('Set your Water Source to see supply pipe routing.', 4000);
+  }
+
+  // ── UI updates ───────────────────────────────────────────
+  const badge = document.getElementById('tp-head-count');
+  if (badge) {
+    badge.textContent = totalHeads;
+    badge.style.display = totalHeads > 0 ? '' : 'none';
+  }
+
+  const summ = document.getElementById('water-plan-summary');
+  if (summ) {
+    summ.style.display = '';
+    summ.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="font-size:12px;color:var(--gray)">Sprinkler heads</span>
+        <strong style="font-size:13px;color:var(--forest)">${totalHeads}</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="font-size:12px;color:var(--gray)">Est. pipe</span>
+        <strong style="font-size:13px;color:var(--forest)">${Math.round(totalPipeFt)} ft</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:12px;color:var(--gray)">Zones irrigated</span>
+        <strong style="font-size:13px;color:var(--forest)">${zoneCentroids.length}</strong>
+      </div>`;
+  }
+
+  document.getElementById('btn-clear-layer').style.display = '';
+  showStep('water');
+  hint(`Irrigation layer generated — ${totalHeads} heads across ${zoneCentroids.length} zone${zoneCentroids.length !== 1 ? 's' : ''}.`, 4000);
+
+  // ── build irrigationZones for materials.html Zone Parts tab ──
+  const irrigationZones = [];
+  shapes.forEach(s => {
+    const cfg2 = HEAD_CONFIG[s.type];
+    if (!cfg2) return;
+    const ll2    = s.layer.getLatLngs()[0].map(p => [p.lat, p.lng]);
+    const heads2 = placeHeadsInZone(ll2, cfg2.spacingFt);
+    const cen2   = polyCentroid(ll2);
+    const isDrip = s.type === 'garden' || s.type === 'shrubs';
+
+    let distFt2 = 50;
+    if (wsLat !== null) {
+      const dL = degPerFtLat(), dG = degPerFtLng(wsLat);
+      distFt2 = Math.round(Math.hypot((wsLat - cen2[0]) / dL, (wsLng - cen2[1]) / dG));
+    }
+
+    const zInfo = ZONES[s.type] || ZONES.lawn;
+    irrigationZones.push({
+      id:   'z-' + L.stamp(s.layer),
+      name:  s.name || (zInfo.label + ' Zone'),
+      type:  s.type,
+      color: zInfo.color,
+      isDrip,
+      area:  calcAreaSqFt(ll2),
+      distFt: distFt2,
+      pressureAtZone: 45,
+      totalGpm: isDrip ? Math.ceil(heads2.length * 0.5) : Math.ceil(heads2.length * 1.5),
+      mainPipe: { sz: '¾"' },
+      latPipe:  { sz: '½"' },
+      heads: heads2.map(([lat, lng]) => ({
+        lat, lng,
+        type: isDrip ? 'spray' : 'rotor',
+        radiusFt: cfg2.radiusFt,
+      })),
+    });
+  });
+
+  try {
+    const existing = JSON.parse(sessionStorage.getItem('drip_design') || '{}');
+    sessionStorage.setItem('drip_design', JSON.stringify({ ...existing, irrigationZones }));
+  } catch (e) {}
+
+  if (_embedded) {
+    try { window.parent.postMessage({ type: 'waterPlanGenerated' }, '*'); } catch (e) {}
+  }
 }
 
 let _hintTimer;
@@ -916,7 +1518,7 @@ function hint(msg, dur = 3000) {
   el.textContent = msg;
   el.style.opacity = '1';
   clearTimeout(_hintTimer);
-  _hintTimer = setTimeout(() => { el.style.opacity = '0'; }, dur);
+  if (dur > 0) _hintTimer = setTimeout(() => { el.style.opacity = '0'; }, dur);
 }
 
 // ─────────────────────────────────────────
@@ -1004,9 +1606,7 @@ function selectPlant(id) {
   deselectPlant(false);
   selPlantId = id;
 
-  document.getElementById('panel-empty').style.display = 'none';
-  document.getElementById('panel-body').style.display  = 'none';
-  document.getElementById('plant-body').style.display  = '';
+  document.getElementById('plant-props').style.display = '';
 
   const el = document.getElementById(`pic-${id}`);
   if (el) el.classList.add('selected');
@@ -1024,8 +1624,7 @@ function deselectPlant(reset = true) {
   }
   if (reset) {
     selPlantId = null;
-    document.getElementById('plant-body').style.display = 'none';
-    document.getElementById('panel-empty').style.display = '';
+    document.getElementById('plant-props').style.display = 'none';
     document.querySelectorAll('.shape-row[data-kind="plant"]').forEach(r => r.classList.remove('sel'));
   }
 }
@@ -1085,15 +1684,14 @@ function deletePlant() {
   map.removeLayer(s.handleMkr);
   plants.delete(selPlantId);
   selPlantId = null;
-  document.getElementById('plant-body').style.display  = 'none';
-  document.getElementById('panel-empty').style.display = '';
+  document.getElementById('plant-props').style.display = 'none';
   updatePlantList();
   updateSaveBtn();
 }
 
 function updatePlantList() {
   const scroll = document.getElementById('plants-scroll');
-  document.getElementById('plant-count').textContent = plants.size;
+  document.getElementById('tp-plant-count').textContent = plants.size;
   scroll.innerHTML = '';
   plants.forEach((s, id) => {
     const p  = PLANTS[s.type];
@@ -1128,6 +1726,12 @@ document.addEventListener('keydown', e => {
       if (selPlantId !== null) deletePlant(); else deleteSelected();
       break;
   }
+});
+
+// Initialize flow step (after DOMContentLoaded has fired and wsMarker may be set)
+window.addEventListener('DOMContentLoaded', () => {
+  // Small defer so boot sequence (which restores wsMarker) runs first
+  setTimeout(() => showStep(wsMarker ? 'landscape' : 'ws'), 0);
 });
 </script>
 </body>

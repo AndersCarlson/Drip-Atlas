@@ -24,7 +24,7 @@
       border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
     .sb-brand{padding:18px 20px 14px;border-bottom:1px solid var(--border);
       display:flex;align-items:center;gap:10px}
-    .sb-logo{font-family:'Playfair Display',serif;font-size:17px;color:var(--green);line-height:1}
+    .sb-logo{display:flex;align-items:center}
     .sb-plan-badge{margin-left:auto;font-size:10px;font-weight:700;letter-spacing:.08em;
       background:var(--green);color:#f1ebe2;padding:3px 8px;border-radius:20px}
     .sb-address{padding:9px 20px 13px;border-bottom:1px solid var(--border)}
@@ -32,8 +32,13 @@
       color:var(--muted);margin-bottom:2px}
     .sb-addr-val{font-size:12px;color:var(--text);line-height:1.4}
     .sb-nav{padding:10px 8px;flex:1;overflow-y:auto}
-    .nav-section{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+    .nav-section{display:flex;align-items:center;
+      font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
       color:var(--muted);padding:10px 12px 6px}
+    .nav-section .ns-badge{margin-left:auto;font-size:9px;font-weight:800;
+      letter-spacing:.06em;padding:2px 7px;border-radius:4px;
+      background:#253319;color:#c8e670;text-transform:uppercase;font-family:'Inter',sans-serif}
+    .nav-section .ns-badge-kit{background:#f0800022;color:#c05800}
     .nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;
       cursor:pointer;font-size:13px;font-weight:500;color:var(--text);
       transition:background .12s,color .12s;margin-bottom:2px;user-select:none}
@@ -43,6 +48,44 @@
     .nav-item .ni-badge{margin-left:auto;font-size:10px;font-weight:700;
       background:rgba(0,0,0,.1);padding:2px 6px;border-radius:10px}
     .nav-item.active .ni-badge{background:rgba(255,255,255,.2);color:#f1ebe2}
+    /* locked nav items (Complete Kit section only) */
+    .nav-item.nav-locked{color:var(--muted)}
+    .nav-item.nav-locked:hover{background:var(--cream)}
+    .ni-lock{margin-left:auto;font-size:10px;opacity:.4;flex-shrink:0}
+    .ni-tier{font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+      padding:2px 5px;border-radius:4px;flex-shrink:0;font-family:'Inter',sans-serif}
+    .ni-tier.tvar{background:#f0800022;color:#c05800}
+    /* paywall overlay */
+    #mat-paywall{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);
+      backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+      z-index:5000;align-items:flex-end;justify-content:center}
+    #mat-paywall.open{display:flex}
+    .mpw-sheet{background:#18250f;border:1px solid rgba(255,255,255,.1);border-bottom:none;
+      border-radius:20px 20px 0 0;padding:8px 28px 32px;width:100%;max-width:480px;
+      animation:mpwUp .22s cubic-bezier(.32,1,.28,1) both}
+    @keyframes mpwUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+    .mpw-handle{width:34px;height:4px;background:rgba(255,255,255,.14);border-radius:2px;
+      margin:10px auto 18px}
+    .mpw-badge{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.1em;
+      text-transform:uppercase;font-family:'Inter',sans-serif;
+      padding:3px 10px;border-radius:100px;margin-bottom:10px}
+    .mpw-name{font-size:24px;font-weight:700;color:#fff;
+      font-family:'Playfair Display',Georgia,serif;margin-bottom:5px}
+    .mpw-tagline{font-size:13px;color:rgba(255,255,255,.5);font-family:'Inter',sans-serif;
+      margin-bottom:18px;line-height:1.5}
+    .mpw-features{list-style:none;padding:0;margin:0 0 22px;display:flex;flex-direction:column;gap:8px}
+    .mpw-features li{font-size:13px;color:rgba(255,255,255,.72);font-family:'Inter',sans-serif;
+      display:flex;align-items:flex-start;gap:8px;line-height:1.4}
+    .mpw-check{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;
+      justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;margin-top:1px}
+    .mpw-cta{display:block;width:100%;padding:14px;border:none;border-radius:10px;
+      font-size:14px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;
+      letter-spacing:.02em;transition:opacity .15s;text-align:center;text-decoration:none}
+    .mpw-cta:hover{opacity:.88}
+    .mpw-dismiss{display:block;width:100%;margin-top:8px;padding:9px;background:transparent;
+      border:none;font-size:12px;color:rgba(255,255,255,.28);font-family:'Inter',sans-serif;
+      cursor:pointer;text-align:center}
+    .mpw-dismiss:hover{color:rgba(255,255,255,.5)}
     .sb-footer{padding:10px 12px 18px;border-top:1px solid var(--border)}
     .sb-btn{display:flex;align-items:center;gap:8px;width:100%;padding:9px 12px;
       border-radius:8px;border:1.5px solid var(--border);background:transparent;
@@ -186,6 +229,42 @@
       box-shadow:0 4px 20px rgba(0,0,0,.25);
     }
     .gt-kit-btn:hover{background:#fff;transform:translateY(-1px)}
+
+    /* ── INSTALLATION GUIDE ── */
+    .ig-phases{display:flex;flex-direction:column;gap:20px;margin-bottom:24px}
+    .ig-phase{background:var(--white);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+    .ig-phase-header{
+      display:flex;align-items:center;gap:16px;
+      padding:18px 22px;border-bottom:1px solid var(--border);
+      background:var(--cream);
+    }
+    .ig-phase-num{
+      width:36px;height:36px;border-radius:50%;flex-shrink:0;
+      background:var(--green);color:#f1ebe2;
+      display:flex;align-items:center;justify-content:center;
+      font-size:15px;font-weight:800;font-family:'Playfair Display',serif;
+    }
+    .ig-phase-title{font-size:15px;font-weight:700;color:var(--green);margin-bottom:2px}
+    .ig-phase-sub{font-size:12px;color:var(--muted)}
+    .ig-steps{padding:16px 22px;display:flex;flex-direction:column;gap:14px}
+    .ig-step{display:flex;align-items:flex-start;gap:12px;font-size:13px;line-height:1.6;color:var(--text)}
+    .ig-check{
+      width:20px;height:20px;border-radius:5px;flex-shrink:0;margin-top:2px;
+      border:2px solid var(--border);background:var(--white);cursor:pointer;
+      transition:background .15s,border-color .15s;
+    }
+    .ig-check:hover{border-color:var(--green)}
+    .ig-check.done{background:var(--green);border-color:var(--green);
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 12 12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 6l3 3 5-5' stroke='%23f1ebe2' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;background-position:center;background-size:10px;
+    }
+    .ig-tip-card{
+      display:flex;align-items:flex-start;gap:14px;
+      background:#f7fdf0;border:1.5px solid #c8e67066;border-radius:12px;
+      padding:18px 20px;font-size:13px;line-height:1.65;color:var(--text);
+      margin-bottom:24px;
+    }
+    .ig-tip-icon{font-size:22px;flex-shrink:0;margin-top:1px}
     .gt-kit-btn:active{transform:none}
     .gt-kit-divider{border:none;border-top:1px solid rgba(255,255,255,.15);margin:18px 0 0}
 
@@ -303,6 +382,8 @@
     .toast-icon{font-size:16px}
 
     /* ── PLAN BADGE UPGRADE ── */
+    .sb-plan-badge.free{background:var(--cream);color:var(--muted);border:1px solid var(--border)}
+    .sb-plan-badge.plan{background:var(--green);color:#f1ebe2}
     .sb-plan-badge.kit{background:#c8e670;color:#1a2516}
 
     /* ── TRACK TAB ── */
@@ -590,46 +671,67 @@
   <!-- ═══════ SIDEBAR ═══════ -->
   <div class="sidebar">
     <div class="sb-brand">
-      <div class="sb-logo">🌿 Drip Atlas</div>
-      <div class="sb-plan-badge">$99 Plan</div>
+      <div class="sb-logo"><img src="file:///Users/andersmacbookpro/Downloads/drip-atlas-assets/Drip Atlas Logo_Forest Green.png" alt="Drip Atlas" style="height:28px;display:block"/></div>
+      <div class="sb-plan-badge">Irrigation Plan</div>
     </div>
     <div class="sb-address">
       <div class="sb-addr-label">Property</div>
       <div class="sb-addr-val" id="sb-address">Loading…</div>
     </div>
     <div class="sb-nav">
-      <div class="nav-section">Your Plan</div>
-      <div class="nav-item active" data-tab="zones" onclick="setTab('zones')">
-        <span class="ni-icon">📋</span> Zone Parts
+      <div class="nav-section">Free</div>
+      <div class="nav-item" data-tab="designer" onclick="setTab('designer')">
+        <span class="ni-icon">🗺️</span> Design Tool
+      </div>
+
+      <div class="nav-section" style="margin-top:6px">
+        Irrigation Plan
+        <span class="ns-badge">$99</span>
+      </div>
+      <div class="nav-item" id="nav-zones" data-tab="zones">
+        <span class="ni-icon">📋</span> Parts List
         <span class="ni-badge" id="nb-zones">—</span>
+        <span class="ni-lock" id="lock-zones">🔒</span>
       </div>
-      <div class="nav-item" data-tab="schedule" onclick="setTab('schedule')">
+      <div class="nav-item" id="nav-schedule" data-tab="schedule">
         <span class="ni-icon">💧</span> Water Schedule
+        <span class="ni-lock" id="lock-schedule">🔒</span>
       </div>
-      <div class="nav-item" data-tab="manifold" onclick="setTab('manifold')">
+      <div class="nav-item" id="nav-manifold" data-tab="manifold">
         <span class="ni-icon">🔧</span> Manifold Assembly
+        <span class="ni-lock" id="lock-manifold">🔒</span>
       </div>
-      <div class="nav-item" data-tab="blueprint" onclick="setTab('blueprint')">
+      <div class="nav-item" id="nav-blueprint" data-tab="blueprint">
         <span class="ni-icon">📐</span> Blueprint
+        <span class="ni-lock" id="lock-blueprint">🔒</span>
       </div>
-      <div class="nav-item kit-only" data-tab="track" onclick="setTab('track')" style="display:none">
-        <span class="ni-icon">📦</span> Track My Order
-        <span class="ni-badge" id="nb-track" style="background:#c8e670;color:#1a2516">NEW</span>
+      <div class="nav-item" id="nav-guide" data-tab="guide">
+        <span class="ni-icon">📖</span> Installation Guide
+        <span class="ni-lock" id="lock-guide">🔒</span>
       </div>
-      <div class="nav-item kit-only" data-tab="pro" onclick="setTab('pro')" style="display:none">
-        <span class="ni-icon">👷</span> My Irrigation Pro
+
+      <div class="nav-section" style="margin-top:6px">
+        Complete Kit
+        <span class="ns-badge ns-badge-kit">Quote</span>
+      </div>
+      <div class="nav-item nav-locked" id="nav-parts">
+        <span class="ni-icon">🛒</span> Buy Parts
+        <span class="ni-lock" id="lock-parts">🔒</span>
+      </div>
+      <div class="nav-item nav-locked" id="nav-support">
+        <span class="ni-icon">🧑‍🔧</span> Support
+        <span class="ni-lock" id="lock-support">🔒</span>
       </div>
     </div>
     <div class="sb-footer">
       <button class="sb-btn" onclick="window.print()">🖨️ &nbsp;Print List</button>
-      <button class="sb-btn" onclick="window.location.href='zones.html'">← Edit Design</button>
     </div>
   </div>
 
   <!-- ═══════ MAIN ═══════ -->
   <div class="main">
     <div class="topbar">
-      <span class="tb-title" id="tb-title">Zone Parts</span>
+      <span class="tb-title" id="tb-title">Parts List</span>
       <div class="tb-divider"></div>
       <div class="brand-group">
         <span class="brand-label">Brand</span>
@@ -653,10 +755,15 @@
     </div>
 
     <div class="content">
+      <!-- ══ DESIGNER ══ -->
+      <div class="tab-pane" id="tab-designer" style="margin:-24px;padding:0;height:100vh">
+        <iframe src="" style="width:100%;height:100%;border:none;display:block" id="designer-frame"></iframe>
+      </div>
+
       <!-- ══ ZONES PARTS ══ -->
-      <div class="tab-pane active" id="tab-zones">
+      <div class="tab-pane" id="tab-zones">
         <div class="zones-header">
-          <h2>Zone Parts List</h2>
+          <h2>Parts List List</h2>
           <p>Parts required per zone. Switch brand or pipe type above to reprice instantly.</p>
         </div>
         <div id="zones-list"></div>
@@ -725,6 +832,124 @@
           </div>
           <div class="bp-svg-wrap">
             <svg id="blueprint-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ INSTALLATION GUIDE ══ -->
+      <div class="tab-pane" id="tab-guide">
+        <div class="zones-header">
+          <h2>Installation Guide</h2>
+          <p>Follow these steps in order. Each phase builds on the last — don't skip ahead.</p>
+        </div>
+
+        <div class="ig-phases">
+
+          <div class="ig-phase">
+            <div class="ig-phase-header">
+              <div class="ig-phase-num">1</div>
+              <div>
+                <div class="ig-phase-title">Plan &amp; Prep</div>
+                <div class="ig-phase-sub">Before you dig anything</div>
+              </div>
+            </div>
+            <div class="ig-steps">
+              <div class="ig-step"><div class="ig-check"></div><div><strong>Call 811</strong> — free utility locating service. Required by law before any digging. Allow 2–3 business days.</div></div>
+              <div class="ig-step"><div class="ig-check"></div><div><strong>Measure water pressure</strong> at the outdoor hose bib using a pressure gauge ($8 at any hardware store). Note the PSI — you need at least 40 PSI for rotors.</div></div>
+              <div class="ig-step"><div class="ig-check"></div><div><strong>Measure flow rate</strong> — fill a 5-gallon bucket from the hose bib and time it. Divide 300 by the seconds = GPM.</div></div>
+              <div class="ig-step"><div class="ig-check"></div><div><strong>Print your blueprint</strong> and mark your water source, zones, and trench paths on the ground with marking paint.</div></div>
+              <div class="ig-step"><div class="ig-check"></div><div><strong>Gather tools:</strong> trenching spade or rent a trencher, pipe cutter, hole punch, wire stripper, volt meter.</div></div>
+            </div>
+          </div>
+
+          <div class="ig-phase">
+            <div class="ig-phase-header">
+              <div class="ig-phase-num">2</div>
+              <div>
+                <div class="ig-phase-title">Tap the Water Supply</div>
+                <div class="ig-phase-sub">Connect to your main line</div>
+              </div>
+            </div>
+            <div class="ig-steps">
+              <div class="ig-step"><div class="ig-check"></div><div><strong>Shut off the water</strong> at the main and open a hose bib to relieve pressure.</div></div>
+              <div class="ig-step"><div class="ig-check"></div><div><strong>Install a backflow preventer</strong> on the supply line — required in most jurisdictions and protects your drinking water.</div></div>
+              <div class="ig-step"><div class="ig-check"></div><div><strong>Install the manifold</strong> downstream of the backflow preventer. See the Manifold Assembly tab for the exact configuration.</div></div>
+              <div class="ig-step"><div class="ig-check"></div><div><strong>Run the main supply line</strong> (¾" poly or PVC) from the manifold toward your zones following your blueprint. Keep it 6" deep minimum.</div></div>
+            </div>
+          </div>
+
+          <div class="ig-phase">
+            <div class="ig-phase-header">
+              <div class="ig-phase-num">3</div>
+              <div>
+                <div class="ig-phase-title">Trench &amp; Lay Pipe</div>
+                <div class="ig-phase-sub">Zone by zone</div>
+              </div>
+            </div>
+            <div class="ig-steps">
+              <div class="ig-step"><div class="ig-check"></div><div><strong>Trench 6–8" deep</strong> along your zone paths. Curve around obstacles — avoid sharp 90° bends in the main line.</div></div>
+              <div class="ig-step"><div class="ig-check"></div><div><strong>Lay lateral pipe</strong> (½" poly) from the zone valve to each head position. Use your Parts List for exact footage per zone.</div></div>
+              <div class="ig-step"><div class="ig-check"></div><div><strong>Install T-fittings and elbows</strong> at each head location. Leave 4–6" of pipe stub above grade for the riser.</div></div>
+              <div class="ig-step"><div class="ig-check"></div><div><strong>Cap all open ends</strong> before pressurising — you'll flush the system before installing heads.</div></div>
+            </div>
+          </div>
+
+          <div class="ig-phase">
+            <div class="ig-phase-header">
+              <div class="ig-phase-num">4</div>
+              <div>
+                <div class="ig-phase-title">Install Heads</div>
+                <div class="ig-phase-sub">Rotors, sprays, and drip emitters</div>
+              </div>
+            </div>
+            <div class="ig-steps">
+              <div class="ig-step"><div class="ig-check"></div><div><strong>Flush the system first</strong> — open each zone valve manually and run water for 30 seconds to clear debris before installing any heads.</div></div>
+              <div class="ig-step"><div class="ig-check"></div><div><strong>Install pop-up rotors</strong> using swing pipe (funny pipe) for flexibility. The top of the head should sit ¼" above final grade.</div></div>
+              <div class="ig-step"><div class="ig-check"></div><div><strong>Set spray arcs</strong> — rotors can be adjusted 40°–360°. Match arc to your zone map. Use the smallest arc that covers the area to avoid over-spray.</div></div>
+              <div class="ig-step"><div class="ig-check"></div><div><strong>For drip zones</strong> — lay ½" drip tubing along plant rows, punch holes, and insert ½ GPH emitters at each plant. Stake tubing every 18".</div></div>
+              <div class="ig-step"><div class="ig-check"></div><div><strong>Install pressure regulators</strong> on drip zones — drip systems need 25–30 PSI max or emitters will blow off.</div></div>
+            </div>
+          </div>
+
+          <div class="ig-phase">
+            <div class="ig-phase-header">
+              <div class="ig-phase-num">5</div>
+              <div>
+                <div class="ig-phase-title">Wire the Controller</div>
+                <div class="ig-phase-sub">Power and zone wiring</div>
+              </div>
+            </div>
+            <div class="ig-steps">
+              <div class="ig-step"><div class="ig-check"></div><div><strong>Run 18 AWG multi-strand wire</strong> from the controller to the valve manifold. Bundle per zone with a common wire (white = common).</div></div>
+              <div class="ig-step"><div class="ig-check"></div><div><strong>Connect each solenoid valve</strong> — one colored wire per zone valve, all common wires splice to the white common. Use waterproof wire connectors.</div></div>
+              <div class="ig-step"><div class="ig-check"></div><div><strong>Mount the controller</strong> in a sheltered location — garage wall or exterior rated enclosure. Must be within reach of a GFCI outlet.</div></div>
+              <div class="ig-step"><div class="ig-check"></div><div><strong>Program run times</strong> using your Water Schedule tab as the starting point. Adjust after observing coverage.</div></div>
+            </div>
+          </div>
+
+          <div class="ig-phase">
+            <div class="ig-phase-header">
+              <div class="ig-phase-num">6</div>
+              <div>
+                <div class="ig-phase-title">Test &amp; Commission</div>
+                <div class="ig-phase-sub">Final checks before backfilling</div>
+              </div>
+            </div>
+            <div class="ig-steps">
+              <div class="ig-step"><div class="ig-check"></div><div><strong>Run each zone manually</strong> from the controller and walk the zone. Check every head is popping up, rotating, and covering its arc.</div></div>
+              <div class="ig-step"><div class="ig-check"></div><div><strong>Check for leaks</strong> at all fittings, T-connections, and risers while the system is pressurized.</div></div>
+              <div class="ig-step"><div class="ig-check"></div><div><strong>Adjust head spacing</strong> — heads should throw water to the next head (head-to-head coverage). Raise or lower risers as needed.</div></div>
+              <div class="ig-step"><div class="ig-check"></div><div><strong>Backfill trenches</strong> only after all zones pass the leak test. Tamp soil gently — don't compact directly over pipe.</div></div>
+              <div class="ig-step"><div class="ig-check"></div><div><strong>Set your schedule</strong> — run early morning (4–6 AM) to minimise evaporation and fungal pressure. Start conservatively and increase if needed.</div></div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="ig-tip-card">
+          <div class="ig-tip-icon">💡</div>
+          <div>
+            <strong>Pro tip:</strong> Take photos of all trenches before backfilling. If you ever need to repair or expand, you'll know exactly where every pipe runs without digging blind.
           </div>
         </div>
       </div>
@@ -814,6 +1039,14 @@
   </div>
 </div>
 
+<!-- PAYWALL SHEET -->
+<div id="mat-paywall" onclick="dismissPaywall(event)">
+  <div class="mpw-sheet">
+    <div class="mpw-handle"></div>
+    <div id="mpw-content"></div>
+  </div>
+</div>
+
 <!-- SWAP BOTTOM SHEET -->
 <div id="swap-backdrop" onclick="closeSwap(event)">
   <div id="swap-sheet">
@@ -888,6 +1121,12 @@ let pipeType = 'pvc';
 let activeTab = 'zones';
 const overrides = {};
 
+// ── Tier system ──────────────────────────────────────────────
+// 'free' | 'plan' | 'kit'
+let currentTier = sessionStorage.getItem('drip_tier') || 'free';
+const TIER_RANK  = { free: 0, plan: 1, kit: 2 };
+const hasTier = t => (TIER_RANK[currentTier] || 0) >= (TIER_RANK[t] || 0);
+
 // ═══════════════════════════════════════════════════════════
 // DESIGN DATA (sessionStorage or mock)
 // ═══════════════════════════════════════════════════════════
@@ -931,7 +1170,24 @@ const design = (()=>{
   try{ const d=JSON.parse(sessionStorage.getItem('drip_design')); return d||MOCK_DESIGN; }
   catch(e){ return MOCK_DESIGN; }
 })();
-const zones = design.irrigationZones || [];
+let zones = design.irrigationZones || [];
+
+function refreshZones() {
+  try {
+    const d = JSON.parse(sessionStorage.getItem('drip_design') || '{}');
+    zones = d.irrigationZones || [];
+  } catch(e) {}
+}
+
+window.addEventListener('message', e => {
+  if (e.data && e.data.type === 'waterPlanGenerated') {
+    refreshZones();
+    renderZonesParts();
+  }
+  if (e.data && e.data.type === 'goToPartslist') {
+    setTab('zones');
+  }
+});
 
 // ═══════════════════════════════════════════════════════════
 // HELPERS
@@ -1063,6 +1319,16 @@ function calcZoneParts(iz){
   if(latFt>0)  parts.push({key:'lat_pipe', category:'pipe',icon:'pipe',
     name:`${pipe.name} ${latSz} (Lateral)`,sku:`PIPE-LAT-${pipeType.toUpperCase()}`,
     price:pipe.pricePerFt,qty:latFt,unit:'ft'});
+  // Fittings for lateral line
+  if(heads.length>0){
+    parts.push({key:'reducing_tee',category:'fitting',icon:'tee',
+      name:`¾" × ½" Barbed Reducing Tee`,sku:'BRT-07550',price:1.29,qty:1,unit:'ea'});
+    const elbows = Math.max(1, Math.round(heads.length * 0.25));
+    parts.push({key:'elbow',category:'fitting',icon:'adapter',
+      name:`½" Barbed Elbow 90°`,sku:'BE-050',price:0.79,qty:elbows,unit:'ea'});
+    parts.push({key:'end_cap',category:'fitting',icon:'adapter',
+      name:`½" Barbed End Cap`,sku:'EC-050',price:0.49,qty:1,unit:'ea'});
+  }
   return parts;
 }
 
@@ -1074,11 +1340,22 @@ function calcDripParts(iz){
   const dripRolls = Math.ceil(areaSqFt*0.15/100);
   const mainFt = Math.round((iz.distFt||30)*1.2);
   return [
-    {key:'drip_emitter',category:'drip',...cat.drip_emitter,qty:emitters,   unit:'ea'},
-    {key:'drip_tube',   category:'drip',...cat.drip_tube,   qty:Math.max(1,dripRolls),unit:'roll'},
-    {key:'main_pipe',   category:'pipe', icon:'pipe',
-     name:`${pipe.name} ${iz.mainPipe?.sz||'½"'} (Main Line)`,
-     sku:`PIPE-MAIN-${pipeType.toUpperCase()}`,price:pipe.pricePerFt,qty:mainFt,unit:'ft'},
+    {key:'drip_emitter', category:'drip',   ...cat.drip_emitter, qty:emitters,             unit:'ea'},
+    {key:'drip_tube',    category:'drip',   ...cat.drip_tube,    qty:Math.max(1,dripRolls), unit:'roll'},
+    {key:'drip_stake',   category:'drip',   icon:'emitter',
+      name:'Drip Emitter Stakes (10-pack)', sku:'DR-STAKE10', price:2.99,
+      qty:Math.max(1,Math.ceil(emitters/10)), unit:'10pk'},
+    {key:'main_pipe',    category:'pipe',   icon:'pipe',
+      name:`${pipe.name} ${iz.mainPipe?.sz||'½"'} (Main Line)`,
+      sku:`PIPE-MAIN-${pipeType.toUpperCase()}`, price:pipe.pricePerFt, qty:mainFt, unit:'ft'},
+    {key:'reducing_tee', category:'fitting', icon:'tee',
+      name:'¾" × ½" Barbed Reducing Tee', sku:'BRT-07550', price:1.29, qty:1, unit:'ea'},
+    {key:'drip_reg',     category:'fitting', icon:'valve',
+      name:'25 PSI Pressure Regulator ¾"', sku:'DR-PREG25', price:8.99, qty:1, unit:'ea'},
+    {key:'drip_filter',  category:'fitting', icon:'adapter',
+      name:'150-Mesh Drip Filter ¾"',       sku:'DR-FILT150', price:5.99, qty:1, unit:'ea'},
+    {key:'end_cap',      category:'fitting', icon:'adapter',
+      name:'½" Barbed End Cap',             sku:'EC-050',     price:0.49, qty:1, unit:'ea'},
   ];
 }
 
@@ -1088,6 +1365,22 @@ const zoneSubtotal = parts => parts.reduce((s,p)=>s+p.price*p.qty, 0);
 // RENDER ZONES PARTS
 // ═══════════════════════════════════════════════════════════
 function renderZonesParts(){
+  if (zones.length === 0) {
+    document.getElementById('zones-list').innerHTML = `
+      <div style="text-align:center;padding:64px 24px 40px;color:var(--muted)">
+        <div style="font-size:44px;margin-bottom:16px">🗺️</div>
+        <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px">No water plan yet</div>
+        <div style="font-size:14px;line-height:1.65;max-width:300px;margin:0 auto;color:var(--muted)">
+          Go to the Designer tab, draw your irrigation zones, and tap <strong>Generate Water Plan</strong> — your full parts list will appear here automatically.
+        </div>
+        <button onclick="setTab('designer')"
+          style="margin-top:24px;padding:13px 28px;background:var(--green);color:#f1ebe2;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">
+          Open Designer →
+        </button>
+      </div>`;
+    document.getElementById('grand-total-card').innerHTML = '';
+    return;
+  }
   const sprayZones = zones.filter(z=>!z.isDrip);
   const dripZones  = zones.filter(z=>z.isDrip);
   let grandTotal=0, html='';
@@ -1681,24 +1974,77 @@ function orderKit(){
   },1100);
 }
 
-function upgradeToKit(){
-  orderPlaced=true;
-  // Upgrade plan badge
-  const badge=document.querySelector('.sb-plan-badge');
-  badge.textContent='Complete Kit';
-  badge.classList.add('kit');
-  // Upgrade topbar kit button
-  const kitBtn=document.querySelector('.tb-kit-btn');
-  kitBtn.textContent='✓ Kit Ordered';
-  kitBtn.style.background='var(--lime)';
-  kitBtn.style.color='var(--green)';
-  kitBtn.onclick=null;
-  // Show new nav tabs
-  document.querySelectorAll('.kit-only').forEach(el=>el.style.display='flex');
-  // Show toast
+// ── TIER MANAGEMENT ─────────────────────────────────────────
+function setTier(tier) {
+  currentTier = tier;
+  sessionStorage.setItem('drip_tier', tier);
+  updateTierUI();
+}
+
+function upgradeToPlan() {
+  setTier('plan');
+  dismissPaywall();
+  showToast('✓ Irrigation Plan unlocked!');
+}
+
+function upgradeToKit() {
+  orderPlaced = true;
+  setTier('kit');
+  // Topbar kit button
+  const kitBtn = document.querySelector('.tb-kit-btn');
+  if (kitBtn) {
+    kitBtn.textContent = '✓ Kit Ordered';
+    kitBtn.style.background = 'var(--lime)';
+    kitBtn.style.color = 'var(--green)';
+    kitBtn.onclick = null;
+  }
+  document.querySelectorAll('.kit-only').forEach(el => el.style.display = 'flex');
   showToast('✓ Order placed! Your kit is being prepared.');
-  // Navigate to Track tab
-  setTimeout(()=>setTab('track'),400);
+  setTimeout(() => setTab('track'), 400);
+}
+
+function updateTierUI() {
+  // ── badge ─────────────────────────────────────────────────
+  const badge = document.querySelector('.sb-plan-badge');
+  if (badge) {
+    badge.className = 'sb-plan-badge ' + currentTier;
+    badge.textContent = currentTier === 'kit' ? 'Complete Kit'
+                      : currentTier === 'plan' ? 'Irrigation Plan'
+                      : 'Free';
+  }
+
+  // ── plan-tier nav items ───────────────────────────────────
+  ['zones', 'schedule', 'manifold', 'blueprint', 'guide'].forEach(tab => {
+    const el   = document.getElementById('nav-' + tab);
+    const lock = document.getElementById('lock-' + tab);
+    if (!el) return;
+    if (hasTier('plan')) {
+      el.classList.remove('nav-locked');
+      el.onclick = () => setTab(tab);
+      if (lock) lock.style.display = 'none';
+    } else {
+      el.classList.add('nav-locked');
+      el.onclick = () => showPaywall('plan');
+      if (lock) lock.style.display = '';
+    }
+  });
+
+  // ── kit-tier nav items ────────────────────────────────────
+  const kitActions = { parts: () => openKitModal(), support: () => setTab('pro') };
+  ['parts', 'support'].forEach(key => {
+    const el   = document.getElementById('nav-' + key);
+    const lock = document.getElementById('lock-' + key);
+    if (!el) return;
+    if (hasTier('kit')) {
+      el.classList.remove('nav-locked');
+      el.onclick = kitActions[key];
+      if (lock) lock.style.display = 'none';
+    } else {
+      el.classList.add('nav-locked');
+      el.onclick = () => showPaywall(key === 'parts' ? 'parts' : 'support');
+      if (lock) lock.style.display = '';
+    }
+  });
 }
 
 function showToast(msg){
@@ -1865,8 +2211,9 @@ function renderMyPro(){
 // TAB / BRAND / PIPE SWITCHES
 // ═══════════════════════════════════════════════════════════
 const TAB_TITLES={
-  zones:'Zone Parts', schedule:'Water Schedule',
+  designer:'Design Tool', zones:'Parts List', schedule:'Water Schedule',
   manifold:'Manifold Assembly', blueprint:'Blueprint',
+  guide:'Installation Guide',
   track:'Track My Order', pro:'My Irrigation Pro'
 };
 
@@ -1875,7 +2222,11 @@ function setTab(tab){
   document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.tab===tab));
-  document.getElementById('tb-title').textContent=TAB_TITLES[tab];
+  document.getElementById('tb-title').textContent=TAB_TITLES[tab]||tab;
+  // hide topbar controls when designer is active (it has its own UI)
+  const tbControls = document.querySelector('.topbar');
+  if(tbControls) tbControls.style.display = tab==='designer' ? 'none' : '';
+  if(tab==='zones')     { if(hasTier('plan')){ refreshZones(); renderZonesParts(); } else { showPaywall('plan'); return; } }
   if(tab==='schedule')  renderSchedule();
   if(tab==='manifold')  renderManifold();
   if(tab==='blueprint') renderBlueprint();
@@ -1899,7 +2250,125 @@ function setPipe(p){
 // INIT
 // ═══════════════════════════════════════════════════════════
 document.getElementById('sb-address').textContent=design.address||'Your Property';
+
+// Set designer iframe src from sessionStorage coords
+(function initDesignerIframe(){
+  const frame = document.getElementById('designer-frame');
+  if (design.lat && design.lng) {
+    frame.src = `designer.html?lat=${design.lat}&lng=${design.lng}&address=${encodeURIComponent(design.address||'')}`;
+  } else {
+    frame.src = 'designer.html';
+  }
+})();
+
+// Open on designer tab by default
+setTab('designer');
 renderZonesParts();
+
+// Apply tier state (also handles ?upgraded=plan return from checkout)
+(function initTier() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('upgraded') === 'plan' && !hasTier('plan')) {
+    currentTier = 'plan';
+    sessionStorage.setItem('drip_tier', 'plan');
+    history.replaceState({}, '', 'materials.html');
+    setTimeout(() => showToast('✓ Irrigation Plan unlocked!'), 600);
+  }
+  updateTierUI();
+  // Navigate to a specific tab if requested via URL param
+  const tabParam = params.get('tab');
+  if (tabParam) {
+    history.replaceState({}, '', 'materials.html');
+    setTab(tabParam);
+  }
+})();
+
+// ═══════════════════════════════════════════════════════════
+// PAYWALL
+// ═══════════════════════════════════════════════════════════
+const PAYWALL_DATA = {
+  plan: {
+    badgeLabel: '$99 Plan',
+    badgeStyle: 'background:#25331922;color:#253319;border:1px solid #25331944',
+    checkColor: '#253319',
+    name: 'Full Irrigation Plan',
+    tagline: 'Get the complete analysis for your system — schedule, manifold wiring, and a print-ready blueprint.',
+    features: [
+      'Zone-by-zone watering schedule with run times and days per week',
+      'Manifold assembly diagram with valve wiring and controller setup',
+      'Print-ready blueprint of your entire irrigation layout',
+      'Lifetime access — edit your design and regenerate anytime',
+    ],
+    ctaLabel: 'Get the $99 Plan',
+    ctaStyle: 'background:#253319;color:#f1ebe2',
+    ctaAction: 'upgradeToPlan',
+  },
+  parts: {
+    badgeLabel: 'Buy Parts',
+    badgeStyle: 'background:#f0800022;color:#c05800;border:1px solid #f0800044',
+    checkColor: '#c05800',
+    name: 'Order Your Parts Kit',
+    tagline: 'Every part from your materials list, pre-picked, labeled by zone, and shipped to your door.',
+    features: [
+      'All sprinkler heads, pipe, fittings, and valves — nothing missing',
+      'Parts pre-labeled by zone so you know exactly what goes where',
+      'Controller + pre-cut wire bundle included',
+      '90-day satisfaction guarantee on all parts',
+    ],
+    ctaLabel: 'Get a Quote',
+    ctaStyle: 'background:#c05800;color:#fff',
+    ctaAction: 'openKitModal',
+  },
+  support: {
+    badgeLabel: 'Support',
+    badgeStyle: 'background:#f0800022;color:#c05800;border:1px solid #f0800044',
+    checkColor: '#c05800',
+    name: 'Irrigation Specialist',
+    tagline: 'A licensed irrigation specialist reviews your plan, answers your questions, and stays available through installation.',
+    features: [
+      'Pre-ship specialist call to confirm your design and water pressure',
+      'Direct phone and email access during your install',
+      'Plan review and adjustments if anything needs changing',
+      'Most calls are 15–20 minutes — fast and practical',
+    ],
+    ctaLabel: 'Get a Quote',
+    ctaStyle: 'background:#c05800;color:#fff',
+    ctaAction: 'openKitModal',
+  },
+};
+
+function showPaywall(tier) {
+  const d = PAYWALL_DATA[tier];
+  if (!d) return;
+  const feats = d.features.map(f =>
+    `<li><div class="mpw-check" style="background:${d.checkColor}22;border:1px solid ${d.checkColor}55;color:${d.checkColor}">✓</div>${f}</li>`
+  ).join('');
+  const cta = d.ctaHref
+    ? `<a class="mpw-cta" href="${d.ctaHref}" style="${d.ctaStyle}">${d.ctaLabel}</a>`
+    : `<button class="mpw-cta" onclick="dismissPaywall();${d.ctaAction}();" style="${d.ctaStyle}">${d.ctaLabel}</button>`;
+  document.getElementById('mpw-content').innerHTML =
+    `<span class="mpw-badge" style="${d.badgeStyle}">${d.badgeLabel}</span>
+    <div class="mpw-name">${d.name}</div>
+    <div class="mpw-tagline">${d.tagline}</div>
+    <ul class="mpw-features">${feats}</ul>
+    ${cta}
+    <button class="mpw-dismiss" onclick="dismissPaywall()">Maybe later</button>`;
+  document.getElementById('mat-paywall').classList.add('open');
+}
+
+// Toggle installation guide checkboxes
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('ig-check')) {
+    e.target.classList.toggle('done');
+    e.target.closest('.ig-step').style.opacity =
+      e.target.classList.contains('done') ? '.45' : '';
+  }
+});
+
+function dismissPaywall(e) {
+  if (e && e.target !== document.getElementById('mat-paywall')) return;
+  document.getElementById('mat-paywall').classList.remove('open');
+}
 </script>
 </body>
 </html>
