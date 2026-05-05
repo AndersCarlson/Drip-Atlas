@@ -630,6 +630,12 @@ window.addEventListener('DOMContentLoaded', async () => {
   if (savedDesign.water?.srcLat && savedDesign.water?.srcLng) {
     dropWsMarker(L.latLng(savedDesign.water.srcLat, savedDesign.water.srcLng));
   }
+  const restoredGpm = savedDesign.water?.gpm ||
+    (savedDesign.water?.flowUnit === 'gpm' ? savedDesign.water?.flowVal : null);
+  if (restoredGpm) {
+    const gpmEl = document.getElementById('ws-gpm');
+    if (gpmEl) { gpmEl.value = restoredGpm; document.getElementById('gpm-wrap').style.borderColor = 'var(--forest)'; }
+  }
 
   // Populate help drawer with irrigation rules
   const R = IRRIGATION_RULES;
@@ -683,11 +689,11 @@ function setTool(tool) {
     layer.off('click').off('mousedown').off('mouseover').off('mouseout');
     layer.on('mouseover', () => {
       const el = layer.getElement(); if (el) el.style.cursor = 'grab';
-      if (drawHandler) try { drawHandler.disable(); } catch(_){}
+      if (!dragState && drawHandler) try { drawHandler.disable(); } catch(_){}
     });
     layer.on('mouseout', () => {
-      const el = layer.getElement(); if (el) el.style.cursor = '';
-      if (drawHandler) try { drawHandler.enable(); } catch(_){}
+      const el = layer.getElement(); if (el) el.style.cursor = dragState ? 'grabbing' : '';
+      if (!dragState && drawHandler) try { drawHandler.enable(); } catch(_){}
     });
     layer.on('click', e => { e.originalEvent.stopPropagation(); e.originalEvent.stopImmediatePropagation(); selectShape(id); });
     layer.on('mousedown', e => { e.originalEvent.stopPropagation(); startDrag(e, id); });
@@ -744,11 +750,11 @@ function onShapeCreated(e) {
 
   layer.on('mouseover', () => {
     const el = layer.getElement(); if (el) el.style.cursor = 'grab';
-    if (drawHandler) try { drawHandler.disable(); } catch(_){}
+    if (!dragState && drawHandler) try { drawHandler.disable(); } catch(_){}
   });
   layer.on('mouseout', () => {
-    const el = layer.getElement(); if (el) el.style.cursor = '';
-    if (drawHandler) try { drawHandler.enable(); } catch(_){}
+    const el = layer.getElement(); if (el) el.style.cursor = dragState ? 'grabbing' : '';
+    if (!dragState && drawHandler) try { drawHandler.enable(); } catch(_){}
   });
   layer.on('click',     ev => { ev.originalEvent.stopPropagation(); ev.originalEvent.stopImmediatePropagation(); selectShape(id); });
   layer.on('mousedown', ev => { ev.originalEvent.stopPropagation(); startDrag(ev, id); });
@@ -842,6 +848,8 @@ function onDragEnd() {
   map.off('mousemove', onDragMove);
   map.off('mouseup',   onDragEnd);
   document.removeEventListener('mouseup', onDragEnd);
+  // Re-enable polygon drawing now that drag is finished
+  if (drawHandler) try { drawHandler.enable(); } catch(_){}
 }
 
 // ─────────────────────────────────────────

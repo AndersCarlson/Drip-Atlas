@@ -71,37 +71,67 @@
     /* ─── HERO ─── */
     .hero {
       padding: 28px 36px 36px;
-      display: flex; gap: 20px; align-items: stretch;
-      min-height: calc(100vh - 64px);
     }
 
-    /* Left text column */
+    .hero-video-wrap {
+      position: relative;
+      border-radius: 20px;
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .hero-video-wrap video {
+      width: 100%;
+      display: block;
+      max-height: 72vh;
+      object-fit: cover;
+    }
+
+    /* CTA overlay */
     .hero-text-col {
-      flex: 0 0 360px;
-      display: flex; flex-direction: column; justify-content: center;
-      padding: 16px 8px;
+      position: absolute;
+      top: 50%;
+      left: 48px;
+      transform: translateY(-50%);
+      max-width: 460px;
+      padding: 36px 40px;
+      border-radius: 16px;
+      /* iOS liquid glass */
+      background: linear-gradient(
+        135deg,
+        rgba(255,255,255,0.22) 0%,
+        rgba(255,255,255,0.10) 60%,
+        rgba(255,255,255,0.16) 100%
+      );
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid rgba(255,255,255,0.35);
+      box-shadow:
+        0 8px 32px rgba(0,0,0,0.18),
+        inset 0 1px 0 rgba(255,255,255,0.5),
+        inset 0 -1px 0 rgba(255,255,255,0.1);
     }
 
     .hero-text-col h1 {
       font-family: 'Playfair Display', serif;
-      font-size: clamp(30px, 2.8vw, 48px);
+      font-size: clamp(28px, 2.8vw, 46px);
       font-weight: 700;
       line-height: 1.1;
-      color: var(--forest);
+      color: var(--white);
       margin-bottom: 18px;
     }
 
     .hero-text-col p {
-      font-size: 16px;
-      color: var(--gray);
-      line-height: 1.7;
-      margin-bottom: 32px;
+      font-size: 17px;
+      color: rgba(255,255,255,.88);
+      line-height: 1.65;
+      margin-bottom: 28px;
     }
 
     .btn-primary {
       display: block;
-      background: var(--forest);
-      color: var(--white);
+      background: var(--lime);
+      color: var(--forest);
       font-size: 15px; font-weight: 600;
       padding: 15px 28px;
       border-radius: 8px;
@@ -110,10 +140,10 @@
       transition: background .2s, transform .15s;
       margin-bottom: 14px;
     }
-    .btn-primary:hover { background: var(--forest-md); transform: translateY(-1px); }
+    .btn-primary:hover { background: #b3d15a; transform: translateY(-1px); }
 
     .btn-text {
-      font-size: 14px; font-weight: 500;
+      font-size: 16px; font-weight: 500;
       color: var(--gray); text-decoration: none;
       display: inline-flex; align-items: center; gap: 6px;
       transition: color .2s;
@@ -535,27 +565,26 @@
 
 <!-- HERO -->
 <div class="hero">
+  <div class="hero-video-wrap">
 
-  <!-- Left: text column -->
-  <div class="hero-text-col">
-    <h1>Professional irrigation designed for you, installed by you</h1>
-    <p>We design your sprinkler system and ship you a complete, labeled kit. You install it in a weekend—no guesswork, no wasted trips.</p>
-    <a href="design.html" class="btn-primary">Get My Custom Plan</a>
-    <a href="#how-it-works" class="btn-text">See How It Works ↓</a>
-  </div>
+    <video autoplay loop muted playsinline>
+      <source src="hero-video.mp4" type="video/mp4">
+    </video>
 
-  <!-- Right: single unified card — photo left / diagram right -->
-  <div class="hero-visual">
-
-    <!-- Photo half -->
-    <div class="hv-photo">
-      <div class="hv-photo-placeholder">
-        <span>📸 Your yard photo here</span>
-      </div>
+    <!-- CTA overlaid on video -->
+    <div class="hero-text-col">
+      <h1>Professional irrigation designed for you, installed by you</h1>
+      <p>We design your sprinkler system and ship you a complete, labeled kit. You install it in a weekend—no guesswork, no wasted trips.</p>
+      <a href="design.html" class="btn-primary">Free Design Tool →</a>
+      <a href="#how-it-works" class="btn-text" style="color:rgba(255,255,255,.7)">See How It Works ↓</a>
     </div>
 
-    <!-- Diagram half: dark green bg + SVG -->
-    <div class="hv-diagram">
+  </div>
+</div>
+
+<!-- REMOVED old hero visual — keeping below for reference during cleanup -->
+<div style="display:none">
+  <div class="hv-diagram">
       <svg viewBox="0 0 480 310" xmlns="http://www.w3.org/2000/svg" style="width:100%;flex:1;display:block;position:relative;z-index:1;">
 
         <!-- ── Zone 3: top-left (Amber / Shrubs) ── -->
@@ -620,7 +649,7 @@
       </div>
     </div>
   </div>
-</div>
+</div><!-- end hidden old hero -->
 
 <!-- HOW IT WORKS -->
 <section class="hiw" id="how-it-works">
