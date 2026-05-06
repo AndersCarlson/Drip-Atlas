@@ -466,7 +466,7 @@
         <div id="ls-panel-surfaces">
           <!-- Zone type buttons -->
           <div class="ls-type-grid">
-            <button class="ls-type-btn active" data-zone="lawn"     onclick="setActiveZoneType('lawn')"><img src="assets/icons/lawn.svg" width="20" height="20" alt="Lawn">Lawn</button>
+            <button class="ls-type-btn" data-zone="lawn"     onclick="setActiveZoneType('lawn')"><img src="assets/icons/lawn.svg" width="20" height="20" alt="Lawn">Lawn</button>
             <button class="ls-type-btn"        data-zone="garden"   onclick="setActiveZoneType('garden')"><img src="assets/icons/garden.svg" width="20" height="20" alt="Garden Bed">Garden Bed</button>
             <button class="ls-type-btn"        data-zone="pool"     onclick="setActiveZoneType('pool')"><img src="assets/icons/pool.svg" width="20" height="20" alt="Pool/Pond">Pool/Pond</button>
             <button class="ls-type-btn"        data-zone="driveway" onclick="setActiveZoneType('driveway')"><img src="assets/icons/driveway.svg" width="20" height="20" alt="Driveway">Driveway</button>
@@ -503,7 +503,7 @@
         <div id="ls-panel-plants" style="display:none">
           <!-- Type picker -->
           <div class="plant-type-grid" style="margin-bottom:8px">
-            <button class="ptype-btn active" id="ptype-tree"  onclick="setPlantType('tree')"><img src="assets/icons/tree.png" class="ptype-icon" width="22" height="22" alt="Tree">Tree</button>
+            <button class="ptype-btn" id="ptype-tree"  onclick="setPlantType('tree')"><img src="assets/icons/tree.png" class="ptype-icon" width="22" height="22" alt="Tree">Tree</button>
             <button class="ptype-btn"        id="ptype-shrub" onclick="setPlantType('shrub')"><img src="assets/icons/shrubs.png" class="ptype-icon" width="22" height="22" alt="Shrub">Shrub</button>
             <button class="ptype-btn"        id="ptype-grass" onclick="setPlantType('grass')"><img src="assets/icons/grasses.svg" class="ptype-icon" width="22" height="22" alt="Grasses">Grasses</button>
           </div>
@@ -639,7 +639,7 @@ let wsType    = 'hose';
 
 // Flow step state
 let currentStep   = 'ws';
-let activeZoneType = 'lawn';
+let activeZoneType = null;
 
 // ─────────────────────────────────────────
 // EMBEDDED MODE (shown inside materials.html iframe)
@@ -760,7 +760,7 @@ function setTool(tool) {
   });
 
   // Draw zone handlers
-  if (tool === 'polygon' || tool === 'rect') {
+  if ((tool === 'polygon' || tool === 'rect') && activeZoneType) {
     const z = ZONES[activeZoneType];
     const opts = { shapeOptions:{ color:z.color, fillColor:z.fill, fillOpacity:0.28, weight:2 } };
     drawHandler = tool === 'polygon'
@@ -782,8 +782,8 @@ function setTool(tool) {
 }
 
 function onPlantClick(e) {
-  // Don't fire if clicking on an existing layer
   if (e.originalEvent._stopped) return;
+  if (!activePlantType) return;
   placePlant(e.latlng);
 }
 
@@ -1195,7 +1195,7 @@ function showStep(name) {
     startWsGhost();
   } else {
     stopWsGhost();
-    if (name === 'landscape') setTool('polygon');
+    if (name === 'landscape') setTool('select');
   }
 
   // Update CTA button
@@ -1214,12 +1214,18 @@ function showStep(name) {
 }
 
 function setActiveZoneType(type) {
+  // Toggle off if already armed with this type
+  if (activeZoneType === type && currentTool === 'polygon') {
+    activeZoneType = null;
+    document.querySelectorAll('.ls-type-btn').forEach(b => b.classList.remove('active'));
+    setTool('select');
+    return;
+  }
   activeZoneType = type;
   document.querySelectorAll('.ls-type-btn').forEach(b =>
     b.classList.toggle('active', b.dataset.zone === type)
   );
   if (selectedId !== null) updateType(type);
-  // Only arm zone drawing when not in plant placement mode
   if (currentTool !== 'plant') setTool('polygon');
 }
 
@@ -1232,6 +1238,19 @@ function switchLsMode(mode) {
   document.getElementById('ls-tab-plants').classList.toggle('active', mode === 'plants');
   document.getElementById('ls-panel-surfaces').style.display = mode === 'surfaces' ? '' : 'none';
   document.getElementById('ls-panel-plants').style.display   = mode === 'plants'   ? '' : 'none';
+  // Stop whichever tool was active in the outgoing tab
+  if (mode === 'plants' && (currentTool === 'polygon' || currentTool === 'rect')) {
+    activeZoneType = null;
+    document.querySelectorAll('.ls-type-btn').forEach(b => b.classList.remove('active'));
+    setTool('select');
+  }
+  if (mode === 'surfaces' && currentTool === 'plant') {
+    activePlantType = null;
+    ['tree','shrub','grass'].forEach(t =>
+      document.getElementById('ptype-' + t).classList.remove('active')
+    );
+    setTool('select');
+  }
   if (mode === 'plants') loadPlantsIndex();
 }
 
@@ -1792,7 +1811,7 @@ const PLANTS = {
 const plants     = new Map(); // id → { marker, type, name, radiusFt, lat, lng }
 let plantIdSeq   = 0;
 let selPlantId   = null;
-let activePlantType = 'tree';
+let activePlantType = null;
 
 function ftToM(ft) { return ft * 0.3048; }
 function mToFt(m)  { return m  / 0.3048; }
@@ -1941,12 +1960,21 @@ function syncPlantPanel(id) {
 }
 
 function setPlantType(type) {
+  // Toggle off if already armed with this type
+  if (activePlantType === type && currentTool === 'plant') {
+    activePlantType = null;
+    ['tree','shrub','grass'].forEach(t =>
+      document.getElementById('ptype-' + t).classList.remove('active')
+    );
+    setTool('select');
+    return;
+  }
   activePlantType = type;
   ['tree','shrub','grass'].forEach(t =>
     document.getElementById('ptype-' + t).classList.toggle('active', t === type)
   );
-  // Arm the plant tool so clicking the map immediately places this type
-  if (currentTool !== 'plant') setTool('plant');
+  setTool('plant');
+  // Update selected plant's type if one is selected
   if (selPlantId === null) return;
   const s = plants.get(selPlantId); if (!s) return;
   s.type = type;
