@@ -69,15 +69,27 @@
     .ls-type-btn img{flex-shrink:0;display:block}
     .ls-type-btn.active img{filter:brightness(0) invert(1)}
 
-    /* plants sub-section */
-    .ls-sub-sect{border:1px solid var(--border);border-radius:9px;overflow:hidden}
-    .ls-sub-hd{display:flex;align-items:center;gap:8px;padding:9px 12px;cursor:pointer;background:var(--cream);user-select:none;transition:background .12s}
-    .ls-sub-hd:hover{background:#eae3d9}
-    .ls-sub-hd .tp-arrow{font-size:9px;color:var(--gray);transition:transform .18s}
-    .ls-sub-hd.open .tp-arrow{transform:rotate(90deg)}
-    .ls-sub-title{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gray);flex:1}
-    .ls-sub-body{display:none;padding:10px 12px;flex-direction:column;gap:8px}
-    .ls-sub-body.open{display:flex}
+    /* landscape mode tabs */
+    .ls-mode-tabs{display:flex;gap:4px;padding:4px;background:var(--cream);border-radius:10px;margin-bottom:12px}
+    .ls-mode-tab{flex:1;padding:7px;border-radius:7px;border:none;background:transparent;font-size:12px;font-weight:600;color:var(--gray);cursor:pointer;font-family:'Inter',sans-serif;transition:background .15s,color .15s}
+    .ls-mode-tab.active{background:var(--white);color:var(--charcoal);box-shadow:0 1px 3px rgba(0,0,0,.10)}
+    /* plant search */
+    .plant-search-wrap{position:relative}
+    .plant-search-inp{width:100%;box-sizing:border-box;padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:'Inter',sans-serif;color:var(--charcoal);outline:none;background:var(--white);transition:border-color .15s}
+    .plant-search-inp:focus{border-color:var(--forest)}
+    .plant-search-results{position:absolute;top:calc(100% + 3px);left:0;right:0;background:var(--white);border:1.5px solid var(--border);border-radius:8px;z-index:9000;max-height:180px;overflow-y:auto;box-shadow:0 4px 14px rgba(0,0,0,.13);display:none}
+    .plant-search-results.open{display:block}
+    .plant-search-item{padding:7px 10px;cursor:pointer;border-bottom:1px solid var(--cream)}
+    .plant-search-item:last-child{border-bottom:none}
+    .plant-search-item:hover{background:var(--cream)}
+    .psi-name{font-size:11px;font-weight:600;color:var(--charcoal)}
+    .psi-sci{font-size:10px;font-style:italic;color:var(--gray)}
+    .plant-assigned{display:flex;align-items:center;gap:6px;padding:6px 8px;background:rgba(37,51,25,.06);border-radius:7px;margin-bottom:4px}
+    .plant-assigned-info{flex:1;min-width:0}
+    .plant-assigned-name{font-size:11px;font-weight:600;color:var(--forest);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .plant-assigned-sci{font-size:10px;font-style:italic;color:var(--gray);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .plant-assigned-clear{background:none;border:none;cursor:pointer;color:var(--gray);font-size:15px;padding:0 2px;line-height:1;flex-shrink:0}
+    .plant-assigned-clear:hover{color:#c0392b}
 
     /* sticky CTA */
     .panel-cta{padding:12px 14px;border-top:1px solid var(--border);flex-shrink:0;background:var(--white)}
@@ -434,80 +446,102 @@
           <div class="step-head-sub">Select a zone type, then draw it on the map.</div>
         </div>
 
-        <!-- Zone type buttons -->
-        <div class="ls-type-grid">
-          <button class="ls-type-btn active" data-zone="lawn"     onclick="setActiveZoneType('lawn')"><img src="assets/icons/lawn.svg" width="20" height="20" alt="Lawn">Lawn</button>
-          <button class="ls-type-btn"        data-zone="garden"   onclick="setActiveZoneType('garden')"><img src="assets/icons/garden.svg" width="20" height="20" alt="Garden Bed">Garden Bed</button>
-          <button class="ls-type-btn"        data-zone="pool"     onclick="setActiveZoneType('pool')"><img src="assets/icons/pool.svg" width="20" height="20" alt="Pool/Pond">Pool/Pond</button>
-          <button class="ls-type-btn"        data-zone="driveway" onclick="setActiveZoneType('driveway')"><img src="assets/icons/driveway.svg" width="20" height="20" alt="Driveway">Driveway</button>
-          <button class="ls-type-btn"        data-zone="path"     onclick="setActiveZoneType('path')"><img src="assets/icons/walkway.svg" width="20" height="20" alt="Walkway">Walkway</button>
-          <button class="ls-type-btn"        data-zone="nowater"  onclick="setActiveZoneType('nowater')"><img src="assets/icons/nowater.svg" width="20" height="20" alt="No-Water">No-Water</button>
+        <!-- Mode tab controller -->
+        <div class="ls-mode-tabs">
+          <button class="ls-mode-tab active" id="ls-tab-surfaces" onclick="switchLsMode('surfaces')">Surfaces</button>
+          <button class="ls-mode-tab"        id="ls-tab-plants"   onclick="switchLsMode('plants')">Plants</button>
         </div>
 
-        <!-- Draw tool buttons -->
-        <!-- Zone count badge -->
-        <div style="font-size:11px;color:var(--gray)">Zones: <strong id="tp-zone-count" style="color:var(--forest)">0</strong></div>
+        <!-- Surfaces panel -->
+        <div id="ls-panel-surfaces">
+          <!-- Zone type buttons -->
+          <div class="ls-type-grid">
+            <button class="ls-type-btn active" data-zone="lawn"     onclick="setActiveZoneType('lawn')"><img src="assets/icons/lawn.svg" width="20" height="20" alt="Lawn">Lawn</button>
+            <button class="ls-type-btn"        data-zone="garden"   onclick="setActiveZoneType('garden')"><img src="assets/icons/garden.svg" width="20" height="20" alt="Garden Bed">Garden Bed</button>
+            <button class="ls-type-btn"        data-zone="pool"     onclick="setActiveZoneType('pool')"><img src="assets/icons/pool.svg" width="20" height="20" alt="Pool/Pond">Pool/Pond</button>
+            <button class="ls-type-btn"        data-zone="driveway" onclick="setActiveZoneType('driveway')"><img src="assets/icons/driveway.svg" width="20" height="20" alt="Driveway">Driveway</button>
+            <button class="ls-type-btn"        data-zone="path"     onclick="setActiveZoneType('path')"><img src="assets/icons/walkway.svg" width="20" height="20" alt="Walkway">Walkway</button>
+            <button class="ls-type-btn"        data-zone="nowater"  onclick="setActiveZoneType('nowater')"><img src="assets/icons/nowater.svg" width="20" height="20" alt="No-Water">No-Water</button>
+          </div>
 
-        <!-- Selected zone props card -->
-        <div class="tp-props" id="zone-props" style="display:none">
-          <div class="tp-props-lbl">Selected Zone</div>
-          <div>
-            <div class="prop-lbl">Label</div>
-            <input class="prop-inp" id="prop-name" type="text" placeholder="e.g. Front Lawn" oninput="updateName(this.value)"/>
-          </div>
-          <div class="stat-box">
-            <div class="stat-val" id="prop-area">—</div>
-            <div class="stat-unit">Square feet</div>
-          </div>
-          <div class="draw-btns">
-            <button class="draw-btn danger full" onclick="deleteSelected()">
-              <svg viewBox="0 0 16 16" fill="none" width="13" height="13"><path d="M2 4h12M6 4V2h4v2M5 4l.4 9h5.2L11 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Delete Zone
-            </button>
-          </div>
-        </div>
+          <!-- Zone count -->
+          <div style="font-size:11px;color:var(--gray)">Zones: <strong id="tp-zone-count" style="color:var(--forest)">0</strong></div>
 
-        <!-- Zone list -->
-        <div class="tp-list" id="shapes-scroll"></div>
-
-        <!-- Plants sub-section -->
-        <div class="ls-sub-sect">
-          <div class="ls-sub-hd" id="ls-sub-hd-plants" onclick="toggleLsSub('plants')">
-            <span class="tp-arrow">▶</span>
-            <span class="ls-sub-title">Plants</span>
-            <span class="tp-badge" id="tp-plant-count">0</span>
-          </div>
-          <div class="ls-sub-body" id="ls-sub-body-plants">
-            <!-- Type picker always visible — clicking one arms the plant tool -->
-            <div class="plant-type-grid" style="margin-bottom:8px">
-              <button class="ptype-btn active" id="ptype-tree"  onclick="setPlantType('tree')"><img src="assets/icons/tree.png" class="ptype-icon" width="22" height="22" alt="Tree">Tree</button>
-              <button class="ptype-btn"        id="ptype-shrub" onclick="setPlantType('shrub')"><img src="assets/icons/shrubs.png" class="ptype-icon" width="22" height="22" alt="Shrub">Shrub</button>
-              <button class="ptype-btn"        id="ptype-grass" onclick="setPlantType('grass')"><img src="assets/icons/grasses.svg" class="ptype-icon" width="22" height="22" alt="Grasses">Grasses</button>
+          <!-- Selected zone props card -->
+          <div class="tp-props" id="zone-props" style="display:none">
+            <div class="tp-props-lbl">Selected Zone</div>
+            <div>
+              <div class="prop-lbl">Label</div>
+              <input class="prop-inp" id="prop-name" type="text" placeholder="e.g. Front Lawn" oninput="updateName(this.value)"/>
             </div>
-            <button class="draw-btn full" id="tool-plant" data-tool="plant" onclick="setTool('plant')">
-              <svg viewBox="0 0 16 16" fill="none" width="13" height="13"><circle cx="8" cy="6" r="4" fill="currentColor" fill-opacity=".2" stroke="currentColor" stroke-width="1.3"/><line x1="8" y1="10" x2="8" y2="15" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><line x1="5.5" y1="13" x2="8" y2="11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-              Click Map to Place
-            </button>
-            <!-- Selected plant props -->
-            <div class="tp-props" id="plant-props" style="display:none">
-              <div class="tp-props-lbl">Selected Plant</div>
-              <div>
-                <div class="prop-lbl">Label</div>
-                <input class="prop-inp" id="plant-name-inp" type="text" placeholder="e.g. Oak Tree" oninput="updatePlantName(this.value)"/>
-              </div>
-              <div>
-                <div class="prop-lbl">Canopy — <span id="plant-size-lbl">—</span></div>
-                <div class="size-row">
-                  <input class="size-slider" id="plant-size-slider" type="range" min="2" max="60" value="16" oninput="updatePlantRadius(this.value)"/>
-                  <span class="size-val" id="plant-size-val">16 ft</span>
-                </div>
-              </div>
-              <button class="draw-btn danger full" onclick="deletePlant()">
-                <svg viewBox="0 0 16 16" fill="none" width="13" height="13"><path d="M2 4h12M6 4V2h4v2M5 4l.4 9h5.2L11 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Delete Plant
+            <div class="stat-box">
+              <div class="stat-val" id="prop-area">—</div>
+              <div class="stat-unit">Square feet</div>
+            </div>
+            <div class="draw-btns">
+              <button class="draw-btn danger full" onclick="deleteSelected()">
+                <svg viewBox="0 0 16 16" fill="none" width="13" height="13"><path d="M2 4h12M6 4V2h4v2M5 4l.4 9h5.2L11 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Delete Zone
               </button>
             </div>
-            <!-- Plant list -->
-            <div class="tp-list" id="plants-scroll"></div>
           </div>
+
+          <!-- Zone list -->
+          <div class="tp-list" id="shapes-scroll"></div>
+        </div>
+
+        <!-- Plants panel -->
+        <div id="ls-panel-plants" style="display:none">
+          <!-- Type picker -->
+          <div class="plant-type-grid" style="margin-bottom:8px">
+            <button class="ptype-btn active" id="ptype-tree"  onclick="setPlantType('tree')"><img src="assets/icons/tree.png" class="ptype-icon" width="22" height="22" alt="Tree">Tree</button>
+            <button class="ptype-btn"        id="ptype-shrub" onclick="setPlantType('shrub')"><img src="assets/icons/shrubs.png" class="ptype-icon" width="22" height="22" alt="Shrub">Shrub</button>
+            <button class="ptype-btn"        id="ptype-grass" onclick="setPlantType('grass')"><img src="assets/icons/grasses.svg" class="ptype-icon" width="22" height="22" alt="Grasses">Grasses</button>
+          </div>
+          <button class="draw-btn full" id="tool-plant" data-tool="plant" onclick="setTool('plant')">
+            <svg viewBox="0 0 16 16" fill="none" width="13" height="13"><circle cx="8" cy="6" r="4" fill="currentColor" fill-opacity=".2" stroke="currentColor" stroke-width="1.3"/><line x1="8" y1="10" x2="8" y2="15" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><line x1="5.5" y1="13" x2="8" y2="11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            Click Map to Place
+          </button>
+
+          <!-- Plant count -->
+          <div style="font-size:11px;color:var(--gray)">Plants: <strong id="tp-plant-count" style="color:var(--forest)">0</strong></div>
+
+          <!-- Selected plant props -->
+          <div class="tp-props" id="plant-props" style="display:none">
+            <div class="tp-props-lbl">Selected Plant</div>
+            <div>
+              <div class="prop-lbl">Label</div>
+              <input class="prop-inp" id="plant-name-inp" type="text" placeholder="e.g. Oak Tree" oninput="updatePlantName(this.value)"/>
+            </div>
+            <div>
+              <div class="prop-lbl">Canopy — <span id="plant-size-lbl">—</span></div>
+              <div class="size-row">
+                <input class="size-slider" id="plant-size-slider" type="range" min="2" max="60" value="16" oninput="updatePlantRadius(this.value)"/>
+                <span class="size-val" id="plant-size-val">16 ft</span>
+              </div>
+            </div>
+            <!-- Species assignment -->
+            <div>
+              <div class="prop-lbl">Species <span style="font-weight:400;color:var(--gray)">(optional)</span></div>
+              <div class="plant-assigned" id="plant-assigned" style="display:none">
+                <div class="plant-assigned-info">
+                  <div class="plant-assigned-name" id="plant-assigned-name"></div>
+                  <div class="plant-assigned-sci"  id="plant-assigned-sci"></div>
+                </div>
+                <button class="plant-assigned-clear" onclick="clearAssignedPlant()" title="Remove species">✕</button>
+              </div>
+              <div class="plant-search-wrap" id="plant-search-wrap">
+                <input class="plant-search-inp" id="plant-search-inp" type="text" placeholder="Search by name…"
+                  oninput="onPlantSearch(this.value)" onfocus="onPlantSearch(this.value)" autocomplete="off"/>
+                <div class="plant-search-results" id="plant-search-results"></div>
+              </div>
+            </div>
+            <button class="draw-btn danger full" onclick="deletePlant()">
+              <svg viewBox="0 0 16 16" fill="none" width="13" height="13"><path d="M2 4h12M6 4V2h4v2M5 4l.4 9h5.2L11 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Delete Plant
+            </button>
+          </div>
+
+          <!-- Plant list -->
+          <div class="tp-list" id="plants-scroll"></div>
         </div>
       </div>
 
@@ -1171,14 +1205,94 @@ function setActiveZoneType(type) {
   if (currentTool !== 'plant') setTool('polygon');
 }
 
-function toggleLsSub(name) {
-  const hd   = document.getElementById('ls-sub-hd-'   + name);
-  const body = document.getElementById('ls-sub-body-' + name);
-  if (!hd || !body) return;
-  const isOpen = body.classList.contains('open');
-  hd.classList.toggle('open', !isOpen);
-  body.classList.toggle('open', !isOpen);
+// ── Landscape mode tabs ──────────────────────────────────────────────────────
+let lsModeActive = 'surfaces';
+
+function switchLsMode(mode) {
+  lsModeActive = mode;
+  document.getElementById('ls-tab-surfaces').classList.toggle('active', mode === 'surfaces');
+  document.getElementById('ls-tab-plants').classList.toggle('active', mode === 'plants');
+  document.getElementById('ls-panel-surfaces').style.display = mode === 'surfaces' ? '' : 'none';
+  document.getElementById('ls-panel-plants').style.display   = mode === 'plants'   ? '' : 'none';
+  if (mode === 'plants') loadPlantsIndex();
 }
+
+// ── Plants index / search ────────────────────────────────────────────────────
+let plantsIndex = null;
+
+async function loadPlantsIndex() {
+  if (plantsIndex !== null) return;
+  try {
+    const r = await fetch('assets/plants-index.json');
+    plantsIndex = await r.json();
+  } catch(e) { plantsIndex = []; }
+}
+
+function escHtml(s) {
+  return String(s).replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function onPlantSearch(query) {
+  const results = document.getElementById('plant-search-results');
+  if (!plantsIndex || query.trim().length < 2) {
+    results.classList.remove('open');
+    return;
+  }
+  const q = query.trim().toLowerCase();
+  const matches = plantsIndex.filter(p =>
+    (p.n && p.n.toLowerCase().includes(q)) ||
+    (p.sn && p.sn.toLowerCase().includes(q))
+  ).slice(0, 10);
+  if (matches.length === 0) { results.classList.remove('open'); return; }
+  results.innerHTML = matches.map(p =>
+    `<div class="plant-search-item" onmousedown="assignPlantToSelected(${p.id},${JSON.stringify(p.n)},${JSON.stringify(p.sn||'')})">
+      <div class="psi-name">${escHtml(p.n)}</div>
+      ${p.sn ? `<div class="psi-sci">${escHtml(p.sn)}</div>` : ''}
+    </div>`
+  ).join('');
+  results.classList.add('open');
+}
+
+function assignPlantToSelected(perenualId, name, sn) {
+  if (selPlantId === null) return;
+  const s = plants.get(selPlantId); if (!s) return;
+  s.assignedPlant = { id: perenualId, name, sn };
+  s.name = name;
+  document.getElementById('plant-name-inp').value = s.name;
+  document.getElementById('plant-search-inp').value = '';
+  document.getElementById('plant-search-results').classList.remove('open');
+  showAssignedPlant(s.assignedPlant);
+  updatePlantList();
+}
+
+function clearAssignedPlant() {
+  if (selPlantId === null) return;
+  const s = plants.get(selPlantId); if (!s) return;
+  s.assignedPlant = null;
+  showAssignedPlant(null);
+  updatePlantList();
+}
+
+function showAssignedPlant(plant) {
+  const box  = document.getElementById('plant-assigned');
+  const wrap = document.getElementById('plant-search-wrap');
+  if (!plant) {
+    box.style.display  = 'none';
+    wrap.style.display = '';
+    return;
+  }
+  document.getElementById('plant-assigned-name').textContent = plant.name;
+  document.getElementById('plant-assigned-sci').textContent  = plant.sn || '';
+  box.style.display  = 'flex';
+  wrap.style.display = 'none';
+}
+
+// close search dropdown on outside click
+document.addEventListener('click', ev => {
+  const res = document.getElementById('plant-search-results');
+  if (res && !ev.target.closest('#plant-search-wrap')) res.classList.remove('open');
+});
 
 function flowNext() {
   if (currentStep === 'ws')        showStep('landscape');
@@ -1641,7 +1755,7 @@ function placePlant(latlng) {
     draggable: true, zIndexOffset: 200,
   }).addTo(map);
 
-  const entry = { marker, type, name: p.label, radiusFt: rFt, lat: latlng.lat, lng: latlng.lng };
+  const entry = { marker, type, name: p.label, radiusFt: rFt, lat: latlng.lat, lng: latlng.lng, assignedPlant: null };
   plants.set(id, entry);
 
   marker.on('click', ev => { L.DomEvent.stopPropagation(ev); selectPlant(id); });
@@ -1659,6 +1773,8 @@ function selectPlant(id) {
   deselect(true);
   deselectPlant(false);
   selPlantId = id;
+  // ensure Plants tab is visible
+  if (lsModeActive !== 'plants') switchLsMode('plants');
   document.getElementById('plant-props').style.display = '';
   const w = document.getElementById('pw-' + id);
   if (w) w.classList.add('selected');
@@ -1683,14 +1799,19 @@ function deselectPlant(reset = true) {
 function syncPlantPanel(id) {
   const s = plants.get(id); if (!s) return;
   document.getElementById('plant-name-inp').value = s.name;
-  document.getElementById('plant-size-slider').value = Math.round(s.radiusFt * 2); // diameter
+  document.getElementById('plant-size-slider').value = Math.round(s.radiusFt * 2);
   const diam = Math.round(s.radiusFt * 2);
   document.getElementById('plant-size-val').textContent  = diam + ' ft';
   document.getElementById('plant-size-lbl').textContent  = diam + ' ft diameter';
-  // active type chips
   ['tree','shrub','grass'].forEach(t => {
     document.getElementById('ptype-' + t).classList.toggle('active', t === s.type);
   });
+  // species
+  const inp = document.getElementById('plant-search-inp');
+  if (inp) inp.value = '';
+  const res = document.getElementById('plant-search-results');
+  if (res) res.classList.remove('open');
+  showAssignedPlant(s.assignedPlant || null);
 }
 
 function setPlantType(type) {
@@ -1747,8 +1868,14 @@ function updatePlantList() {
     el.className = 'shape-row' + (id === selPlantId ? ' sel' : '');
     el.dataset.id   = id;
     el.dataset.kind = 'plant';
+    const sciLine = s.assignedPlant?.sn
+      ? `<div style="font-size:10px;font-style:italic;color:var(--gray);margin-top:1px">${escHtml(s.assignedPlant.sn)}</div>`
+      : '';
     el.innerHTML = `<div class="shape-dot" style="background:${p.color}"></div>
-      <span class="shape-name"><img src="${p.iconSrc}" width="14" height="14" style="vertical-align:middle;margin-right:3px"> ${s.name}</span>
+      <span class="shape-name" style="display:flex;flex-direction:column;align-items:flex-start">
+        <span><img src="${p.iconSrc}" width="14" height="14" style="vertical-align:middle;margin-right:3px">${escHtml(s.name)}</span>
+        ${sciLine}
+      </span>
       <span class="shape-area">${Math.round(s.radiusFt*2)}ft ⌀</span>`;
     el.onclick = () => { setTool('select'); selectPlant(id); };
     scroll.appendChild(el);

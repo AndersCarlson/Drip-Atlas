@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Drip Atlas — Plant Browser</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="icon" type="image/png" href="assets/favicon.png"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --cream:#f1ebe2; --forest:#253319; --forest2:#2e4020;
+      --lime:#c8e670;  --gray:#7a7a72;  --border:rgba(37,51,25,.12);
+      --white:#fff;    --text:#1c1c1a;  --card-r:14px;
+    }
+    body{font-family:'Inter',sans-serif;background:var(--cream);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+    /* ── HEADER ── */
+    .hdr{background:var(--white);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100}
+    .hdr-logo{height:26px}
+    .hdr-div{width:1px;height:22px;background:var(--border)}
+    .hdr-title{font-family:'Playfair Display',serif;font-size:17px;color:var(--forest)}
+    .hdr-zone{margin-left:auto;display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--gray)}
+    .hdr-zone-badge{background:var(--lime);color:var(--forest);font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px}
+
+    /* ── SEARCH BAR ── */
+    .search-wrap{padding:28px 28px 0;max-width:1200px;margin:0 auto}
+    .search-box{display:flex;align-items:center;gap:10px;background:var(--white);border:1.5px solid var(--border);border-radius:50px;padding:0 20px;height:52px;box-shadow:0 2px 12px rgba(37,51,25,.06);transition:border-color .15s,box-shadow .15s}
+    .search-box:focus-within{border-color:var(--forest);box-shadow:0 2px 16px rgba(37,51,25,.1)}
+    .search-icon{font-size:18px;opacity:.5}
+    .search-box input{flex:1;border:none;outline:none;font-size:15px;font-family:'Inter',sans-serif;background:transparent;color:var(--text)}
+    .search-box input::placeholder{color:var(--gray)}
+    .search-count{font-size:12px;color:var(--gray);white-space:nowrap}
+
+    /* ── FILTERS ── */
+    .filters{padding:16px 28px 0;max-width:1200px;margin:0 auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .filter-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--gray);margin-right:4px}
+    .filter-chip{padding:6px 14px;border:1.5px solid var(--border);border-radius:20px;font-size:12px;font-weight:600;color:var(--gray);background:var(--white);cursor:pointer;font-family:'Inter',sans-serif;transition:all .14s;white-space:nowrap}
+    .filter-chip:hover{border-color:var(--forest);color:var(--forest)}
+    .filter-chip.active{background:var(--forest);border-color:var(--forest);color:#f1ebe2}
+    .filter-divider{width:1px;height:20px;background:var(--border);margin:0 4px}
+
+    /* ── GRID ── */
+    .grid-wrap{padding:24px 28px 60px;max-width:1200px;margin:0 auto}
+    .plant-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+
+    /* ── CARD ── */
+    .plant-card{background:var(--white);border:1px solid var(--border);border-radius:var(--card-r);overflow:hidden;cursor:pointer;transition:box-shadow .18s,transform .18s;position:relative}
+    .plant-card:hover{box-shadow:0 8px 28px rgba(37,51,25,.12);transform:translateY(-3px)}
+    .plant-card:hover .card-add{opacity:1;transform:translateY(0)}
+    .card-img-wrap{width:100%;height:160px;overflow:hidden;background:var(--cream)}
+    .card-img{width:100%;height:160px;object-fit:cover;display:block}
+    .card-img-skeleton{width:100%;height:160px;background:linear-gradient(90deg,#ede7dd 25%,#e6dfd5 50%,#ede7dd 75%);background-size:200% 100%;animation:shimmer 1.4s infinite}
+    .card-img-placeholder{width:100%;height:160px;display:flex;align-items:center;justify-content:center;font-size:52px;background:linear-gradient(135deg,#d8f0b8,#b8dfa0)}
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    .card-body{padding:14px}
+    .card-name{font-size:14px;font-weight:700;color:var(--forest);line-height:1.3;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .card-sci{font-size:11px;color:var(--gray);font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:10px}
+    .card-badges{display:flex;gap:5px;flex-wrap:wrap}
+    .badge{padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.03em}
+    .badge-zone{background:rgba(200,230,112,.25);color:#3a5a1a}
+    .badge-water{background:rgba(37,51,25,.07);color:var(--forest)}
+    .badge-bloom{background:rgba(180,120,60,.12);color:#7a4820}
+    .badge-sun{background:rgba(255,200,50,.15);color:#7a5800}
+    .badge-loading{background:var(--cream);color:transparent;animation:shimmer 1.4s infinite}
+    .card-add{position:absolute;bottom:0;left:0;right:0;padding:10px 14px;background:var(--forest);color:#f1ebe2;font-size:12px;font-weight:700;text-align:center;opacity:0;transform:translateY(4px);transition:all .18s;font-family:'Inter',sans-serif;border:none;cursor:pointer;letter-spacing:.02em}
+    .card-add:hover{background:var(--forest2)}
+
+    /* ── DETAIL DRAWER ── */
+    #drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);backdrop-filter:blur(3px);z-index:500;opacity:0;pointer-events:none;transition:opacity .25s}
+    #drawer-overlay.open{opacity:1;pointer-events:all}
+    #detail-drawer{position:fixed;top:0;right:0;bottom:0;width:420px;max-width:100vw;background:var(--white);z-index:501;transform:translateX(100%);transition:transform .3s cubic-bezier(.32,.72,0,1);overflow-y:auto;display:flex;flex-direction:column}
+    #detail-drawer.open{transform:none}
+    .dd-hero{position:relative;height:260px;background:var(--cream);flex-shrink:0}
+    .dd-hero img{width:100%;height:100%;object-fit:cover}
+    .dd-hero-skeleton{width:100%;height:100%;background:linear-gradient(90deg,#ede7dd 25%,#e6dfd5 50%,#ede7dd 75%);background-size:200% 100%;animation:shimmer 1.4s infinite}
+    .dd-close{position:absolute;top:14px;right:14px;width:34px;height:34px;background:rgba(255,255,255,.9);border-radius:50%;border:none;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+    .dd-body{padding:24px;flex:1}
+    .dd-eyebrow{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gray);margin-bottom:6px}
+    .dd-name{font-family:'Playfair Display',serif;font-size:26px;color:var(--forest);line-height:1.2;margin-bottom:4px}
+    .dd-sci{font-size:13px;color:var(--gray);font-style:italic;margin-bottom:18px}
+    .dd-badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px}
+    .dd-badge{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700}
+    .dd-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+    .dd-stat{background:var(--cream);border-radius:10px;padding:12px 14px}
+    .dd-stat-label{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--gray);margin-bottom:3px}
+    .dd-stat-val{font-size:15px;font-weight:700;color:var(--forest)}
+    .dd-desc{font-size:13px;color:var(--gray);line-height:1.7;margin-bottom:24px}
+    .dd-section{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gray);margin-bottom:10px;margin-top:18px;display:flex;align-items:center;gap:8px}
+    .dd-section::after{content:'';flex:1;height:1px;background:var(--border)}
+    .dd-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:7px 0;border-bottom:1px solid var(--border)}
+    .dd-row:last-child{border-bottom:none}
+    .dd-row-label{color:var(--gray)}
+    .dd-row-val{font-weight:600;color:var(--forest)}
+    .dd-cta{width:100%;padding:16px;background:var(--forest);color:#f1ebe2;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;margin-top:8px;transition:background .15s}
+    .dd-cta:hover{background:var(--forest2)}
+    .dd-loading{padding:60px 24px;text-align:center;color:var(--gray);font-size:14px}
+
+    /* ── EMPTY STATE ── */
+    .empty{text-align:center;padding:80px 24px;color:var(--gray)}
+    .empty-icon{font-size:48px;margin-bottom:16px}
+    .empty h3{font-family:'Playfair Display',serif;font-size:22px;color:var(--forest);margin-bottom:8px}
+    .empty p{font-size:14px;line-height:1.6}
+
+    @media(max-width:600px){
+      .search-wrap,.filters,.grid-wrap{padding-left:16px;padding-right:16px}
+      #detail-drawer{width:100vw}
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <img src="assets/logo-forest-green.png" alt="Drip Atlas" class="hdr-logo"/>
+  <div class="hdr-div"></div>
+  <span class="hdr-title">Plant Browser</span>
+  <div class="hdr-zone">
+    Your zone: <span class="hdr-zone-badge" id="hdr-zone">—</span>
+  </div>
+</div>
+
+<!-- SEARCH -->
+<div class="search-wrap">
+  <div class="search-box">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="search-input" placeholder="Search by name, genus, or type…" oninput="onSearch()"/>
+    <span class="search-count" id="search-count"></span>
+  </div>
+</div>
+
+<!-- FILTERS -->
+<div class="filters">
+  <span class="filter-label">Zone</span>
+  <button class="filter-chip" data-filter="zone" data-val="all" onclick="setFilter('zone','all',this)">All Zones</button>
+  <button class="filter-chip" data-filter="zone" data-val="my"  onclick="setFilter('zone','my',this)">My Zone Only</button>
+  <div class="filter-divider"></div>
+  <span class="filter-label">Water</span>
+  <button class="filter-chip" data-filter="water" data-val="all"     onclick="setFilter('water','all',this)">Any</button>
+  <button class="filter-chip" data-filter="water" data-val="Minimum"  onclick="setFilter('water','Minimum',this)">Low</button>
+  <button class="filter-chip" data-filter="water" data-val="Average"  onclick="setFilter('water','Average',this)">Medium</button>
+  <button class="filter-chip" data-filter="water" data-val="Frequent" onclick="setFilter('water','Frequent',this)">High</button>
+  <div class="filter-divider"></div>
+  <span class="filter-label">Bloom</span>
+  <button class="filter-chip" data-filter="bloom" data-val="all"    onclick="setFilter('bloom','all',this)">Any</button>
+  <button class="filter-chip" data-filter="bloom" data-val="Spring" onclick="setFilter('bloom','Spring',this)">Spring</button>
+  <button class="filter-chip" data-filter="bloom" data-val="Summer" onclick="setFilter('bloom','Summer',this)">Summer</button>
+  <button class="filter-chip" data-filter="bloom" data-val="Fall"   onclick="setFilter('bloom','Fall',this)">Fall</button>
+  <button class="filter-chip" data-filter="bloom" data-val="Winter" onclick="setFilter('bloom','Winter',this)">Winter</button>
+</div>
+
+<!-- GRID -->
+<div class="grid-wrap">
+  <div class="plant-grid" id="plant-grid"></div>
+  <div class="empty" id="empty-state" style="display:none">
+    <div class="empty-icon">🌱</div>
+    <h3>No plants found</h3>
+    <p>Try a different search term or adjust your filters.</p>
+  </div>
+</div>
+
+<!-- DETAIL DRAWER -->
+<div id="drawer-overlay" onclick="closeDrawer()"></div>
+<div id="detail-drawer">
+  <div class="dd-hero"><div class="dd-hero-skeleton" id="dd-img-wrap"></div></div>
+  <button class="dd-close" onclick="closeDrawer()">✕</button>
+  <div class="dd-body" id="dd-body">
+    <div class="dd-loading">Loading plant data…</div>
+  </div>
+</div>
+
+<script>
+const API_KEY = 'sk-85AE69fb87929ebe317050';
+const CACHE_KEY = 'drip_plant_cache';
+
+let allPlants  = [];
+let filters    = { zone: 'all', water: 'all', bloom: 'all' };
+let searchQ    = '';
+let myZone     = null;
+let detailCache = {};
+
+// ── INIT ──────────────────────────────────
+async function init() {
+  // Load persisted detail cache from localStorage
+  try { detailCache = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}'); } catch {}
+
+  // Load user's hardiness zone from design session
+  try {
+    const sess = JSON.parse(sessionStorage.getItem('drip_design') || '{}');
+    // Also check phz-zones.json if we have a zip
+    const zip = sess?.water?.zip;
+    if (zip) {
+      const zData = await fetch('assets/phz-zones.json').then(r=>r.json()).catch(()=>({}));
+      myZone = zData[zip] ? parseInt(zData[zip]) : null;
+    }
+  } catch {}
+  if (myZone) document.getElementById('hdr-zone').textContent = 'Zone ' + myZone;
+
+  // Load plant index
+  const res = await fetch('assets/plants-index.json');
+  allPlants = await res.json();
+  render();
+}
+
+// ── SEARCH & FILTER ────────────────────────
+function onSearch() {
+  searchQ = document.getElementById('search-input').value.trim().toLowerCase();
+  render();
+}
+
+function setFilter(key, val, btn) {
+  filters[key] = val;
+  document.querySelectorAll(`[data-filter="${key}"]`).forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function matchesFilters(plant) {
+  const detail = detailCache[plant.id];
+
+  // Zone filter — only applies if we have detail
+  if (filters.zone === 'my' && myZone && detail) {
+    const min = parseInt(detail.hardiness?.min || 0);
+    const max = parseInt(detail.hardiness?.max || 99);
+    if (myZone < min || myZone > max) return false;
+  }
+
+  // Water filter — only applies if we have detail
+  if (filters.water !== 'all' && detail) {
+    if (detail.watering !== filters.water) return false;
+  }
+
+  // Bloom filter — only applies if we have detail
+  if (filters.bloom !== 'all' && detail) {
+    if (detail.flowering_season !== filters.bloom) return false;
+  }
+
+  return true;
+}
+
+// ── LAZY FETCH QUEUE ──────────────────────
+let fetchQueue   = [];
+let fetchPending = false;
+
+async function processQueue() {
+  if (fetchPending || fetchQueue.length === 0) return;
+  fetchPending = true;
+  while (fetchQueue.length > 0) {
+    const id = fetchQueue.shift();
+    if (detailCache[id]) { updateCard(id); continue; }
+    await fetchDetail(id);
+    updateCard(id);
+    await new Promise(r => setTimeout(r, 80)); // ~12 req/sec — polite
+  }
+  fetchPending = false;
+}
+
+async function fetchDetail(id) {
+  try {
+    const res = await fetch(`https://perenual.com/api/v2/species/details/${id}?key=${API_KEY}`);
+    const txt = await res.text();
+    if (txt.includes('Upgrade') || txt.includes('Missing')) return;
+    const data = JSON.parse(txt);
+    detailCache[id] = data;
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify(detailCache)); } catch {}
+  } catch {}
+}
+
+function queueFetch(id) {
+  if (detailCache[id] || fetchQueue.includes(id)) return;
+  fetchQueue.push(id);
+  processQueue();
+}
+
+function updateCard(id) {
+  const card = document.querySelector(`.plant-card[data-id="${id}"]`);
+  if (!card) return;
+  const detail = detailCache[id];
+  if (!detail) return;
+
+  // Update image
+  const imgWrap = card.querySelector('.card-img-wrap');
+  if (imgWrap) {
+    const url = detail.default_image?.medium_url;
+    if (url) {
+      imgWrap.innerHTML = `<img class="card-img" src="${url}" alt="" loading="lazy" onerror="this.parentElement.innerHTML='<div class=card-img-placeholder>🌿</div>'">`;
+    } else {
+      imgWrap.innerHTML = `<div class="card-img-placeholder">🌿</div>`;
+    }
+  }
+
+  // Update badges
+  const badgeWrap = card.querySelector('.card-badges');
+  if (badgeWrap) badgeWrap.innerHTML = buildBadges(detail);
+}
+
+function buildBadges(detail) {
+  const zone  = detail?.hardiness
+    ? `<span class="badge badge-zone">Zone ${detail.hardiness.min}–${detail.hardiness.max}</span>` : '';
+  const water = detail?.watering
+    ? `<span class="badge badge-water">${waterIcon(detail.watering)} ${detail.watering}</span>` : '';
+  const bloom = detail?.flowering_season
+    ? `<span class="badge badge-bloom">🌸 ${detail.flowering_season}</span>` : '';
+  return zone + water + bloom;
+}
+
+// IntersectionObserver — trigger fetch when card enters viewport
+let observer;
+function observeCards() {
+  if (observer) observer.disconnect();
+  observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const id = parseInt(e.target.dataset.id);
+        if (id) queueFetch(id);
+      }
+    });
+  }, { rootMargin: '200px' });
+
+  document.querySelectorAll('.plant-card[data-id]').forEach(c => observer.observe(c));
+}
+
+// ── RENDER ────────────────────────────────
+function render() {
+  const grid  = document.getElementById('plant-grid');
+  const empty = document.getElementById('empty-state');
+
+  let list = allPlants;
+  if (searchQ) {
+    list = list.filter(p =>
+      p.n.toLowerCase().includes(searchQ) ||
+      p.sn.toLowerCase().includes(searchQ) ||
+      (p.g || '').toLowerCase().includes(searchQ)
+    );
+  }
+  list = list.filter(matchesFilters);
+
+  document.getElementById('search-count').textContent =
+    list.length < allPlants.length
+      ? `${list.length.toLocaleString()} results`
+      : `${allPlants.length.toLocaleString()} plants`;
+
+  if (list.length === 0) { grid.innerHTML = ''; empty.style.display = ''; return; }
+  empty.style.display = 'none';
+
+  const show = list.slice(0, 60);
+  grid.innerHTML = show.map(p => cardHTML(p)).join('');
+  observeCards();
+}
+
+function cardHTML(p) {
+  const detail = detailCache[p.id];
+
+  const imgHTML = detail?.default_image?.medium_url
+    ? `<img class="card-img" src="${detail.default_image.medium_url}" alt="${p.n}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=card-img-placeholder>🌿</div>'">`
+    : `<div class="card-img-skeleton"></div>`;
+
+  return `<div class="plant-card" data-id="${p.id}" onclick="openDrawer(${p.id})">
+    <div class="card-img-wrap">${imgHTML}</div>
+    <div class="card-body">
+      <div class="card-name">${p.n || p.sn}</div>
+      <div class="card-sci">${p.sn}</div>
+      <div class="card-badges">${detail ? buildBadges(detail) : '<span class="badge badge-loading" style="width:58px">&nbsp;</span>'}</div>
+    </div>
+    <button class="card-add" onclick="event.stopPropagation();addToZone(${p.id})">+ Add to Landscape</button>
+  </div>`;
+}
+
+function waterIcon(w) {
+  return { Frequent:'💧💧', Average:'💧', Minimum:'🌵', None:'⛔' }[w] || '💧';
+}
+
+// ── DETAIL DRAWER ─────────────────────────
+async function openDrawer(id) {
+  document.getElementById('drawer-overlay').classList.add('open');
+  document.getElementById('detail-drawer').classList.add('open');
+
+  const plant = allPlants.find(p => p.id === id);
+  const body  = document.getElementById('dd-body');
+  const imgWrap = document.getElementById('dd-img-wrap');
+
+  body.innerHTML = '<div class="dd-loading">Loading…</div>';
+  imgWrap.innerHTML = '<div class="dd-hero-skeleton"></div>';
+
+  // Fetch detail (cache first)
+  let detail = detailCache[id];
+  if (!detail) {
+    await fetchDetail(id);
+    detail = detailCache[id] || null;
+  }
+
+  // Render photo
+  const photoUrl = detail?.default_image?.medium_url;
+  if (photoUrl) {
+    imgWrap.innerHTML = `<img src="${photoUrl}" style="width:100%;height:100%;object-fit:cover" alt="${plant?.n}"/>`;
+  } else {
+    imgWrap.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:64px">🌿</div>`;
+  }
+
+  if (!detail) {
+    body.innerHTML = `
+      <div class="dd-eyebrow">Plant Details</div>
+      <div class="dd-name">${plant?.n || 'Unknown'}</div>
+      <div class="dd-sci">${plant?.sn || ''}</div>
+      <p style="font-size:13px;color:var(--gray);margin-top:16px;line-height:1.6">
+        Detailed data for this plant requires an upgraded plan. Only species 1–3,000 are available on the current plan.
+      </p>`;
+    return;
+  }
+
+  const h = detail.hardiness;
+  const dim = (detail.dimensions || [])[0];
+  const colors = (detail.plant_anatomy || []).find(a => a.part === 'flowers')?.color || [];
+  const sunlight = (detail.sunlight || []).join(', ');
+
+  body.innerHTML = `
+    <div class="dd-eyebrow">${detail.type || 'Plant'} · ${detail.cycle || ''}</div>
+    <div class="dd-name">${detail.common_name || plant?.n}</div>
+    <div class="dd-sci">${(detail.scientific_name || [])[0] || plant?.sn}</div>
+
+    <div class="dd-badges">
+      ${h ? `<span class="dd-badge badge-zone">Zone ${h.min}–${h.max}</span>` : ''}
+      ${detail.watering ? `<span class="dd-badge badge-water">${waterIcon(detail.watering)} ${detail.watering} water</span>` : ''}
+      ${detail.flowering_season ? `<span class="dd-badge badge-bloom">🌸 ${detail.flowering_season}</span>` : ''}
+      ${detail.drought_tolerant ? `<span class="dd-badge" style="background:rgba(180,120,0,.1);color:#7a5000">🏜️ Drought tolerant</span>` : ''}
+      ${detail.indoor ? `<span class="dd-badge" style="background:rgba(37,51,25,.07);color:var(--forest)">🏠 Indoor</span>` : ''}
+    </div>
+
+    <div class="dd-stats">
+      ${dim ? `<div class="dd-stat"><div class="dd-stat-label">Mature Height</div><div class="dd-stat-val">${dim.min_value}–${dim.max_value} ${dim.unit}</div></div>` : ''}
+      ${detail.watering_general_benchmark?.value ? `<div class="dd-stat"><div class="dd-stat-label">Water Every</div><div class="dd-stat-val">${detail.watering_general_benchmark.value.replace(/"/g,'')} ${detail.watering_general_benchmark.unit}</div></div>` : ''}
+      ${detail.growth_rate ? `<div class="dd-stat"><div class="dd-stat-label">Growth Rate</div><div class="dd-stat-val">${detail.growth_rate}</div></div>` : ''}
+      ${detail.maintenance ? `<div class="dd-stat"><div class="dd-stat-label">Maintenance</div><div class="dd-stat-val">${detail.maintenance}</div></div>` : ''}
+    </div>
+
+    ${detail.description ? `<div class="dd-desc">${detail.description.slice(0, 280)}${detail.description.length > 280 ? '…' : ''}</div>` : ''}
+
+    <div class="dd-section">Care Details</div>
+    ${sunlight ? `<div class="dd-row"><span class="dd-row-label">Sunlight</span><span class="dd-row-val">${sunlight}</span></div>` : ''}
+    ${colors.length ? `<div class="dd-row"><span class="dd-row-label">Flower Color</span><span class="dd-row-val">${colors.join(', ')}</span></div>` : ''}
+    ${(detail.soil||[]).length ? `<div class="dd-row"><span class="dd-row-label">Soil</span><span class="dd-row-val">${detail.soil.slice(0,3).join(', ')}</span></div>` : ''}
+    ${detail.care_level ? `<div class="dd-row"><span class="dd-row-label">Care Level</span><span class="dd-row-val">${detail.care_level}</span></div>` : ''}
+    ${detail.poisonous_to_pets ? `<div class="dd-row"><span class="dd-row-label">⚠️ Pets</span><span class="dd-row-val" style="color:#a03030">Toxic to pets</span></div>` : ''}
+
+    <button class="dd-cta" onclick="addToZone(${id})">+ Add to Landscape Design</button>
+  `;
+
+  // Re-render grid card with fresh data
+  render();
+}
+
+function closeDrawer() {
+  document.getElementById('drawer-overlay').classList.remove('open');
+  document.getElementById('detail-drawer').classList.remove('open');
+}
+
+function addToZone(id) {
+  const plant = allPlants.find(p => p.id === id);
+  alert(`"${plant?.n}" would be added to your active landscape zone.\n\n(Integration with designer coming soon)`);
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
+
+init();
+</script>
+</body>
+</html>
