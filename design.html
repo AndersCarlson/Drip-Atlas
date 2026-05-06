@@ -782,6 +782,8 @@
 <script src="map-config.js"></script>
 <script>
   let currentCoords = null;
+  let currentZip    = null;
+  let _phzData      = null;   // loaded once from local JSON
   let confirmMap    = null;
   let sourceType    = null;
   let flowMode      = 'gpm';
@@ -879,6 +881,7 @@
         const c = (d.candidates || [])[0];
         if (!c) throw new Error('Not found');
         currentCoords = { lat: c.location.y, lng: c.location.x };
+        currentZip    = c.attributes?.Postal || null;
         const displayAddr = c.attributes?.LongLabel || c.address || text;
         setTimeout(() => showConfirm(currentCoords, displayAddr), 700);
       })
@@ -909,7 +912,7 @@
     document.getElementById('map-addr-chip').textContent     = displayAddr;
     document.getElementById('confirm-addr-text').textContent = displayAddr;
     showScreen('screen-confirm');
-    fetchPropertyInfo(coords.lat, coords.lng);
+    fetchPropertyInfo(coords.lat, coords.lng, currentZip);
 
     // Wait one frame for display:block to take effect so Leaflet can measure the container
     requestAnimationFrame(() => setTimeout(() => {
@@ -946,7 +949,16 @@
     document.getElementById(id + '-sub').classList.toggle('pic-loading', loading);
   }
 
-  async function fetchPropertyInfo(lat, lng) {
+  async function loadPhzData() {
+    if (_phzData) return _phzData;
+    try {
+      const r = await fetch('assets/phz-zones.json');
+      _phzData = await r.json();
+    } catch { _phzData = {}; }
+    return _phzData;
+  }
+
+  async function fetchPropertyInfo(lat, lng, zip) {
     // Reset to loading state
     const zv = document.getElementById('chip-zone-val');
     const zs = document.getElementById('chip-zone-sub');
@@ -957,15 +969,19 @@
     setChipLoading('chip-zone', true);
     setChipLoading('chip-lot', true);
 
-    // 1. USDA Plant Hardiness Zone
+    // 1. USDA Plant Hardiness Zone — local bundled lookup
     try {
-      const res  = await fetch(`https://phzmapi.org/${lat}/${lng}.json`);
-      const data = await res.json();
-      const zone = data.zone || '—';
-      const num  = parseInt(zone);
-      const desc = ZONE_CLIMATE[String(num)] || '';
-      zv.textContent = 'Zone ' + zone;
-      zs.textContent = desc;
+      const data = await loadPhzData();
+      const zone = (zip && data[zip]) ? data[zip] : null;
+      if (zone) {
+        const num  = parseInt(zone);
+        const desc = ZONE_CLIMATE[String(num)] || '';
+        zv.textContent = 'Zone ' + zone;
+        zs.textContent = desc;
+      } else {
+        zv.textContent = 'Zone —';
+        zs.textContent = zip ? 'Not in dataset' : 'ZIP unavailable';
+      }
       setChipLoading('chip-zone', false);
     } catch {
       zv.textContent = 'Zone —';
