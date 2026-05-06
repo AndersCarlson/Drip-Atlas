@@ -377,8 +377,26 @@
       font-size: clamp(22px, 3vw, 32px);
       font-weight: 700; color: var(--forest); margin-bottom: 6px;
     }
-    .confirm-sub { font-size: 14px; color: var(--gray); margin-bottom: 24px; }
+    .confirm-sub { font-size: 14px; color: var(--gray); margin-bottom: 16px; }
     .confirm-actions { display: flex; flex-direction: column; gap: 0; }
+
+    /* ── PROPERTY INFO CHIPS ── */
+    .prop-info-row {
+      display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap;
+    }
+    .prop-info-chip {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--white); border: 1.5px solid var(--border);
+      border-radius: 10px; padding: 10px 14px; flex: 1; min-width: 140px;
+    }
+    .pic-icon { font-size: 18px; flex-shrink: 0; }
+    .pic-body { display: flex; flex-direction: column; }
+    .pic-label { font-size: 10px; font-weight: 700; letter-spacing: .07em;
+      text-transform: uppercase; color: var(--gray); }
+    .pic-value { font-size: 15px; font-weight: 700; color: var(--forest); line-height: 1.2; }
+    .pic-sub { font-size: 11px; color: var(--gray); }
+    .pic-loading { opacity: .45; animation: picPulse 1.2s ease-in-out infinite; }
+    @keyframes picPulse { 0%,100%{opacity:.35} 50%{opacity:.7} }
 
     /* ── OPTION CARDS (source type) ── */
     #screen-source { max-width: 560px; }
@@ -450,6 +468,57 @@
       #screen-confirm { max-width: 100%; }
       .map-container { height: 260px; }
     }
+
+    /* ── SOURCE DRAWER ── */
+    #source-drawer-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.4);
+      backdrop-filter: blur(4px); z-index: 2000;
+      opacity: 0; pointer-events: none;
+      transition: opacity .25s;
+    }
+    #source-drawer-overlay.open { opacity: 1; pointer-events: all; }
+    #source-drawer {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      max-height: 82vh; background: var(--white);
+      border-radius: 20px 20px 0 0;
+      box-shadow: 0 -8px 40px rgba(0,0,0,.14);
+      z-index: 2001; overflow-y: auto;
+      transform: translateY(100%);
+      transition: transform .3s cubic-bezier(.32,.72,0,1);
+    }
+    #source-drawer.open { transform: translateY(0); }
+    .sd-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 22px 24px 14px; border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; background: var(--white); z-index: 1;
+    }
+    .sd-title { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--forest); }
+    .sd-close {
+      width: 32px; height: 32px; border-radius: 50%;
+      border: none; background: var(--cream); cursor: pointer;
+      font-size: 16px; display: flex; align-items: center; justify-content: center;
+      transition: background .12s;
+    }
+    .sd-close:hover { background: var(--border); }
+    .sd-body { padding: 20px 24px 36px; display: flex; flex-direction: column; gap: 20px; }
+    .sd-source {
+      border: 1.5px solid var(--border); border-radius: 14px; padding: 20px;
+    }
+    .sd-source-head {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 10px;
+    }
+    .sd-source-icon { font-size: 26px; }
+    .sd-source-title { font-size: 15px; font-weight: 700; color: var(--forest); }
+    .sd-source-body { font-size: 13px; color: var(--charcoal); line-height: 1.65; margin-bottom: 12px; }
+    .sd-pros-cons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .sd-col-title { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 6px; }
+    .sd-pros .sd-col-title { color: #3a7d3a; }
+    .sd-cons .sd-col-title { color: #a03030; }
+    .sd-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
+    .sd-list li { font-size: 12px; color: var(--gray); line-height: 1.5; display: flex; gap: 5px; }
+    .sd-pros .sd-list li::before { content: '✓'; color: #3a7d3a; font-weight: 700; flex-shrink: 0; }
+    .sd-cons .sd-list li::before { content: '✕'; color: #a03030; font-weight: 700; flex-shrink: 0; }
   </style>
   <link rel="icon" type="image/png" href="assets/favicon.png"/>
 </head>
@@ -519,6 +588,25 @@
       <div class="confirm-question">Does this look right?</div>
       <p class="confirm-sub" id="confirm-addr-text"></p>
 
+      <div class="prop-info-row">
+        <div class="prop-info-chip" id="chip-zone">
+          <span class="pic-icon">🌡️</span>
+          <div class="pic-body">
+            <span class="pic-label">USDA Hardiness</span>
+            <span class="pic-value pic-loading" id="chip-zone-val">Zone —</span>
+            <span class="pic-sub" id="chip-zone-sub">Loading…</span>
+          </div>
+        </div>
+        <div class="prop-info-chip" id="chip-lot">
+          <span class="pic-icon">📐</span>
+          <div class="pic-body">
+            <span class="pic-label">Lot Size (est.)</span>
+            <span class="pic-value pic-loading" id="chip-lot-val">— sq ft</span>
+            <span class="pic-sub" id="chip-lot-sub">Loading…</span>
+          </div>
+        </div>
+      </div>
+
       <div class="confirm-actions">
         <button class="btn-primary" onclick="goSource()">Yes, that's my property →</button>
         <button class="btn-secondary" onclick="changeAddress()">Change Address</button>
@@ -544,10 +632,17 @@
           <p class="opt-desc">Taps directly into your home's water supply underground. Higher flow, more zones.</p>
           <div class="opt-check"></div>
         </div>
+        <div class="opt-card" id="opt-pond" onclick="selectSource('pond')">
+          <span class="opt-icon">💧</span>
+          <div class="opt-title">Pond / Well</div>
+          <p class="opt-desc">Draws from a private water source. Requires a pump — flow rate varies by setup.</p>
+          <div class="opt-check"></div>
+        </div>
       </div>
 
+      <button class="btn-text-link" onclick="openSourceDrawer()" style="margin-bottom:4px">What's the difference? →</button>
       <button class="btn-primary" id="btn-source-next" disabled onclick="goFlow()">Continue →</button>
-      <button class="btn-secondary" onclick="showScreen('screen-confirm')">← Back</button>
+      <button class="btn-text-link" onclick="skipSource()">Skip — I'll decide later</button>
     </div>
 
     <!-- ── SCREEN 5: FLOW RATE ── -->
@@ -587,6 +682,100 @@
     </div>
 
   </main>
+</div>
+
+<!-- What's the difference drawer -->
+<div id="source-drawer-overlay" onclick="closeSourceDrawer()"></div>
+<div id="source-drawer">
+  <div class="sd-header">
+    <span class="sd-title">Choosing Your Water Source</span>
+    <button class="sd-close" onclick="closeSourceDrawer()">✕</button>
+  </div>
+  <div class="sd-body">
+
+    <div class="sd-source">
+      <div class="sd-source-head">
+        <span class="sd-source-icon">🚿</span>
+        <span class="sd-source-title">Hose Tap (Backflow Preventer)</span>
+      </div>
+      <p class="sd-source-body">The simplest connection — threads onto any standard ¾" outdoor spigot. A backflow preventer and timer attach here. No plumbing work required, making this a true weekend DIY project for most homeowners.</p>
+      <div class="sd-pros-cons">
+        <div class="sd-pros">
+          <div class="sd-col-title">Pros</div>
+          <ul class="sd-list">
+            <li>No digging or pipe work</li>
+            <li>Lowest upfront cost</li>
+            <li>Easiest to winterize</li>
+            <li>Works with existing spigot</li>
+          </ul>
+        </div>
+        <div class="sd-cons">
+          <div class="sd-col-title">Cons</div>
+          <ul class="sd-list">
+            <li>Ties up your outdoor spigot</li>
+            <li>Lower max flow (6–10 GPM typical)</li>
+            <li>Limited zone count</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="sd-source">
+      <div class="sd-source-head">
+        <span class="sd-source-icon">🔧</span>
+        <span class="sd-source-title">Main Line Manifold</span>
+      </div>
+      <p class="sd-source-body">Taps directly into your home's main water supply line, typically near the meter or pressure reducer. Requires cutting into the supply pipe and installing a dedicated shutoff and backflow preventer underground.</p>
+      <div class="sd-pros-cons">
+        <div class="sd-pros">
+          <div class="sd-col-title">Pros</div>
+          <ul class="sd-list">
+            <li>Higher flow rate (10–20+ GPM)</li>
+            <li>Supports more zones</li>
+            <li>Doesn't use your spigot</li>
+            <li>Cleaner, more permanent install</li>
+          </ul>
+        </div>
+        <div class="sd-cons">
+          <div class="sd-col-title">Cons</div>
+          <ul class="sd-list">
+            <li>Requires digging &amp; plumbing</li>
+            <li>Higher installation effort</li>
+            <li>May need a permit in some areas</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="sd-source">
+      <div class="sd-source-head">
+        <span class="sd-source-icon">💧</span>
+        <span class="sd-source-title">Pond / Well</span>
+      </div>
+      <p class="sd-source-body">Uses a private water source — a retention pond, cistern, or drilled well — fed by a submersible or surface pump. Flow rate depends entirely on your pump capacity and source depth. Common in rural properties or where municipal water costs are high.</p>
+      <div class="sd-pros-cons">
+        <div class="sd-pros">
+          <div class="sd-col-title">Pros</div>
+          <ul class="sd-list">
+            <li>No municipal water cost</li>
+            <li>High volume potential</li>
+            <li>Independent of city supply</li>
+            <li>Great for large properties</li>
+          </ul>
+        </div>
+        <div class="sd-cons">
+          <div class="sd-col-title">Cons</div>
+          <ul class="sd-list">
+            <li>Requires pump &amp; filtration</li>
+            <li>Flow rate varies seasonally</li>
+            <li>More complex setup</li>
+            <li>Pump maintenance required</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -720,6 +909,7 @@
     document.getElementById('map-addr-chip').textContent     = displayAddr;
     document.getElementById('confirm-addr-text').textContent = displayAddr;
     showScreen('screen-confirm');
+    fetchPropertyInfo(coords.lat, coords.lng);
 
     // Wait one frame for display:block to take effect so Leaflet can measure the container
     requestAnimationFrame(() => setTimeout(() => {
@@ -743,6 +933,100 @@
     document.getElementById('address-input').focus();
   }
 
+  // ── PROPERTY INFO (USDA zone + lot size) ──
+  const ZONE_CLIMATE = {
+    '1':'Arctic','2':'Subarctic','3':'Very Cold','4':'Cold',
+    '5':'Cool Temperate','6':'Temperate','7':'Warm Temperate',
+    '8':'Subtropical','9':'Hot & Humid','10':'Tropical',
+    '11':'Tropical','12':'Tropical','13':'Tropical'
+  };
+
+  function setChipLoading(id, loading) {
+    document.getElementById(id + '-val').classList.toggle('pic-loading', loading);
+    document.getElementById(id + '-sub').classList.toggle('pic-loading', loading);
+  }
+
+  async function fetchPropertyInfo(lat, lng) {
+    // Reset to loading state
+    const zv = document.getElementById('chip-zone-val');
+    const zs = document.getElementById('chip-zone-sub');
+    const lv = document.getElementById('chip-lot-val');
+    const ls = document.getElementById('chip-lot-sub');
+    zv.textContent = 'Zone —'; zs.textContent = 'Loading…';
+    lv.textContent = '— sq ft'; ls.textContent = 'Loading…';
+    setChipLoading('chip-zone', true);
+    setChipLoading('chip-lot', true);
+
+    // 1. USDA Plant Hardiness Zone
+    try {
+      const res  = await fetch(`https://phzmapi.org/${lat}/${lng}.json`);
+      const data = await res.json();
+      const zone = data.zone || '—';
+      const num  = parseInt(zone);
+      const desc = ZONE_CLIMATE[String(num)] || '';
+      zv.textContent = 'Zone ' + zone;
+      zs.textContent = desc;
+      setChipLoading('chip-zone', false);
+    } catch {
+      zv.textContent = 'Zone —';
+      zs.textContent = 'Unavailable';
+      setChipLoading('chip-zone', false);
+    }
+
+    // 2. Lot size via Overpass (building or residential boundary)
+    try {
+      const query = `[out:json][timeout:8];
+(way[building](around:60,${lat},${lng});
+ way[landuse~"residential|grass|garden"](around:80,${lat},${lng}););
+out geom;`;
+      const res  = await fetch('https://overpass-api.de/api/interpreter', {
+        method: 'POST', body: 'data=' + encodeURIComponent(query)
+      });
+      const data = await res.json();
+      const ways = data.elements || [];
+
+      // Pick the smallest polygon that contains the point (likely the lot/building)
+      let bestArea = null;
+      for (const way of ways) {
+        if (!way.geometry || way.geometry.length < 3) continue;
+        const a = polygonAreaSqFt(way.geometry);
+        if (bestArea === null || a < bestArea) bestArea = a;
+      }
+
+      if (bestArea && bestArea > 100) {
+        const acres = bestArea / 43560;
+        lv.textContent = Math.round(bestArea).toLocaleString() + ' sq ft';
+        ls.textContent = acres >= 0.1 ? acres.toFixed(2) + ' acres' : 'Small lot';
+      } else {
+        lv.textContent = '—';
+        ls.textContent = 'Not found in OSM';
+      }
+      setChipLoading('chip-lot', false);
+    } catch {
+      lv.textContent = '—';
+      ls.textContent = 'Unavailable';
+      setChipLoading('chip-lot', false);
+    }
+  }
+
+  function polygonAreaSqFt(nodes) {
+    if (!nodes || nodes.length < 3) return 0;
+    const toRad = d => d * Math.PI / 180;
+    const lat0  = nodes[0].lat;
+    const fpLat = 364000; // feet per degree lat
+    const fpLng = 364000 * Math.cos(toRad(lat0));
+    const pts   = nodes.map(n => ({
+      x: (n.lon - nodes[0].lon) * fpLng,
+      y: (n.lat - nodes[0].lat) * fpLat,
+    }));
+    let area = 0;
+    for (let i = 0; i < pts.length; i++) {
+      const j = (i + 1) % pts.length;
+      area += pts[i].x * pts[j].y - pts[j].x * pts[i].y;
+    }
+    return Math.abs(area / 2);
+  }
+
   // ── STEP 3: Source type ──
   function goSource() {
     showScreen('screen-source');
@@ -750,9 +1034,21 @@
 
   function selectSource(type) {
     sourceType = type;
-    document.getElementById('opt-hose').classList.toggle('selected', type === 'hose');
-    document.getElementById('opt-manifold').classList.toggle('selected', type === 'manifold');
+    ['hose','manifold','pond'].forEach(t =>
+      document.getElementById('opt-' + t).classList.toggle('selected', t === type)
+    );
     document.getElementById('btn-source-next').disabled = false;
+  }
+
+  function skipSource() { sourceType = null; showScreen('screen-flow'); }
+
+  function openSourceDrawer() {
+    document.getElementById('source-drawer').classList.add('open');
+    document.getElementById('source-drawer-overlay').classList.add('open');
+  }
+  function closeSourceDrawer() {
+    document.getElementById('source-drawer').classList.remove('open');
+    document.getElementById('source-drawer-overlay').classList.remove('open');
   }
 
   function goFlow() {
