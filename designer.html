@@ -90,6 +90,16 @@
     .plant-assigned-sci{font-size:10px;font-style:italic;color:var(--gray);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .plant-assigned-clear{background:none;border:none;cursor:pointer;color:var(--gray);font-size:15px;padding:0 2px;line-height:1;flex-shrink:0}
     .plant-assigned-clear:hover{color:#c0392b}
+    /* watering card */
+    .watering-card{background:var(--cream);border-radius:8px;padding:9px 11px;display:flex;flex-direction:column;gap:6px}
+    .watering-row{display:flex;align-items:center;gap:8px}
+    .watering-icon{font-size:16px;flex-shrink:0}
+    .watering-freq{font-size:12px;font-weight:700;color:var(--charcoal)}
+    .watering-bench{font-size:11px;color:var(--gray)}
+    .zone-compat{font-size:11px;padding:5px 8px;border-radius:6px;font-weight:500}
+    .zone-compat.ok{background:rgba(37,100,37,.1);color:#1e5c1e}
+    .zone-compat.warn{background:rgba(180,120,0,.12);color:#7a5000}
+    .zone-compat.bad{background:rgba(180,40,40,.1);color:#7a1c1c}
 
     /* sticky CTA */
     .panel-cta{padding:12px 14px;border-top:1px solid var(--border);flex-shrink:0;background:var(--white)}
@@ -508,10 +518,7 @@
           <!-- Selected plant props -->
           <div class="tp-props" id="plant-props" style="display:none">
             <div class="tp-props-lbl">Selected Plant</div>
-            <div>
-              <div class="prop-lbl">Label</div>
-              <input class="prop-inp" id="plant-name-inp" type="text" placeholder="e.g. Oak Tree" oninput="updatePlantName(this.value)"/>
-            </div>
+            <!-- Canopy size -->
             <div>
               <div class="prop-lbl">Canopy — <span id="plant-size-lbl">—</span></div>
               <div class="size-row">
@@ -519,9 +526,9 @@
                 <span class="size-val" id="plant-size-val">16 ft</span>
               </div>
             </div>
-            <!-- Species assignment -->
+            <!-- Species -->
             <div>
-              <div class="prop-lbl">Species <span style="font-weight:400;color:var(--gray)">(optional)</span></div>
+              <div class="prop-lbl">Species</div>
               <div class="plant-assigned" id="plant-assigned" style="display:none">
                 <div class="plant-assigned-info">
                   <div class="plant-assigned-name" id="plant-assigned-name"></div>
@@ -530,10 +537,21 @@
                 <button class="plant-assigned-clear" onclick="clearAssignedPlant()" title="Remove species">✕</button>
               </div>
               <div class="plant-search-wrap" id="plant-search-wrap">
-                <input class="plant-search-inp" id="plant-search-inp" type="text" placeholder="Search by name…"
+                <input class="plant-search-inp" id="plant-search-inp" type="text" placeholder="Search to identify species…"
                   oninput="onPlantSearch(this.value)" onfocus="onPlantSearch(this.value)" autocomplete="off"/>
                 <div class="plant-search-results" id="plant-search-results"></div>
               </div>
+            </div>
+            <!-- Watering guidance -->
+            <div class="watering-card" id="plant-watering-card" style="display:none">
+              <div class="watering-row">
+                <span class="watering-icon" id="watering-icon">💧</span>
+                <div>
+                  <div class="watering-freq" id="watering-freq">—</div>
+                  <div class="watering-bench" id="watering-bench"></div>
+                </div>
+              </div>
+              <div class="zone-compat" id="zone-compat"></div>
             </div>
             <button class="draw-btn danger full" onclick="deletePlant()">
               <svg viewBox="0 0 16 16" fill="none" width="13" height="13"><path d="M2 4h12M6 4V2h4v2M5 4l.4 9h5.2L11 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Delete Plant
@@ -1218,7 +1236,94 @@ function switchLsMode(mode) {
 }
 
 // ── Plants index / search ────────────────────────────────────────────────────
-let plantsIndex = null;
+const PERENUAL_KEY   = 'sk-85AE69fb87929ebe317050';
+const PERENUAL_CACHE = 'drip_plant_cache';
+let plantsIndex   = null;
+let localZone     = null;   // USDA hardiness zone string e.g. "9b"
+let localZoneFetched = false;
+
+async function fetchLocalZone() {
+  if (localZoneFetched) return;
+  localZoneFetched = true;
+  if (!_coords) return;
+  try {
+    const r = await fetch(`https://phzmapi.org/${_coords.lat}/${_coords.lng}.json`);
+    const d = await r.json();
+    localZone = d.zone || null;
+  } catch { localZone = null; }
+}
+
+async function fetchPlantDetail(perenualId) {
+  try {
+    const raw = localStorage.getItem(PERENUAL_CACHE);
+    const cache = raw ? JSON.parse(raw) : {};
+    if (cache[perenualId]) return cache[perenualId];
+    const r = await fetch(`https://perenual.com/api/v2/species/details/${perenualId}?key=${PERENUAL_KEY}`);
+    const txt = await r.text();
+    if (txt.includes('Upgrade') || txt.includes('Missing')) return null;
+    const data = JSON.parse(txt);
+    cache[perenualId] = data;
+    try { localStorage.setItem(PERENUAL_CACHE, JSON.stringify(cache)); } catch {}
+    return data;
+  } catch { return null; }
+}
+
+function parseZoneNum(z) {
+  const m = String(z || '').match(/(\d+)([ab]?)/i);
+  if (!m) return null;
+  return parseFloat(m[1]) + (m[2].toLowerCase() === 'b' ? 0.5 : 0);
+}
+
+const WATER_LABEL = {
+  Frequent:  { icon: '💧💧', label: 'Frequent watering',  desc: 'Every 1–2 days in peak season' },
+  Average:   { icon: '💧',   label: 'Regular watering',   desc: 'Every 3–7 days' },
+  Minimum:   { icon: '🏜️',   label: 'Low water needs',    desc: 'Every 2–4 weeks' },
+  None:      { icon: '☀️',   label: 'No watering needed', desc: 'Drought-tolerant once established' },
+};
+
+async function loadWateringCard(perenualId) {
+  document.getElementById('plant-watering-card').style.display = 'none';
+  await fetchLocalZone();
+  const detail = await fetchPlantDetail(perenualId);
+  if (!detail) return;
+
+  const w = detail.watering ? (WATER_LABEL[detail.watering] || { icon: '💧', label: detail.watering, desc: '' }) : null;
+  const bench = detail.watering_general_benchmark;
+  const benchText = bench?.value && bench?.unit
+    ? `Every ${bench.value} ${bench.unit}`
+    : (w?.desc || '');
+
+  document.getElementById('watering-icon').textContent  = w?.icon  || '💧';
+  document.getElementById('watering-freq').textContent  = w?.label || '—';
+  document.getElementById('watering-bench').textContent = benchText;
+
+  // Zone compatibility
+  const zc = document.getElementById('zone-compat');
+  const hMin = parseZoneNum(detail.hardiness?.min);
+  const hMax = parseZoneNum(detail.hardiness?.max);
+  const lz   = parseZoneNum(localZone);
+  if (hMin !== null && hMax !== null && detail.hardiness?.min && detail.hardiness?.max) {
+    const rangeStr = `Zone ${detail.hardiness.min}–${detail.hardiness.max}`;
+    if (lz === null) {
+      zc.className = 'zone-compat warn';
+      zc.textContent = `Rated for ${rangeStr}`;
+    } else if (lz >= hMin && lz <= hMax) {
+      zc.className = 'zone-compat ok';
+      zc.textContent = `✓ Well-suited for your area — ${rangeStr}`;
+    } else if (lz < hMin - 1 || lz > hMax + 1) {
+      zc.className = 'zone-compat bad';
+      zc.textContent = `⚠ May struggle here (Zone ${localZone}) — rated ${rangeStr}`;
+    } else {
+      zc.className = 'zone-compat warn';
+      zc.textContent = `Marginal in Zone ${localZone} — rated ${rangeStr}`;
+    }
+    zc.style.display = '';
+  } else {
+    zc.style.display = 'none';
+  }
+
+  document.getElementById('plant-watering-card').style.display = '';
+}
 
 async function loadPlantsIndex() {
   if (plantsIndex !== null) return;
@@ -1265,18 +1370,20 @@ function assignPlantToSelected(perenualId, name, sn) {
   const s = plants.get(selPlantId); if (!s) return;
   s.assignedPlant = { id: perenualId, name, sn };
   s.name = name;
-  document.getElementById('plant-name-inp').value = s.name;
   document.getElementById('plant-search-inp').value = '';
   document.getElementById('plant-search-results').classList.remove('open');
   showAssignedPlant(s.assignedPlant);
   updatePlantList();
+  loadWateringCard(perenualId);
 }
 
 function clearAssignedPlant() {
   if (selPlantId === null) return;
   const s = plants.get(selPlantId); if (!s) return;
+  s.name = PLANTS[s.type].label;
   s.assignedPlant = null;
   showAssignedPlant(null);
+  document.getElementById('plant-watering-card').style.display = 'none';
   updatePlantList();
 }
 
@@ -1804,20 +1911,19 @@ function deselectPlant(reset = true) {
 
 function syncPlantPanel(id) {
   const s = plants.get(id); if (!s) return;
-  document.getElementById('plant-name-inp').value = s.name;
   document.getElementById('plant-size-slider').value = Math.round(s.radiusFt * 2);
   const diam = Math.round(s.radiusFt * 2);
-  document.getElementById('plant-size-val').textContent  = diam + ' ft';
-  document.getElementById('plant-size-lbl').textContent  = diam + ' ft diameter';
-  ['tree','shrub','grass'].forEach(t => {
-    document.getElementById('ptype-' + t).classList.toggle('active', t === s.type);
-  });
-  // species
-  const inp = document.getElementById('plant-search-inp');
-  if (inp) inp.value = '';
-  const res = document.getElementById('plant-search-results');
-  if (res) res.classList.remove('open');
+  document.getElementById('plant-size-val').textContent = diam + ' ft';
+  document.getElementById('plant-size-lbl').textContent = diam + ' ft diameter';
+  ['tree','shrub','grass'].forEach(t =>
+    document.getElementById('ptype-' + t).classList.toggle('active', t === s.type)
+  );
+  document.getElementById('plant-search-inp').value = '';
+  document.getElementById('plant-search-results').classList.remove('open');
   showAssignedPlant(s.assignedPlant || null);
+  // watering card
+  if (s.assignedPlant) loadWateringCard(s.assignedPlant.id);
+  else document.getElementById('plant-watering-card').style.display = 'none';
 }
 
 function setPlantType(type) {
@@ -1830,16 +1936,8 @@ function setPlantType(type) {
   if (selPlantId === null) return;
   const s = plants.get(selPlantId); if (!s) return;
   s.type = type;
-  s.name = PLANTS[type].label;
-  document.getElementById('plant-name-inp').value = s.name;
+  if (!s.assignedPlant) s.name = PLANTS[type].label;
   refreshPlantIcon(selPlantId);
-  updatePlantList();
-}
-
-function updatePlantName(val) {
-  if (selPlantId === null) return;
-  const s = plants.get(selPlantId); if (!s) return;
-  s.name = val || PLANTS[s.type].label;
   updatePlantList();
 }
 
