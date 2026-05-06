@@ -243,15 +243,18 @@
       box-shadow:0 2px 12px rgba(0,0,0,.1);
     }
 
-    /* plant markers */
-    .plant-ic{width:24px;height:24px;line-height:1;display:flex;align-items:center;justify-content:center;
-      cursor:pointer;user-select:none;filter:drop-shadow(0 1px 3px rgba(0,0,0,.3));
-      transition:filter .15s}
-    .plant-ic img{width:24px;height:24px;display:block}
-    .plant-ic.selected{filter:drop-shadow(0 0 6px rgba(37,51,25,.6)) drop-shadow(0 1px 3px rgba(0,0,0,.3))}
-    .plant-handle{width:11px;height:11px;background:var(--forest);
-      border:2px solid rgba(255,255,255,.8);border-radius:50%;cursor:ew-resize;
-      box-shadow:0 1px 5px rgba(0,0,0,.3)}
+    /* plant markers — plan-view watercolor style */
+    .plant-wrap{position:relative;display:block;cursor:move;
+      filter:drop-shadow(0 2px 5px rgba(0,0,0,.22));transition:filter .15s}
+    .plant-wrap img{display:block;pointer-events:none;user-select:none}
+    .plant-wrap.selected{filter:drop-shadow(0 0 9px rgba(37,51,25,.75)) drop-shadow(0 2px 5px rgba(0,0,0,.22))}
+    .plant-resize-grip{
+      display:none;position:absolute;bottom:-6px;right:-6px;
+      width:13px;height:13px;background:var(--forest);
+      border:2.5px solid #fff;border-radius:50%;cursor:se-resize;
+      box-shadow:0 1px 5px rgba(0,0,0,.4);pointer-events:all;z-index:1000;
+    }
+    .plant-wrap.selected .plant-resize-grip{display:block}
     /* plant type selector chip in panel */
     .plant-type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
     .ptype-btn{
@@ -620,7 +623,11 @@ window.addEventListener('DOMContentLoaded', async () => {
   drawnItems = new L.FeatureGroup().addTo(map);
   map.setView([lat, lng], 20);
 
-  map.on('zoomend', () => document.getElementById('sb-zoom').textContent = map.getZoom().toFixed(1));
+  map.on('zoomend', () => {
+    document.getElementById('sb-zoom').textContent = map.getZoom().toFixed(1);
+    // Rescale all plant illustrations to match new zoom level
+    plants.forEach((s, id) => refreshPlantIcon(id));
+  });
   map.on(L.Draw.Event.CREATED, onShapeCreated);
   map.on('click', () => { if (currentTool === 'select') deselect(); });
 
@@ -1537,12 +1544,12 @@ function hint(msg, dur = 3000) {
 // PLANTS
 // ─────────────────────────────────────────
 const PLANTS = {
-  tree:  { label:'Tree',    icon:'<img src="assets/icons/tree.svg"    width="24" height="24">', color:'#2d6e3a', defaultFt:16, minFt:4,  maxFt:60 },
-  shrub: { label:'Shrub',   icon:'<img src="assets/icons/shrubs.svg"  width="24" height="24">', color:'#4a8a4a', defaultFt:6,  minFt:2,  maxFt:20 },
-  grass: { label:'Grasses', icon:'<img src="assets/icons/grasses.svg" width="24" height="24">', color:'#8a9a3a', defaultFt:4,  minFt:2,  maxFt:12 },
+  tree:  { label:'Tree',    iconSrc:'assets/icons/tree.svg',    color:'#2d6e3a', defaultFt:20, minFt:4,  maxFt:80 },
+  shrub: { label:'Shrub',   iconSrc:'assets/icons/shrubs.svg',  color:'#4a8a4a', defaultFt:8,  minFt:2,  maxFt:30 },
+  grass: { label:'Grasses', iconSrc:'assets/icons/grasses.svg', color:'#8a9a3a', defaultFt:5,  minFt:2,  maxFt:20 },
 };
 
-const plants     = new Map(); // id → { circle, centerMkr, handleMkr, type, name, radiusFt, lat, lng }
+const plants     = new Map(); // id → { marker, type, name, radiusFt, lat, lng }
 let plantIdSeq   = 0;
 let selPlantId   = null;
 let activePlantType = 'tree';
@@ -1550,9 +1557,78 @@ let activePlantType = 'tree';
 function ftToM(ft) { return ft * 0.3048; }
 function mToFt(m)  { return m  / 0.3048; }
 
-function handleLatLng(lat, lng, radiusFt) {
-  const dLng = ftToM(radiusFt) / (111320 * Math.cos(lat * Math.PI / 180));
-  return [lat, lng + dLng];
+// Screen pixels per real-world foot at the current map view
+function pxPerFt() {
+  if (!map) return 3;
+  const c   = map.getCenter();
+  const mPD = 111320 * Math.cos(c.lat * Math.PI / 180); // meters per degree lng
+  const p1  = map.latLngToContainerPoint(c);
+  const p2  = map.latLngToContainerPoint(L.latLng(c.lat, c.lng + 0.001));
+  const pxD = Math.abs(p2.x - p1.x);            // pixels per 0.001 deg
+  return 0.3048 / ((mPD * 0.001) / pxD);         // px / ft
+}
+
+// Build a DivIcon with the watercolor SVG scaled to the canopy footprint in pixels
+function makePlantIcon(type, radiusFt, id) {
+  const p  = PLANTS[type];
+  const sz = Math.max(28, Math.round(radiusFt * 2 * pxPerFt()));
+  return L.divIcon({
+    html: `<div class="plant-wrap" id="pw-${id}">
+      <img src="${p.iconSrc}" width="${sz}" height="${sz}" draggable="false" alt="${p.label}">
+      <div class="plant-resize-grip" id="prg-${id}" title="Drag to resize"></div>
+    </div>`,
+    className:  '',
+    iconSize:   [sz, sz],
+    iconAnchor: [sz / 2, sz / 2],
+  });
+}
+
+// Re-render a plant's icon after a zoom or radius change
+function refreshPlantIcon(id) {
+  const s = plants.get(id); if (!s) return;
+  s.marker.setIcon(makePlantIcon(s.type, s.radiusFt, id));
+  requestAnimationFrame(() => {
+    setupResizeGrip(id);
+    if (selPlantId === id) {
+      const w = document.getElementById('pw-' + id);
+      if (w) w.classList.add('selected');
+    }
+  });
+}
+
+// Attach mousedown→mousemove resize logic to the SE grip
+function setupResizeGrip(id) {
+  const grip = document.getElementById('prg-' + id);
+  if (!grip) return;
+  grip.addEventListener('mousedown', ev => {
+    ev.stopPropagation(); ev.preventDefault();
+    map.dragging.disable();
+    const s = plants.get(id); if (!s) return;
+    const p = PLANTS[s.type];
+    const startX   = ev.clientX, startY = ev.clientY;
+    const startDiam = s.radiusFt * 2;
+
+    function onMove(e) {
+      const dx = e.clientX - startX, dy = e.clientY - startY;
+      // SE-direction component → diameter change in feet
+      const delta  = (dx + dy) / Math.sqrt(2) / pxPerFt();
+      const newD   = Math.max(p.minFt, Math.min(p.maxFt, startDiam + delta));
+      s.radiusFt   = newD / 2;
+      refreshPlantIcon(id);
+      const d = Math.round(newD);
+      const sl = document.getElementById('plant-size-slider'); if (sl) sl.value = d;
+      const sv = document.getElementById('plant-size-val');    if (sv) sv.textContent = d + ' ft';
+      const lb = document.getElementById('plant-size-lbl');    if (lb) lb.textContent = d + ' ft diameter';
+    }
+    function onUp() {
+      map.dragging.enable();
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      updatePlantList();
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
 }
 
 function placePlant(latlng) {
@@ -1560,69 +1636,33 @@ function placePlant(latlng) {
   const p    = PLANTS[type];
   const id   = ++plantIdSeq;
   const rFt  = p.defaultFt;
-  const rM   = ftToM(rFt);
 
-  // Canopy circle
-  const circle = L.circle(latlng, {
-    radius: rM, color: p.color, fillColor: p.color,
-    fillOpacity: 0.25, weight: 2, interactive: true,
+  const marker = L.marker(latlng, {
+    icon: makePlantIcon(type, rFt, id),
+    draggable: true, zIndexOffset: 200,
   }).addTo(map);
 
-  // Centre icon marker
-  const centIcon = L.divIcon({
-    html: `<span class="plant-ic" id="pic-${id}">${p.icon}</span>`,
-    className: '', iconSize:[26,26], iconAnchor:[13,13],
-  });
-  const centerMkr = L.marker(latlng, { icon: centIcon, draggable: true, zIndexOffset: 200 }).addTo(map);
-
-  // Resize handle
-  const hIcon = L.divIcon({ html:'<div class="plant-handle"></div>', className:'', iconSize:[11,11], iconAnchor:[5.5,5.5] });
-  const handleMkr = L.marker(handleLatLng(latlng.lat, latlng.lng, rFt), { icon: hIcon, draggable: true, zIndexOffset: 300 }).addTo(map);
-
-  const entry = { circle, centerMkr, handleMkr, type, name: p.label, radiusFt: rFt, lat: latlng.lat, lng: latlng.lng };
+  const entry = { marker, type, name: p.label, radiusFt: rFt, lat: latlng.lat, lng: latlng.lng };
   plants.set(id, entry);
 
-  // Click → select
-  circle.on('click',    ev => { L.DomEvent.stopPropagation(ev); selectPlant(id); });
-  centerMkr.on('click', ev => { L.DomEvent.stopPropagation(ev); selectPlant(id); });
-
-  // Drag centre → move whole plant
-  centerMkr.on('drag', ev => {
+  marker.on('click', ev => { L.DomEvent.stopPropagation(ev); selectPlant(id); });
+  marker.on('drag',  ev => {
     const ll = ev.target.getLatLng();
     entry.lat = ll.lat; entry.lng = ll.lng;
-    circle.setLatLng(ll);
-    handleMkr.setLatLng(handleLatLng(ll.lat, ll.lng, entry.radiusFt));
   });
 
-  // Drag handle → resize
-  handleMkr.on('drag', ev => {
-    const ctr  = L.latLng(entry.lat, entry.lng);
-    const dist = ctr.distanceTo(ev.target.getLatLng());
-    const newFt = Math.max(p.minFt, Math.min(p.maxFt, mToFt(dist)));
-    entry.radiusFt = newFt;
-    circle.setRadius(ftToM(newFt));
-    // update panel if selected
-    if (selPlantId === id) syncPlantPanel(id);
-  });
-  handleMkr.on('dragend', () => {
-    handleMkr.setLatLng(handleLatLng(entry.lat, entry.lng, entry.radiusFt));
-  });
-
+  requestAnimationFrame(() => setupResizeGrip(id));
   updatePlantList();
   selectPlant(id);
 }
 
 function selectPlant(id) {
-  // deselect any zone
   deselect(true);
   deselectPlant(false);
   selPlantId = id;
-
   document.getElementById('plant-props').style.display = '';
-
-  const el = document.getElementById(`pic-${id}`);
-  if (el) el.classList.add('selected');
-
+  const w = document.getElementById('pw-' + id);
+  if (w) w.classList.add('selected');
   syncPlantPanel(id);
   document.querySelectorAll('.shape-row[data-kind="plant"]').forEach(r =>
     r.classList.toggle('sel', r.dataset.id == id)
@@ -1631,8 +1671,8 @@ function selectPlant(id) {
 
 function deselectPlant(reset = true) {
   if (selPlantId !== null) {
-    const el = document.getElementById(`pic-${selPlantId}`);
-    if (el) el.classList.remove('selected');
+    const w = document.getElementById('pw-' + selPlantId);
+    if (w) w.classList.remove('selected');
   }
   if (reset) {
     selPlantId = null;
@@ -1662,11 +1702,9 @@ function setPlantType(type) {
   if (selPlantId === null) return;
   const s = plants.get(selPlantId); if (!s) return;
   s.type = type;
-  const p = PLANTS[type];
-  s.name = p.label;
-  document.getElementById('plant-name-inp').value = p.label;
-  s.circle.setStyle({ color: p.color, fillColor: p.color });
-  document.getElementById(`pic-${selPlantId}`).innerHTML = p.icon;
+  s.name = PLANTS[type].label;
+  document.getElementById('plant-name-inp').value = s.name;
+  refreshPlantIcon(selPlantId);
   updatePlantList();
 }
 
@@ -1681,8 +1719,7 @@ function updatePlantRadius(diamFt) {
   if (selPlantId === null) return;
   const s = plants.get(selPlantId); if (!s) return;
   s.radiusFt = Math.max(1, parseInt(diamFt) / 2);
-  s.circle.setRadius(ftToM(s.radiusFt));
-  s.handleMkr.setLatLng(handleLatLng(s.lat, s.lng, s.radiusFt));
+  refreshPlantIcon(selPlantId);
   const diam = Math.round(s.radiusFt * 2);
   document.getElementById('plant-size-val').textContent = diam + ' ft';
   document.getElementById('plant-size-lbl').textContent = diam + ' ft diameter';
@@ -1691,9 +1728,7 @@ function updatePlantRadius(diamFt) {
 function deletePlant() {
   if (selPlantId === null) return;
   const s = plants.get(selPlantId); if (!s) return;
-  map.removeLayer(s.circle);
-  map.removeLayer(s.centerMkr);
-  map.removeLayer(s.handleMkr);
+  map.removeLayer(s.marker);
   plants.delete(selPlantId);
   selPlantId = null;
   document.getElementById('plant-props').style.display = 'none';
@@ -1712,7 +1747,7 @@ function updatePlantList() {
     el.dataset.id   = id;
     el.dataset.kind = 'plant';
     el.innerHTML = `<div class="shape-dot" style="background:${p.color}"></div>
-      <span class="shape-name">${p.icon} ${s.name}</span>
+      <span class="shape-name"><img src="${p.iconSrc}" width="14" height="14" style="vertical-align:middle;margin-right:3px"> ${s.name}</span>
       <span class="shape-area">${Math.round(s.radiusFt*2)}ft ⌀</span>`;
     el.onclick = () => { setTool('select'); selectPlant(id); };
     scroll.appendChild(el);

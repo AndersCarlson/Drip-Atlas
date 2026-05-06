@@ -1,14 +1,75 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-  <!-- trunk -->
-  <rect x="13.5" y="22" width="5" height="7" rx="1.5" fill="#6D4C41"/>
-  <!-- back canopy shadow -->
-  <ellipse cx="16" cy="14" rx="10" ry="9" fill="#1B5E20"/>
-  <!-- main canopy -->
-  <ellipse cx="16" cy="13" rx="9" ry="8" fill="#2E7D32"/>
-  <!-- mid canopy -->
-  <ellipse cx="16" cy="12" rx="7.5" ry="6.5" fill="#388E3C"/>
-  <!-- top canopy -->
-  <ellipse cx="16" cy="10" rx="5.5" ry="5" fill="#43A047"/>
-  <!-- highlight -->
-  <ellipse cx="13.5" cy="9" rx="2.5" ry="2" fill="#66BB6A" opacity="0.55"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <filter id="sh" x="-15%" y="-15%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4"/>
+    </filter>
+  </defs>
+
+  <!-- Drop shadow -->
+  <ellipse cx="108" cy="110" rx="68" ry="62" fill="#607820" opacity="0.14" filter="url(#sh)"/>
+
+  <!-- Base ground wash — light irregular blob -->
+  <path d="M100 22 C118 20 138 28 152 42 C168 58 172 80 168 102
+           C164 124 152 144 134 156 C116 168 92 170 70 162
+           C48 154 30 136 24 114 C18 92 24 68 36 50
+           C50 30 80 24 100 22 Z"
+        fill="#ddf0aa" opacity="0.55"/>
+
+  <!-- Primary branch lines — drawn before lobes so lobes overlap them -->
+  <g stroke="#3d2010" stroke-linecap="round" fill="none">
+    <!-- 8 primary spokes from trunk (100,102) to each lobe -->
+    <line x1="100" y1="102" x2="100"  y2="34"  stroke-width="2.4"/>
+    <line x1="100" y1="102" x2="144"  y2="54"  stroke-width="2.2"/>
+    <line x1="100" y1="102" x2="162"  y2="100" stroke-width="2.2"/>
+    <line x1="100" y1="102" x2="144"  y2="148" stroke-width="2.2"/>
+    <line x1="100" y1="102" x2="100"  y2="168" stroke-width="2.4"/>
+    <line x1="100" y1="102" x2="56"   y2="148" stroke-width="2.2"/>
+    <line x1="100" y1="102" x2="38"   y2="100" stroke-width="2.2"/>
+    <line x1="100" y1="102" x2="56"   y2="54"  stroke-width="2.2"/>
+    <!-- secondary sub-branches -->
+    <line x1="100" y1="102" x2="122"  y2="70"  stroke-width="1.1" opacity="0.55"/>
+    <line x1="100" y1="102" x2="126"  y2="130" stroke-width="1.1" opacity="0.55"/>
+    <line x1="100" y1="102" x2="78"   y2="130" stroke-width="1.1" opacity="0.55"/>
+    <line x1="100" y1="102" x2="76"   y2="70"  stroke-width="1.1" opacity="0.55"/>
+  </g>
+
+  <!-- Lobe layer 1 — base lobe fill (slightly larger, lighter) -->
+  <ellipse cx="100" cy="38"  rx="30" ry="26" fill="#8ec844" opacity="0.50" transform="rotate( 6,100, 38)"/>
+  <ellipse cx="144" cy="56"  rx="28" ry="30" fill="#82be3a" opacity="0.50" transform="rotate(42,144, 56)"/>
+  <ellipse cx="160" cy="100" rx="28" ry="26" fill="#8ec844" opacity="0.50" transform="rotate( 2,160,100)"/>
+  <ellipse cx="144" cy="144" rx="28" ry="30" fill="#82be3a" opacity="0.50" transform="rotate(-40,144,144)"/>
+  <ellipse cx="100" cy="162" rx="30" ry="24" fill="#8ec844" opacity="0.50" transform="rotate(-6,100,162)"/>
+  <ellipse cx="56"  cy="144" rx="28" ry="30" fill="#82be3a" opacity="0.50" transform="rotate(40, 56,144)"/>
+  <ellipse cx="40"  cy="100" rx="28" ry="26" fill="#8ec844" opacity="0.50" transform="rotate( 2, 40,100)"/>
+  <ellipse cx="56"  cy="56"  rx="28" ry="30" fill="#82be3a" opacity="0.50" transform="rotate(-42, 56, 56)"/>
+
+  <!-- Lobe layer 2 — main canopy fill -->
+  <ellipse cx="100" cy="38"  rx="26" ry="22" fill="#76b430" opacity="0.82" transform="rotate( 6,100, 38)"/>
+  <ellipse cx="144" cy="56"  rx="24" ry="27" fill="#6aaa28" opacity="0.82" transform="rotate(42,144, 56)"/>
+  <ellipse cx="160" cy="100" rx="24" ry="22" fill="#76b430" opacity="0.82" transform="rotate( 2,160,100)"/>
+  <ellipse cx="144" cy="144" rx="24" ry="27" fill="#6aaa28" opacity="0.82" transform="rotate(-40,144,144)"/>
+  <ellipse cx="100" cy="162" rx="26" ry="21" fill="#76b430" opacity="0.82" transform="rotate(-6,100,162)"/>
+  <ellipse cx="56"  cy="144" rx="24" ry="27" fill="#6aaa28" opacity="0.82" transform="rotate(40, 56,144)"/>
+  <ellipse cx="40"  cy="100" rx="24" ry="22" fill="#76b430" opacity="0.82" transform="rotate( 2, 40,100)"/>
+  <ellipse cx="56"  cy="56"  rx="24" ry="27" fill="#6aaa28" opacity="0.82" transform="rotate(-42, 56, 56)"/>
+
+  <!-- Lobe highlights — upper-left of each lobe -->
+  <ellipse cx="94"  cy="28"  rx="11" ry="8"  fill="#c8e870" opacity="0.48"/>
+  <ellipse cx="136" cy="48"  rx="10" ry="7"  fill="#c0e068" opacity="0.42"/>
+  <ellipse cx="36"  cy="90"  rx="10" ry="7"  fill="#c8e870" opacity="0.42"/>
+  <ellipse cx="50"  cy="48"  rx="10" ry="7"  fill="#c0e068" opacity="0.40"/>
+
+  <!-- Darker shadow within each lobe (inner shadow) -->
+  <ellipse cx="100" cy="40"  rx="12" ry="10" fill="#3a8010" opacity="0.30"/>
+  <ellipse cx="144" cy="58"  rx="11" ry="12" fill="#348010" opacity="0.26"/>
+  <ellipse cx="158" cy="100" rx="11" ry="10" fill="#3a8010" opacity="0.26"/>
+  <ellipse cx="144" cy="142" rx="11" ry="12" fill="#348010" opacity="0.26"/>
+  <ellipse cx="100" cy="160" rx="12" ry="10" fill="#3a8010" opacity="0.28"/>
+  <ellipse cx="56"  cy="142" rx="11" ry="12" fill="#348010" opacity="0.26"/>
+  <ellipse cx="42"  cy="100" rx="11" ry="10" fill="#3a8010" opacity="0.26"/>
+  <ellipse cx="56"  cy="58"  rx="11" ry="12" fill="#348010" opacity="0.26"/>
+
+  <!-- Central trunk spot -->
+  <circle cx="100" cy="102" r="14" fill="#245810" opacity="0.45"/>
+  <circle cx="100" cy="102" r="6"  fill="#1a4008" opacity="0.55"/>
 </svg>

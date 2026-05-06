@@ -1,18 +1,59 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-  <!-- trunk -->
-  <rect x="14" y="22" width="4" height="6" rx="1" fill="#5D4037"/>
-  <!-- back bush (slightly larger, darker) -->
-  <ellipse cx="16" cy="17" rx="9" ry="7" fill="#2E7D32"/>
-  <!-- front left lobe -->
-  <circle cx="10" cy="19" r="5.5" fill="#388E3C"/>
-  <!-- front right lobe -->
-  <circle cx="22" cy="19" r="5.5" fill="#388E3C"/>
-  <!-- center top lobe -->
-  <circle cx="16" cy="14" r="6" fill="#43A047"/>
-  <!-- highlight dot left -->
-  <circle cx="13" cy="13" r="1.5" fill="#66BB6A" opacity="0.6"/>
-  <!-- highlight dot right -->
-  <circle cx="19" cy="15" r="1" fill="#66BB6A" opacity="0.5"/>
-  <!-- ground -->
-  <rect x="5" y="27.5" width="22" height="2" rx="1" fill="#1B5E20"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <filter id="shs" x="-15%" y="-15%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3.5"/>
+    </filter>
+  </defs>
+
+  <!-- Drop shadow -->
+  <ellipse cx="107" cy="108" rx="58" ry="54" fill="#507220" opacity="0.15" filter="url(#shs)"/>
+
+  <!-- Base wash -->
+  <path d="M100 44 C118 42 140 52 152 68 C164 84 164 106 154 124
+           C144 142 124 154 102 154 C80 154 58 144 46 128
+           C34 112 34 88 46 72 C58 54 80 46 100 44 Z"
+        fill="#d0ec98" opacity="0.58"/>
+
+  <!-- 5 branch spokes from center at 72° intervals -->
+  <!-- 0°=top 72°=lower-right 144°=lower-right 216°=lower-left 288°=upper-left -->
+  <g stroke="#3a2010" stroke-linecap="round" fill="none">
+    <line x1="100" y1="100" x2="100" y2="52"  stroke-width="2.2"/>
+    <line x1="100" y1="100" x2="148" y2="84"  stroke-width="2"/>
+    <line x1="100" y1="100" x2="130" y2="144" stroke-width="2"/>
+    <line x1="100" y1="100" x2="70"  y2="144" stroke-width="2"/>
+    <line x1="100" y1="100" x2="52"  y2="84"  stroke-width="2"/>
+    <!-- sub-branches -->
+    <line x1="100" y1="100" x2="116" y2="72"  stroke-width="1.0" opacity="0.50"/>
+    <line x1="100" y1="100" x2="84"  y2="72"  stroke-width="1.0" opacity="0.50"/>
+  </g>
+
+  <!-- Lobe base (lighter, slightly larger) -->
+  <!-- 5 lobes: top(100,56), TR(144,88), BR(128,144), BL(72,144), TL(56,88) -->
+  <ellipse cx="100" cy="56"  rx="26" ry="22" fill="#7cbc3a" opacity="0.48"/>
+  <ellipse cx="144" cy="88"  rx="24" ry="26" fill="#6eb030" opacity="0.48" transform="rotate(72,144,88)"/>
+  <ellipse cx="128" cy="144" rx="26" ry="22" fill="#7cbc3a" opacity="0.48" transform="rotate(144,128,144)"/>
+  <ellipse cx="72"  cy="144" rx="26" ry="22" fill="#6eb030" opacity="0.48" transform="rotate(216,72,144)"/>
+  <ellipse cx="56"  cy="88"  rx="24" ry="26" fill="#7cbc3a" opacity="0.48" transform="rotate(288,56,88)"/>
+
+  <!-- Lobe main -->
+  <ellipse cx="100" cy="56"  rx="22" ry="19" fill="#68aa28" opacity="0.84"/>
+  <ellipse cx="144" cy="88"  rx="20" ry="23" fill="#5e9e20" opacity="0.84" transform="rotate(72,144,88)"/>
+  <ellipse cx="128" cy="144" rx="22" ry="19" fill="#68aa28" opacity="0.84" transform="rotate(144,128,144)"/>
+  <ellipse cx="72"  cy="144" rx="22" ry="19" fill="#5e9e20" opacity="0.84" transform="rotate(216,72,144)"/>
+  <ellipse cx="56"  cy="88"  rx="20" ry="23" fill="#68aa28" opacity="0.84" transform="rotate(288,56,88)"/>
+
+  <!-- Highlights -->
+  <ellipse cx="94"  cy="46"  rx="10" ry="7"  fill="#b0dc58" opacity="0.50"/>
+  <ellipse cx="50"  cy="82"  rx="9"  ry="6"  fill="#b0dc58" opacity="0.42"/>
+
+  <!-- Inner shadow on each lobe -->
+  <ellipse cx="100" cy="58"  rx="9"  ry="8"  fill="#2c6c0c" opacity="0.30"/>
+  <ellipse cx="144" cy="90"  rx="8"  ry="9"  fill="#286408" opacity="0.26"/>
+  <ellipse cx="128" cy="144" rx="9"  ry="8"  fill="#2c6c0c" opacity="0.26"/>
+  <ellipse cx="72"  cy="144" rx="9"  ry="8"  fill="#286408" opacity="0.26"/>
+  <ellipse cx="56"  cy="88"  rx="8"  ry="9"  fill="#2c6c0c" opacity="0.26"/>
+
+  <!-- Center -->
+  <circle cx="100" cy="100" r="12" fill="#1e5808" opacity="0.45"/>
+  <circle cx="100" cy="100" r="5"  fill="#163e06" opacity="0.55"/>
 </svg>
