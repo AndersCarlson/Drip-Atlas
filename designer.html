@@ -1275,34 +1275,48 @@ function parseZoneNum(z) {
 }
 
 const WATER_LABEL = {
-  Frequent:  { icon: '💧💧', label: 'Frequent watering',  desc: 'Every 1–2 days in peak season' },
-  Average:   { icon: '💧',   label: 'Regular watering',   desc: 'Every 3–7 days' },
-  Minimum:   { icon: '🏜️',   label: 'Low water needs',    desc: 'Every 2–4 weeks' },
-  None:      { icon: '☀️',   label: 'No watering needed', desc: 'Drought-tolerant once established' },
+  Frequent: { icon: '💧💧', label: 'Frequent watering',  desc: 'Every 1–2 days in peak season' },
+  Average:  { icon: '💧',   label: 'Regular watering',   desc: 'Every 3–7 days' },
+  Minimum:  { icon: '🌵',   label: 'Low water needs',    desc: 'Every 2–4 weeks' },
+  None:     { icon: '☀️',   label: 'No watering needed', desc: 'Drought-tolerant once established' },
 };
 
-async function loadWateringCard(perenualId) {
+// Fallback guidance when Perenual doesn't return watering data for a species
+const TYPE_WATER_DEFAULTS = {
+  tree:  { icon: '💧',   label: 'Regular watering',  desc: 'Weekly when young; monthly once established' },
+  shrub: { icon: '💧',   label: 'Regular watering',  desc: 'Every 1–2 weeks during growing season' },
+  grass: { icon: '💧💧', label: 'Frequent watering', desc: 'Every 2–3 days in warm weather' },
+};
+
+async function loadWateringCard(perenualId, plantType) {
   document.getElementById('plant-watering-card').style.display = 'none';
-  await fetchLocalZone();
-  const detail = await fetchPlantDetail(perenualId);
-  if (!detail) return;
 
-  const w = detail.watering ? (WATER_LABEL[detail.watering] || { icon: '💧', label: detail.watering, desc: '' }) : null;
-  const bench = detail.watering_general_benchmark;
-  const benchText = bench?.value && bench?.unit
+  // Fetch both in parallel — don't let zone lookup block watering display
+  const [detailResult] = await Promise.allSettled([
+    fetchPlantDetail(perenualId),
+    fetchLocalZone(),
+  ]);
+  const detail = detailResult.status === 'fulfilled' ? detailResult.value : null;
+
+  // Watering — prefer API value, fall back to plant-type default
+  const apiWater = detail?.watering && WATER_LABEL[detail.watering];
+  const w = apiWater || TYPE_WATER_DEFAULTS[plantType] || TYPE_WATER_DEFAULTS.tree;
+
+  const bench = detail?.watering_general_benchmark;
+  const benchText = (bench?.value && bench?.unit)
     ? `Every ${bench.value} ${bench.unit}`
-    : (w?.desc || '');
+    : w.desc;
 
-  document.getElementById('watering-icon').textContent  = w?.icon  || '💧';
-  document.getElementById('watering-freq').textContent  = w?.label || '—';
+  document.getElementById('watering-icon').textContent  = w.icon;
+  document.getElementById('watering-freq').textContent  = w.label;
   document.getElementById('watering-bench').textContent = benchText;
 
-  // Zone compatibility
-  const zc = document.getElementById('zone-compat');
-  const hMin = parseZoneNum(detail.hardiness?.min);
-  const hMax = parseZoneNum(detail.hardiness?.max);
+  // Zone compatibility (only when API returns hardiness data)
+  const zc   = document.getElementById('zone-compat');
+  const hMin = parseZoneNum(detail?.hardiness?.min);
+  const hMax = parseZoneNum(detail?.hardiness?.max);
   const lz   = parseZoneNum(localZone);
-  if (hMin !== null && hMax !== null && detail.hardiness?.min && detail.hardiness?.max) {
+  if (hMin !== null && hMax !== null) {
     const rangeStr = `Zone ${detail.hardiness.min}–${detail.hardiness.max}`;
     if (lz === null) {
       zc.className = 'zone-compat warn';
@@ -1374,7 +1388,7 @@ function assignPlantToSelected(perenualId, name, sn) {
   document.getElementById('plant-search-results').classList.remove('open');
   showAssignedPlant(s.assignedPlant);
   updatePlantList();
-  loadWateringCard(perenualId);
+  loadWateringCard(perenualId, s.type);
 }
 
 function clearAssignedPlant() {
@@ -1922,7 +1936,7 @@ function syncPlantPanel(id) {
   document.getElementById('plant-search-results').classList.remove('open');
   showAssignedPlant(s.assignedPlant || null);
   // watering card
-  if (s.assignedPlant) loadWateringCard(s.assignedPlant.id);
+  if (s.assignedPlant) loadWateringCard(s.assignedPlant.id, s.type);
   else document.getElementById('plant-watering-card').style.display = 'none';
 }
 
