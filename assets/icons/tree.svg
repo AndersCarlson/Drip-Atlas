@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- trunk -->
+  <rect x="13.5" y="22" width="5" height="7" rx="1.5" fill="#6D4C41"/>
+  <!-- back canopy shadow -->
+  <ellipse cx="16" cy="14" rx="10" ry="9" fill="#1B5E20"/>
+  <!-- main canopy -->
+  <ellipse cx="16" cy="13" rx="9" ry="8" fill="#2E7D32"/>
+  <!-- mid canopy -->
+  <ellipse cx="16" cy="12" rx="7.5" ry="6.5" fill="#388E3C"/>
+  <!-- top canopy -->
+  <ellipse cx="16" cy="10" rx="5.5" ry="5" fill="#43A047"/>
+  <!-- highlight -->
+  <ellipse cx="13.5" cy="9" rx="2.5" ry="2" fill="#66BB6A" opacity="0.55"/>
+</svg>

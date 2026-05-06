@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- path surface converging to horizon -->
+  <path d="M4 29 L12 10 L20 10 L28 29 Z" fill="#C8A96E"/>
+  <!-- path edge lines (perspective) -->
+  <line x1="4" y1="29" x2="12" y2="10" stroke="#A07840" stroke-width="1.5"/>
+  <line x1="28" y1="29" x2="20" y2="10" stroke="#A07840" stroke-width="1.5"/>
+  <!-- stepping stones -->
+  <rect x="13" y="23" width="6" height="3.5" rx="1" fill="#B89050" opacity="0.8"/>
+  <rect x="13" y="17" width="6" height="3.5" rx="1" fill="#B89050" opacity="0.8"/>
+  <rect x="13" y="11.5" width="6" height="3" rx="1" fill="#B89050" opacity="0.7"/>
+  <!-- grass sides -->
+  <path d="M0 29 L4 29 L12 10 L10 10 Z" fill="#66BB6A" opacity="0.7"/>
+  <path d="M32 29 L28 29 L20 10 L22 10 Z" fill="#66BB6A" opacity="0.7"/>
+</svg>

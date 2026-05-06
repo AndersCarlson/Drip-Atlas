@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- trunk -->
+  <rect x="14" y="22" width="4" height="6" rx="1" fill="#5D4037"/>
+  <!-- back bush (slightly larger, darker) -->
+  <ellipse cx="16" cy="17" rx="9" ry="7" fill="#2E7D32"/>
+  <!-- front left lobe -->
+  <circle cx="10" cy="19" r="5.5" fill="#388E3C"/>
+  <!-- front right lobe -->
+  <circle cx="22" cy="19" r="5.5" fill="#388E3C"/>
+  <!-- center top lobe -->
+  <circle cx="16" cy="14" r="6" fill="#43A047"/>
+  <!-- highlight dot left -->
+  <circle cx="13" cy="13" r="1.5" fill="#66BB6A" opacity="0.6"/>
+  <!-- highlight dot right -->
+  <circle cx="19" cy="15" r="1" fill="#66BB6A" opacity="0.5"/>
+  <!-- ground -->
+  <rect x="5" y="27.5" width="22" height="2" rx="1" fill="#1B5E20"/>
+</svg>

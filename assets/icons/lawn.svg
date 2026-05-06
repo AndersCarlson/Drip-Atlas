@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- left blade -->
+  <path d="M10 27 C10 27 6 21 8 13 C9 10 11 9 12 10 C12 10 10 16 10 27Z" fill="#43A047"/>
+  <!-- right blade -->
+  <path d="M22 27 C22 27 26 21 24 13 C23 10 21 9 20 10 C20 10 22 16 22 27Z" fill="#43A047"/>
+  <!-- center blade (tallest) -->
+  <path d="M16 27 C14 27 13 19 15 10 C15.5 8 16 7 16 7 C16 7 16.5 8 17 10 C19 19 18 27 16 27Z" fill="#2E7D32"/>
+  <!-- ground -->
+  <rect x="5" y="27" width="22" height="2.5" rx="1.25" fill="#1B5E20"/>
+</svg>

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- background surface -->
+  <rect x="3" y="5" width="26" height="22" rx="2" fill="#90A4AE"/>
+  <!-- paving grid lines horizontal -->
+  <line x1="3" y1="13" x2="29" y2="13" stroke="#78909C" stroke-width="1.5"/>
+  <line x1="3" y1="21" x2="29" y2="21" stroke="#78909C" stroke-width="1.5"/>
+  <!-- paving grid lines vertical — top row -->
+  <line x1="10" y1="5" x2="10" y2="13" stroke="#78909C" stroke-width="1.5"/>
+  <line x1="19" y1="5" x2="19" y2="13" stroke="#78909C" stroke-width="1.5"/>
+  <!-- paving grid lines vertical — middle row -->
+  <line x1="14" y1="13" x2="14" y2="21" stroke="#78909C" stroke-width="1.5"/>
+  <line x1="23" y1="13" x2="23" y2="21" stroke="#78909C" stroke-width="1.5"/>
+  <!-- paving grid lines vertical — bottom row -->
+  <line x1="10" y1="21" x2="10" y2="27" stroke="#78909C" stroke-width="1.5"/>
+  <line x1="19" y1="21" x2="19" y2="27" stroke="#78909C" stroke-width="1.5"/>
+  <!-- highlight sheen -->
+  <rect x="3" y="5" width="26" height="4" rx="2" fill="#B0BEC5" opacity="0.5"/>
+</svg>
