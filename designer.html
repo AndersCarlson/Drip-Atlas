@@ -438,7 +438,7 @@
         <div class="ls-type-grid">
           <button class="ls-type-btn active" data-zone="lawn"     onclick="setActiveZoneType('lawn')"><img src="assets/icons/lawn.svg" width="20" height="20" alt="Lawn">Lawn</button>
           <button class="ls-type-btn"        data-zone="garden"   onclick="setActiveZoneType('garden')"><img src="assets/icons/garden.svg" width="20" height="20" alt="Garden Bed">Garden Bed</button>
-          <button class="ls-type-btn"        data-zone="shrubs"   onclick="setActiveZoneType('shrubs')"><img src="assets/icons/shrubs.svg" width="20" height="20" alt="Shrubs">Shrubs</button>
+          <button class="ls-type-btn"        data-zone="pool"     onclick="setActiveZoneType('pool')"><img src="assets/icons/pool.svg" width="20" height="20" alt="Pool/Pond">Pool/Pond</button>
           <button class="ls-type-btn"        data-zone="driveway" onclick="setActiveZoneType('driveway')"><img src="assets/icons/driveway.svg" width="20" height="20" alt="Driveway">Driveway</button>
           <button class="ls-type-btn"        data-zone="path"     onclick="setActiveZoneType('path')"><img src="assets/icons/walkway.svg" width="20" height="20" alt="Walkway">Walkway</button>
           <button class="ls-type-btn"        data-zone="nowater"  onclick="setActiveZoneType('nowater')"><img src="assets/icons/nowater.svg" width="20" height="20" alt="No-Water">No-Water</button>
@@ -565,7 +565,7 @@
 const ZONES = {
   lawn:     { label:'Lawn',           color:'#5db85d', fill:'#4CAF50', icon:'<img src="assets/icons/lawn.svg"     width="16" height="16" style="vertical-align:middle">' },
   garden:   { label:'Garden Bed',     color:'#c8a050', fill:'#a07030', icon:'<img src="assets/icons/garden.svg"   width="16" height="16" style="vertical-align:middle">' },
-  shrubs:   { label:'Shrubs / Trees', color:'#2d8b57', fill:'#1a6b3a', icon:'<img src="assets/icons/shrubs.svg"   width="16" height="16" style="vertical-align:middle">' },
+  pool:     { label:'Pool / Pond',     color:'#29b6f6', fill:'#0288d1', icon:'<img src="assets/icons/pool.svg"    width="16" height="16" style="vertical-align:middle">' },
   driveway: { label:'Driveway',       color:'#9eaab8', fill:'#708090', icon:'<img src="assets/icons/driveway.svg" width="16" height="16" style="vertical-align:middle">' },
   path:     { label:'Walkway',        color:'#d4aa6a', fill:'#b08040', icon:'<img src="assets/icons/walkway.svg"  width="16" height="16" style="vertical-align:middle">' },
   nowater:  { label:'No-Water Zone',  color:'#e05555', fill:'#cc3030', icon:'<img src="assets/icons/nowater.svg"  width="16" height="16" style="vertical-align:middle">' },
@@ -1192,7 +1192,7 @@ function flowNext() {
 const HEAD_REC = {
   lawn:     { head:'Rotor heads',   pipe:'¾" main → ½" lateral', icon:'💦' },
   garden:   { head:'Drip emitters', pipe:'½" drip tubing',        icon:'💧' },
-  shrubs:   { head:'Drip emitters', pipe:'½" drip tubing',        icon:'💧' },
+  pool:     { head:'—',             pipe:'—',                      icon:'⛔' },
   driveway: { head:'—',             pipe:'—',                      icon:'⛔' },
   path:     { head:'—',             pipe:'—',                      icon:'⛔' },
   nowater:  { head:'—',             pipe:'—',                      icon:'⛔' },
@@ -1336,7 +1336,7 @@ function clearIrrigationLayer() {
 const HEAD_CONFIG = {
   lawn:   { radiusFt: 15, spacingFt: 20, type: 'Rotor',   color: '#2980e8' },
   garden: { radiusFt:  5, spacingFt:  8, type: 'Drip',    color: '#27ae60' },
-  shrubs: { radiusFt:  5, spacingFt:  8, type: 'Drip',    color: '#27ae60' },
+  pool:   { radiusFt:  0, spacingFt:  0, type: 'None',    color: '#29b6f6' },
 };
 
 function generateWaterPlan() {
@@ -1491,7 +1491,7 @@ function generateWaterPlan() {
     const ll2    = s.layer.getLatLngs()[0].map(p => [p.lat, p.lng]);
     const heads2 = placeHeadsInZone(ll2, cfg2.spacingFt);
     const cen2   = polyCentroid(ll2);
-    const isDrip = s.type === 'garden' || s.type === 'shrubs';
+    const isDrip = s.type === 'garden';
 
     let distFt2 = 50;
     if (wsLat !== null) {

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- water body -->
+  <ellipse cx="16" cy="17" rx="12" ry="9" fill="#4FC3F7" opacity="0.85"/>
+  <!-- inner water sheen -->
+  <ellipse cx="14" cy="15" rx="7" ry="4" fill="#81D4FA" opacity="0.55"/>
+  <!-- pool edge / coping -->
+  <ellipse cx="16" cy="17" rx="12" ry="9" stroke="#0288D1" stroke-width="1.8" fill="none"/>
+  <!-- ripple lines -->
+  <ellipse cx="16" cy="17" rx="7.5" ry="5" stroke="#29B6F6" stroke-width="0.9" fill="none" opacity="0.6"/>
+  <ellipse cx="16" cy="17" rx="3.5" ry="2.2" stroke="#29B6F6" stroke-width="0.8" fill="none" opacity="0.5"/>
+  <!-- highlight glint -->
+  <ellipse cx="12" cy="13.5" rx="2.5" ry="1.4" fill="white" opacity="0.45" transform="rotate(-20,12,13.5)"/>
+  <!-- ground/deck around pool -->
+  <rect x="4" y="27" width="24" height="2.5" rx="1.25" fill="#90A4AE"/>
+</svg>
