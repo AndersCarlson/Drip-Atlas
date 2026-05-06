@@ -1246,11 +1246,17 @@ function onPlantSearch(query) {
   ).slice(0, 10);
   if (matches.length === 0) { results.classList.remove('open'); return; }
   results.innerHTML = matches.map(p =>
-    `<div class="plant-search-item" onmousedown="assignPlantToSelected(${p.id},${JSON.stringify(p.n)},${JSON.stringify(p.sn||'')})">
+    `<div class="plant-search-item" data-pid="${p.id}" data-name="${escHtml(p.n)}" data-sn="${escHtml(p.sn||'')}">
       <div class="psi-name">${escHtml(p.n)}</div>
       ${p.sn ? `<div class="psi-sci">${escHtml(p.sn)}</div>` : ''}
     </div>`
   ).join('');
+  results.querySelectorAll('.plant-search-item').forEach(el => {
+    el.addEventListener('mousedown', ev => {
+      ev.preventDefault();
+      assignPlantToSelected(parseInt(el.dataset.pid), el.dataset.name, el.dataset.sn);
+    });
+  });
   results.classList.add('open');
 }
 
