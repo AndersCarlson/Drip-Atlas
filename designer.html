@@ -711,60 +711,56 @@ window.addEventListener('DOMContentLoaded', async () => {
 // ─────────────────────────────────────────
 // AUTO SURFACE DETECTION
 // ─────────────────────────────────────────
-
-// Step 1 — draw approximate surfaces immediately so the map is never blank.
-// Step 2 — refine in the background with real OSM data; replace fallbacks if
-//           better shapes are found.
+//
+// Flow:
+//   1. Draw generic placeholder zones immediately (map is never blank).
+//   2. In parallel, fetch the Regrid parcel polygon (via ArcGIS FeatureServer)
+//      and any detailed OSM features (buildings, driveways, etc.).
+//   3. When the parcel polygon arrives:
+//        • Render the lot boundary as a non-interactive yellow dashed outline.
+//        • Remove the generic placeholders.
+//        • Redraw zones scaled and centred to fit inside the actual lot.
+//        • Replace/supplement with any OSM features found within the lot.
 
 function autoDrawSurfaces(lat, lng) {
-  const fallbackIds = _drawFallbackSurfaces(lat, lng);
-  _refineWithOSM(lat, lng, fallbackIds);
+  // Step 1 — instant placeholder so the map is never blank on open.
+  const placeholderIds = _drawGenericZones(lat, lng, null);
+  hint('Fetching your property lot…', 3000);
+
+  // Step 2 — refine with real lot + OSM data in the background.
+  _refineWithLot(lat, lng, placeholderIds);
 }
 
-// Returns the Leaflet stamp IDs of every shape it created.
-function _drawFallbackSurfaces(lat, lng) {
-  const dLat = degPerFtLat();
-  const dLng = degPerFtLng(lat);
-  const ids  = [];
+// ── Parcel polygon fetch (Regrid via ArcGIS FeatureServer) ──────────────────
 
-  // House footprint — 40 ft wide × 30 ft deep, centred on the geocoded point
-  ids.push(addSurfaceShape([
-    [lat + 15*dLat, lng - 20*dLng],
-    [lat + 15*dLat, lng + 20*dLng],
-    [lat - 15*dLat, lng + 20*dLng],
-    [lat - 15*dLat, lng - 20*dLng],
-  ], 'nowater', {}));
+async function _fetchLotPolygon(lat, lng) {
+  const base   = 'https://services.arcgis.com/KzeiCaQsMoeCfoCq/arcgis/rest/services' +
+                 '/Regrid_Nationwide_Parcel_Boundaries_v1/FeatureServer/0/query';
+  const params = new URLSearchParams({
+    geometry:     JSON.stringify({ x: lng, y: lat, spatialReference: { wkid: 4326 } }),
+    geometryType: 'esriGeometryPoint',
+    spatialRel:   'esriSpatialRelIntersects',
+    outFields:    'ogc_fid,parcelnumb,address,ll_address',
+    returnGeometry: 'true',
+    outSR:        '4326',
+    f:            'json',
+    token:        ARCGIS_API_KEY,
+  });
 
-  // Front lawn — south of house, ~56 ft wide × 33 ft deep
-  ids.push(addSurfaceShape([
-    [lat - 15*dLat, lng - 28*dLng],
-    [lat - 15*dLat, lng + 28*dLng],
-    [lat - 48*dLat, lng + 28*dLng],
-    [lat - 48*dLat, lng - 28*dLng],
-  ], 'lawn', {}));
+  const res  = await fetch(`${base}?${params}`);
+  const data = await res.json();
+  const feat = (data.features || [])[0];
+  if (!feat?.geometry?.rings?.length) return null;
 
-  // Back garden — north of house, ~44 ft wide × 37 ft deep
-  ids.push(addSurfaceShape([
-    [lat + 15*dLat, lng - 22*dLng],
-    [lat + 15*dLat, lng + 22*dLng],
-    [lat + 52*dLat, lng + 22*dLng],
-    [lat + 52*dLat, lng - 22*dLng],
-  ], 'garden', {}));
-
-  // Driveway — right side, running from street to house
-  ids.push(addSurfaceShape([
-    [lat + 15*dLat, lng + 20*dLng],
-    [lat + 15*dLat, lng + 32*dLng],
-    [lat - 48*dLat, lng + 32*dLng],
-    [lat - 48*dLat, lng + 20*dLng],
-  ], 'driveway', {}));
-
-  hint('Approximate surfaces placed — reshape them to match your property', 5000);
-  return ids;
+  // Esri uses [x=lng, y=lat] order — swap to Leaflet's [lat, lng].
+  // rings[0] is the outer ring; rings[1+] are holes (ignored here).
+  return feat.geometry.rings[0].map(([x, y]) => [y, x]);
 }
 
-async function _refineWithOSM(lat, lng, fallbackIds) {
-  const OSM_TAG_TO_ZONE = t => {
+// ── OSM detailed features (buildings, driveways, gardens) ───────────────────
+
+async function _fetchOSMFeatures(lat, lng) {
+  const osmTagToZone = t => {
     if (t.building)                                                    return 'nowater';
     if (t.leisure === 'swimming_pool')                                 return 'pool';
     if (t.landuse === 'garden' || t.leisure === 'garden')             return 'garden';
@@ -774,7 +770,6 @@ async function _refineWithOSM(lat, lng, fallbackIds) {
     if (t.highway === 'footway'  || t.footway || t.highway === 'path') return 'path';
     return null;
   };
-
   const query = `[out:json][timeout:10];
 (
   way[building](around:60,${lat},${lng});
@@ -785,34 +780,144 @@ async function _refineWithOSM(lat, lng, fallbackIds) {
   way[highway=footway](around:60,${lat},${lng});
 );
 out geom;`;
+  const res  = await fetch('https://overpass-api.de/api/interpreter', {
+    method: 'POST', body: 'data=' + encodeURIComponent(query),
+  });
+  const data = await res.json();
+  return (data.elements || [])
+    .filter(e => e.type === 'way' && e.geometry?.length >= 3)
+    .map(e => ({ ...e, zoneType: osmTagToZone(e.tags || {}) }))
+    .filter(e => e.zoneType);
+}
 
-  try {
-    const res  = await fetch('https://overpass-api.de/api/interpreter', {
-      method: 'POST', body: 'data=' + encodeURIComponent(query),
-    });
-    const data = await res.json();
-    const ways = (data.elements || []).filter(e => e.type === 'way' && e.geometry?.length >= 3);
+// ── Lot boundary rendering ───────────────────────────────────────────────────
 
-    let drawn = 0;
-    for (const way of ways) {
-      const zoneType = OSM_TAG_TO_ZONE(way.tags || {});
-      if (!zoneType) continue;
-      addSurfaceShape(way.geometry.map(n => [n.lat, n.lon]), zoneType, way.tags);
-      drawn++;
-    }
+let _lotBoundaryLayer = null;
 
-    if (drawn > 0) {
-      // Real OSM data found — remove the placeholder fallback shapes
-      fallbackIds.forEach(id => {
-        const s = shapes.get(id);
-        if (s) { drawnItems.removeLayer(s.layer); shapes.delete(id); }
-      });
-      deselect();
-      updateList();
-      updateSaveBtn();
-      hint(`${drawn} surface${drawn > 1 ? 's' : ''} found from map data — edit or add more`, 5000);
-    }
-  } catch (_) { /* network error — keep fallback surfaces as-is */ }
+function _drawLotBoundary(lotPoly) {
+  if (_lotBoundaryLayer) map.removeLayer(_lotBoundaryLayer);
+  _lotBoundaryLayer = L.polygon(lotPoly, {
+    color:       '#f5c842',
+    weight:      2.5,
+    opacity:     1,
+    fillOpacity: 0.04,
+    fillColor:   '#f5c842',
+    interactive: false,
+    dashArray:   '7 5',
+  }).addTo(map);
+}
+
+// ── Lot geometry helpers ─────────────────────────────────────────────────────
+
+function _lotBounds(lotPoly) {
+  const lats = lotPoly.map(p => p[0]);
+  const lngs = lotPoly.map(p => p[1]);
+  const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+  const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
+  return { minLat, maxLat, minLng, maxLng,
+           cLat: (minLat + maxLat) / 2, cLng: (minLng + maxLng) / 2 };
+}
+
+// ── Zone drawing — generic proportional layout ───────────────────────────────
+// Draws four zones (house / front lawn / back garden / driveway) scaled to fit
+// inside `lotPoly` when provided, or using fixed-ft defaults otherwise.
+// Returns the Leaflet stamp IDs of every shape created.
+
+function _drawGenericZones(lat, lng, lotPoly) {
+  const dLat = degPerFtLat();
+  const dLng = degPerFtLng(lat);
+  const ids  = [];
+
+  let cLat = lat, cLng = lng, sN = 1, sE = 1;
+
+  if (lotPoly) {
+    const b = _lotBounds(lotPoly);
+    cLat = b.cLat;
+    cLng = b.cLng;
+    // Lot dimensions in feet (baseline assumption: 80ft wide × 90ft deep)
+    const lotH = (b.maxLat - b.minLat) / dLat;
+    const lotW = (b.maxLng - b.minLng) / dLng;
+    sN = Math.min(Math.max((lotH - 10) / 90, 0.35), 3);
+    sE = Math.min(Math.max((lotW - 10) / 80, 0.35), 3);
+  }
+
+  // House footprint — centred in the lot
+  ids.push(addSurfaceShape([
+    [cLat + 15*sN*dLat, cLng - 20*sE*dLng],
+    [cLat + 15*sN*dLat, cLng + 20*sE*dLng],
+    [cLat - 15*sN*dLat, cLng + 20*sE*dLng],
+    [cLat - 15*sN*dLat, cLng - 20*sE*dLng],
+  ], 'nowater', {}));
+
+  // Front lawn — south of house
+  ids.push(addSurfaceShape([
+    [cLat - 15*sN*dLat, cLng - 28*sE*dLng],
+    [cLat - 15*sN*dLat, cLng + 28*sE*dLng],
+    [cLat - 48*sN*dLat, cLng + 28*sE*dLng],
+    [cLat - 48*sN*dLat, cLng - 28*sE*dLng],
+  ], 'lawn', {}));
+
+  // Back garden — north of house
+  ids.push(addSurfaceShape([
+    [cLat + 15*sN*dLat, cLng - 22*sE*dLng],
+    [cLat + 15*sN*dLat, cLng + 22*sE*dLng],
+    [cLat + 52*sN*dLat, cLng + 22*sE*dLng],
+    [cLat + 52*sN*dLat, cLng - 22*sE*dLng],
+  ], 'garden', {}));
+
+  // Driveway — right side
+  ids.push(addSurfaceShape([
+    [cLat + 15*sN*dLat, cLng + 20*sE*dLng],
+    [cLat + 15*sN*dLat, cLng + 32*sE*dLng],
+    [cLat - 48*sN*dLat, cLng + 32*sE*dLng],
+    [cLat - 48*sN*dLat, cLng + 20*sE*dLng],
+  ], 'driveway', {}));
+
+  return ids;
+}
+
+// ── Main refinement routine ──────────────────────────────────────────────────
+
+async function _refineWithLot(lat, lng, placeholderIds) {
+  // Fetch parcel polygon and OSM features in parallel.
+  const [lotResult, osmResult] = await Promise.allSettled([
+    _fetchLotPolygon(lat, lng),
+    _fetchOSMFeatures(lat, lng),
+  ]);
+
+  const lotPoly  = lotResult.status  === 'fulfilled' ? lotResult.value  : null;
+  const osmWays  = osmResult.status  === 'fulfilled' ? osmResult.value  : [];
+
+  // Draw lot boundary outline if we got the parcel.
+  if (lotPoly) _drawLotBoundary(lotPoly);
+
+  // Remove generic placeholders — we're about to draw better shapes.
+  placeholderIds.forEach(id => {
+    const s = shapes.get(id);
+    if (s) { drawnItems.removeLayer(s.layer); shapes.delete(id); }
+  });
+  deselect();
+
+  // Draw detailed OSM features (buildings, pools, garden beds, etc.).
+  let osmDrawn = 0;
+  for (const way of osmWays) {
+    addSurfaceShape(way.geometry.map(n => [n.lat, n.lon]), way.zoneType, way.tags);
+    osmDrawn++;
+  }
+
+  // If OSM gave us nothing, fall back to proportional zones fitted to the lot.
+  if (osmDrawn === 0) {
+    _drawGenericZones(lat, lng, lotPoly);
+    const msg = lotPoly
+      ? 'Surfaces fitted to your lot — reshape to fine-tune'
+      : 'Approximate surfaces placed — reshape to match your property';
+    hint(msg, 6000);
+  } else {
+    hint(`${osmDrawn} surface${osmDrawn > 1 ? 's' : ''} mapped from your lot — edit or add more`, 5000);
+  }
+
+  updateList();
+  updateSaveBtn();
 }
 
 // Returns the Leaflet stamp ID of the created shape.
