@@ -2314,7 +2314,7 @@ function _redrawHeadArc(id) {
     });
   }
   irrigationLayer.addLayer(h.arcLayer);
-  if (selectedHeadId === id) _wireArcHover(id);
+  h.arcLayer.on('click', e => { _shapeWasClicked = true; L.DomEvent.stop(e); selectHead(id); });
 }
 
 function _clearArcHandles() {
@@ -2331,61 +2331,57 @@ function _showArcHandles(id) {
     draggable: true, zIndexOffset: 600, interactive: true,
   }).addTo(map);
 
+  // ── Direction + radius handle (solid) ─────────────────────────────────────
+  // Drag rotates the arc; drag closer/farther changes the spray radius.
   const rotLl = _headPtFromAngle(h, h.dirDeg, h.radiusFt);
   const rot = mkHandle(rotLl, 'arc-rotate-handle');
   rot.on('mousedown', e => { _arcHandleDrag = true; L.DomEvent.stopPropagation(e); });
   rot.on('drag', () => {
     const ll = rot.getLatLng();
-    h.dirDeg = _angleFromHead(h, ll.lat, ll.lng);
+    const dLat = degPerFtLat(), dLng = degPerFtLng(h.lat);
+    const northFt = (ll.lat - h.lat) / dLat;
+    const eastFt  = (ll.lng - h.lng) / dLng;
+    h.dirDeg   = Math.atan2(eastFt, northFt) * 180 / Math.PI;
+    h.radiusFt = Math.max(3, Math.hypot(northFt, eastFt));
     _redrawHeadArc(id);
     if (_arcHandles[1]) _arcHandles[1].setLatLng(_headPtFromAngle(h, h.dirDeg + h.arcDeg / 2, h.radiusFt));
     _updateHeadPropsPanel(id);
   });
   rot.on('dragend', () => { _arcHandleDrag = false; });
-  rot.on('mouseover', () => { if (_arcHoverTmo) { clearTimeout(_arcHoverTmo); _arcHoverTmo = null; } });
-  rot.on('mouseout', () => { if (!_arcHandleDrag) _arcHoverTmo = setTimeout(_clearArcHandles, 200); });
 
+  // ── Arc-width handle (dashed) ──────────────────────────────────────────────
+  // Only the dragged side moves; the opposite edge stays fixed.
+  // The direction handle always tracks the new arc centre.
+  let fixedEdge = h.dirDeg - h.arcDeg / 2;
   const wLl = _headPtFromAngle(h, h.dirDeg + h.arcDeg / 2, h.radiusFt);
   const wid = mkHandle(wLl, 'arc-width-handle');
   wid.on('mousedown', e => { _arcHandleDrag = true; L.DomEvent.stopPropagation(e); });
+  wid.on('dragstart', () => { fixedEdge = h.dirDeg - h.arcDeg / 2; });
   wid.on('drag', () => {
     const ll = wid.getLatLng();
-    let diff = _angleFromHead(h, ll.lat, ll.lng) - h.dirDeg;
-    while (diff > 180) diff -= 360; while (diff < -180) diff += 360;
-    h.arcDeg = Math.max(10, Math.min(350, Math.abs(diff) * 2));
+    let movingEdge = _angleFromHead(h, ll.lat, ll.lng);
+    let newArc = movingEdge - fixedEdge;
+    while (newArc < 0) newArc += 360;
+    while (newArc >= 360) newArc -= 360;
+    h.arcDeg = Math.max(5, Math.min(350, newArc));
+    h.dirDeg = fixedEdge + h.arcDeg / 2;
     _redrawHeadArc(id);
     if (_arcHandles[0]) _arcHandles[0].setLatLng(_headPtFromAngle(h, h.dirDeg, h.radiusFt));
     _updateHeadPropsPanel(id);
   });
   wid.on('dragend', () => { _arcHandleDrag = false; });
-  wid.on('mouseover', () => { if (_arcHoverTmo) { clearTimeout(_arcHoverTmo); _arcHoverTmo = null; } });
-  wid.on('mouseout', () => { if (!_arcHandleDrag) _arcHoverTmo = setTimeout(_clearArcHandles, 200); });
 
   _arcHandles = [rot, wid];
-}
-
-function _wireArcHover(id) {
-  const h = heads.get(id);
-  if (!h || !h.arcLayer) return;
-  h.arcLayer.off('mouseover mouseout');
-  if (h.arcDeg >= 360) return;
-  h.arcLayer.on('mouseover', () => {
-    if (_arcHoverTmo) { clearTimeout(_arcHoverTmo); _arcHoverTmo = null; }
-    _showArcHandles(id);
-  });
-  h.arcLayer.on('mouseout', () => {
-    if (!_arcHandleDrag) _arcHoverTmo = setTimeout(_clearArcHandles, 200);
-  });
 }
 
 function _updateHeadPropsPanel(id) {
   const h = heads.get(id);
   if (!h) return;
-  document.getElementById('hp-type').textContent = h.type;
-  document.getElementById('hp-zone').textContent = h.zoneName;
-  document.getElementById('hp-gpm').textContent  = h.gpm.toFixed(1);
-  document.getElementById('hp-radius').textContent = h.radiusFt + ' ft';
-  document.getElementById('hp-arc').textContent  = h.arcDeg >= 360 ? '360°' : Math.round(h.arcDeg) + '°';
+  document.getElementById('hp-type').textContent    = h.type;
+  document.getElementById('hp-zone').textContent    = h.zoneName;
+  document.getElementById('hp-gpm').textContent     = h.gpm.toFixed(1);
+  document.getElementById('hp-radius').textContent  = Math.round(h.radiusFt) + ' ft';
+  document.getElementById('hp-arc').textContent     = h.arcDeg >= 360 ? '360°' : Math.round(h.arcDeg) + '°';
 }
 
 function selectHead(id) {
@@ -2394,23 +2390,18 @@ function selectHead(id) {
   selectedHeadId = id;
   const h = heads.get(id);
   if (!h) return;
-  // highlight marker
   h.marker.setStyle({ weight: 2.5, radius: 6 });
-  // panel
   document.getElementById('head-props').style.display = '';
   _updateHeadPropsPanel(id);
-  // highlight row
   document.querySelectorAll('.head-row').forEach(r =>
     r.classList.toggle('sel', r.dataset.headId === id));
-  // wire arc hover for rotation/width handles
-  _wireArcHover(id);
+  _showArcHandles(id);
 }
 
 function deselectHead(reset = true) {
   if (selectedHeadId !== null) {
     const h = heads.get(selectedHeadId);
     if (h) h.marker.setStyle({ weight: 1.5, radius: 5 });
-    if (h && h.arcLayer) h.arcLayer.off('mouseover mouseout');
   }
   _clearArcHandles();
   if (reset) {
