@@ -694,34 +694,24 @@ const YardGrid = L.Layer.extend({
     const toY = i => map.latLngToContainerPoint([i * yLat, lat0]).y;
     const toX = j => map.latLngToContainerPoint([lat0, j * yLng]).x;
 
-    const draw = (major, horiz) => {
-      ctx.beginPath();
-      const iMn = horiz ? iLatMn : iLngMn;
-      const iMx = horiz ? iLatMx : iLngMx;
-      for (let i = iMn; i <= iMx; i++) {
-        const isMaj = (i % MAJOR + MAJOR) % MAJOR === 0;
-        if (major !== isMaj) continue;
-        if (horiz) { const y = toY(i); ctx.moveTo(0, y); ctx.lineTo(size.x, y); }
-        else       { const x = toX(i); ctx.moveTo(x, 0); ctx.lineTo(x, size.y); }
-      }
-      ctx.stroke();
-    };
-
-    // Minor grid (1 yd spacing)
-    ctx.strokeStyle = 'rgba(150,185,215,0.40)'; ctx.lineWidth = 0.5;
-    draw(false, true); draw(false, false);
-
-    // Major grid (5 yd spacing) — same stroke width, stronger colour only
-    ctx.strokeStyle = 'rgba(75,125,170,0.70)'; ctx.lineWidth = 0.5;
-    draw(true, true); draw(true, false);
+    // Single pass — all lines identical
+    ctx.strokeStyle = 'rgba(150,185,215,0.55)';
+    ctx.lineWidth   = 0.5;
+    ctx.beginPath();
+    for (let i = iLatMn; i <= iLatMx; i++) {
+      const y = toY(i); ctx.moveTo(0, y); ctx.lineTo(size.x, y);
+    }
+    for (let j = iLngMn; j <= iLngMx; j++) {
+      const x = toX(j); ctx.moveTo(x, 0); ctx.lineTo(x, size.y);
+    }
+    ctx.stroke();
 
     // Scale label — bottom-right of canvas
-    const pxPer5 = Math.abs(toX(MAJOR) - toX(0));
     ctx.font = 'bold 10px Inter, sans-serif';
-    ctx.fillStyle = 'rgba(75,125,170,0.80)';
+    ctx.fillStyle = 'rgba(120,160,195,0.80)';
     ctx.textAlign = 'right';
     ctx.textBaseline = 'bottom';
-    ctx.fillText(`grid: 1 yd per cell · 5 yds per bold line`, size.x - 10, size.y - 8);
+    ctx.fillText('grid: 1 yd per cell', size.x - 10, size.y - 8);
   }
 });
 
