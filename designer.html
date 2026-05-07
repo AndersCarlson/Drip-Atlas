@@ -275,8 +275,6 @@
     /* map container background in plan mode */
     #map.grid-view{ background:#f7f9fc; }
     #map.grid-view .leaflet-container{ background:#f7f9fc !important; }
-    /* hide vertex editing handles while a shape is being dragged */
-    #map.shape-dragging .leaflet-editing-icon{ visibility:hidden !important; }
 
     /* hint toast */
     #hint{
@@ -1212,12 +1210,6 @@ function setTool(tool) {
   // Remove plant-click listener if leaving plant mode
   if (currentTool === 'plant') map.off('click', onPlantClick);
 
-  // Disable vertex editing if leaving edit mode
-  if (currentTool === 'edit' && selectedId !== null) {
-    const e = shapes.get(selectedId);
-    if (e?.layer?.editing) try { e.layer.editing.disable(); } catch(_){}
-  }
-
   currentTool = tool;
 
   // Toolbar active state
@@ -1261,10 +1253,6 @@ function setTool(tool) {
     hint('Click the map to place a plant · L to toggle tool', 3000);
   }
 
-  if (tool === 'edit' && selectedId !== null) {
-    const e = shapes.get(selectedId);
-    if (e?.layer?.editing) try { e.layer.editing.enable(); } catch(_){}
-  }
 }
 
 function onPlantClick(e) {
@@ -1345,17 +1333,12 @@ function selectShape(id) {
   document.querySelectorAll('.shape-row').forEach(r =>
     r.classList.toggle('sel', r.dataset.id == id)
   );
-
-  if (s.layer.editing) try { s.layer.editing.enable(); } catch(_){}
 }
 
 function deselect(reset = true) {
   if (selectedId !== null) {
     const s = shapes.get(selectedId);
-    if (s) {
-      s.layer.setStyle({ weight:1, opacity:.9 });
-      if (s.layer.editing) try { s.layer.editing.disable(); } catch(_){}
-    }
+    if (s) s.layer.setStyle({ weight:1, opacity:.9 });
   }
   if (reset) {
     selectedId = null;
@@ -1368,20 +1351,10 @@ function deselect(reset = true) {
 // DRAG TO MOVE
 // ─────────────────────────────────────────
 function startDrag(e, id) {
-  // Ignore mousedown that bubbled from a vertex/midpoint handle — those belong
-  // to Leaflet.draw's own drag system and should reshape, not move, the shape.
-  const origin = e.originalEvent?.target;
-  if (origin && origin.classList.contains('leaflet-editing-icon')) return;
-
   L.DomEvent.stopPropagation(e);
   const s = shapes.get(id);
   if (!s) return;
   map.dragging.disable();
-  // Hide editing handles immediately via CSS, then also disable through the API
-  map.getContainer().classList.add('shape-dragging');
-  if (s.layer.editing && s.layer.editing._enabled) {
-    try { s.layer.editing.disable(); } catch(_){}
-  }
   const el = s.layer.getElement();
   if (el) el.style.cursor = 'grabbing';
   map.getContainer().style.cursor = 'grabbing';
@@ -1398,33 +1371,9 @@ function onDragMove(e) {
   const s = shapes.get(id); if (!s) return;
   const dLat = e.latlng.lat - start.lat;
   const dLng = e.latlng.lng - start.lng;
-  const newRing = orig.map(o => [o.lat + dLat, o.lng + dLng]);
-  s.layer.setLatLngs(newRing);
-
-  // Move tooltip label
+  s.layer.setLatLngs(orig.map(o => [o.lat + dLat, o.lng + dLng]));
   const tt = s.layer.getTooltip();
   if (tt) tt.setLatLng(s.layer.getCenter());
-
-  // Move editing vertex handles and their midpoint markers in real-time.
-  // Leaflet.draw stores its own latlng copies inside _markers and doesn't
-  // listen to setLatLngs, so we update them directly.
-  _moveEditHandles(s.layer, newRing);
-}
-
-function _moveEditHandles(layer, ring) {
-  const ed = layer.editing;
-  if (!ed || !ed._enabled || !ed._verticesHandlers) return;
-  const handler = ed._verticesHandlers[0];
-  if (!handler || !handler._markers) return;
-  const n = handler._markers.length;
-  handler._markers.forEach((m, i) => {
-    const ll = L.latLng(ring[i][0], ring[i][1]);
-    m.setLatLng(ll);
-    const nextLL = L.latLng(ring[(i + 1) % n][0], ring[(i + 1) % n][1]);
-    if (m._middleRight) m._middleRight.setLatLng(
-      L.latLng((ll.lat + nextLL.lat) / 2, (ll.lng + nextLL.lng) / 2)
-    );
-  });
 }
 
 function onDragEnd() {
@@ -1436,14 +1385,7 @@ function onDragEnd() {
     updateList();
     const el = s.layer.getElement();
     if (el) el.style.cursor = 'grab';
-    // Force editing handles to repaint at new vertex positions
-    if (id === selectedId && s.layer.editing) {
-      try { s.layer.editing.disable(); } catch(_){}
-      try { s.layer.editing.enable();  } catch(_){}
-    }
   }
-  // Remove CSS hide class AFTER re-enabling so handles appear at new positions
-  map.getContainer().classList.remove('shape-dragging');
   map.getContainer().style.cursor = '';
   dragState = null;
   map.dragging.enable();
