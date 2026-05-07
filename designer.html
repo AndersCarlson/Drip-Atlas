@@ -273,8 +273,8 @@
       background:#fff;box-shadow:0 1px 5px rgba(0,0,0,.18);color:#1a1a1a;
     }
     /* map container background in plan mode */
-    #map.grid-view{ background:#dce8f2; }
-    #map.grid-view .leaflet-container{ background:#dce8f2 !important; }
+    #map.grid-view{ background:#f7f9fc; }
+    #map.grid-view .leaflet-container{ background:#f7f9fc !important; }
 
     /* hint toast */
     #hint{
@@ -644,38 +644,84 @@ const ZONES = {
 };
 
 // ─────────────────────────────────────────
-// SCALE GRID LAYER
+// YARD GRID LAYER
+// Fixed world-space grid: each cell = 1 yard (0.9144 m).
+// Grid spacing in pixels grows/shrinks with zoom, but 1 cell always = 1 yard
+// on the ground. Canvas is a direct child of the map container (not a pane)
+// so it is unaffected by Leaflet's pan transforms; all positions are computed
+// via latLngToContainerPoint on every frame.
 // ─────────────────────────────────────────
-const ScaleGrid = L.GridLayer.extend({
-  createTile(coords) {
-    const size = this.getTileSize().x;
-    const tile = document.createElement('canvas');
-    tile.width = tile.height = size;
-    const ctx = tile.getContext('2d');
+const YardGrid = L.Layer.extend({
+  onAdd(map) {
+    this._map = map;
+    const c = document.createElement('canvas');
+    c.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;z-index:350;';
+    map.getContainer().appendChild(c);
+    this._canvas = c;
+    map.on('move zoom viewreset resize zoomend moveend', this._draw, this);
+    this._draw();
+  },
+  onRemove(map) {
+    this._canvas.remove();
+    map.off('move zoom viewreset resize zoomend moveend', this._draw, this);
+  },
+  _draw() {
+    const map  = this._map;
+    const size = map.getSize();
+    const c    = this._canvas;
+    c.width = size.x; c.height = size.y;
+    const ctx = c.getContext('2d');
+    ctx.clearRect(0, 0, size.x, size.y);
 
-    // Minor lines — 8×8 sub-divisions per tile
-    const minor = size / 8;
-    ctx.strokeStyle = 'rgba(120,165,205,0.30)';
-    ctx.lineWidth = 0.5;
-    ctx.beginPath();
-    for (let i = 0; i <= 8; i++) {
-      ctx.moveTo(i * minor, 0); ctx.lineTo(i * minor, size);
-      ctx.moveTo(0, i * minor); ctx.lineTo(size, i * minor);
-    }
-    ctx.stroke();
+    const YARD_M = 0.9144;
+    const lat0   = map.getCenter().lat;
+    // Degrees per yard — latitude is constant; longitude scales with cos(lat)
+    const yLat   = YARD_M / 111320;
+    const yLng   = YARD_M / (111320 * Math.cos(lat0 * Math.PI / 180));
 
-    // Major lines — 4×4 per tile (every 2 minor cells)
-    const major = size / 4;
-    ctx.strokeStyle = 'rgba(80,130,175,0.55)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    for (let i = 0; i <= 4; i++) {
-      ctx.moveTo(i * major, 0); ctx.lineTo(i * major, size);
-      ctx.moveTo(0, i * major); ctx.lineTo(size, i * major);
-    }
-    ctx.stroke();
+    const b      = map.getBounds();
+    const iLatMn = Math.floor(b.getSouth() / yLat) - 1;
+    const iLatMx = Math.ceil(b.getNorth()  / yLat) + 1;
+    const iLngMn = Math.floor(b.getWest()  / yLng) - 1;
+    const iLngMx = Math.ceil(b.getEast()   / yLng) + 1;
 
-    return tile;
+    // Skip if zoomed too far out (would draw thousands of lines)
+    if ((iLatMx - iLatMn) > 1500) return;
+
+    const MAJOR = 5; // one dark line every 5 yards (≈ 15 ft)
+
+    // Convert index → canvas pixel. y uses lat only; x uses lng only.
+    const toY = i => map.latLngToContainerPoint([i * yLat, lat0]).y;
+    const toX = j => map.latLngToContainerPoint([lat0, j * yLng]).x;
+
+    const draw = (major, horiz) => {
+      ctx.beginPath();
+      const iMn = horiz ? iLatMn : iLngMn;
+      const iMx = horiz ? iLatMx : iLngMx;
+      for (let i = iMn; i <= iMx; i++) {
+        const isMaj = (i % MAJOR + MAJOR) % MAJOR === 0;
+        if (major !== isMaj) continue;
+        if (horiz) { const y = toY(i); ctx.moveTo(0, y); ctx.lineTo(size.x, y); }
+        else       { const x = toX(i); ctx.moveTo(x, 0); ctx.lineTo(x, size.y); }
+      }
+      ctx.stroke();
+    };
+
+    // Minor grid (1 yd spacing)
+    ctx.strokeStyle = 'rgba(150,185,215,0.40)'; ctx.lineWidth = 0.5;
+    draw(false, true); draw(false, false);
+
+    // Major grid (5 yd spacing)
+    ctx.strokeStyle = 'rgba(75,125,170,0.70)'; ctx.lineWidth = 1;
+    draw(true, true); draw(true, false);
+
+    // Scale label — bottom-right of canvas
+    const pxPer5 = Math.abs(toX(MAJOR) - toX(0));
+    ctx.font = 'bold 10px Inter, sans-serif';
+    ctx.fillStyle = 'rgba(75,125,170,0.80)';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(`grid: 1 yd per cell · 5 yds per bold line`, size.x - 10, size.y - 8);
   }
 });
 
@@ -687,7 +733,7 @@ let _gridLayer = null;
 let _currentView = 'satellite';
 
 function initViewToggle() {
-  _gridLayer = new ScaleGrid({ zIndex: 1, opacity: 1 });
+  _gridLayer = new YardGrid();
 
   const ctrl = document.createElement('div');
   ctrl.className = 'view-toggle';
