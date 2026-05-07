@@ -723,12 +723,8 @@ window.addEventListener('DOMContentLoaded', async () => {
 //        • Replace/supplement with any OSM features found within the lot.
 
 function autoDrawSurfaces(lat, lng) {
-  // Step 1 — instant placeholder so the map is never blank on open.
-  const placeholderIds = _drawGenericZones(lat, lng, null);
-  hint('Fetching your property lot…', 3000);
-
-  // Step 2 — refine with real lot + OSM data in the background.
-  _refineWithLot(lat, lng, placeholderIds);
+  hint('Fetching your property lot…', 4000);
+  _refineWithLot(lat, lng);
 }
 
 // ── Parcel polygon fetch (Regrid via ArcGIS FeatureServer) ──────────────────
@@ -959,9 +955,7 @@ function _drawGenericZones(lat, lng, lotPoly) {
 
 // ── Main refinement routine ──────────────────────────────────────────────────
 
-async function _refineWithLot(lat, lng, placeholderIds) {
-  // Fetch lot polygon, high-accuracy building footprint, and other OSM
-  // features (gardens, driveways, pools) all in parallel.
+async function _refineWithLot(lat, lng) {
   const [lotResult, bldgResult, osmResult] = await Promise.allSettled([
     _fetchLotPolygon(lat, lng),
     _fetchBuildingFootprint(lat, lng),
@@ -972,21 +966,19 @@ async function _refineWithLot(lat, lng, placeholderIds) {
   const bldg    = bldgResult.status === 'fulfilled' ? bldgResult.value : null;
   const osmWays = osmResult.status  === 'fulfilled' ? osmResult.value  : [];
 
-  // Draw lot boundary outline if we got the parcel.
   if (lotPoly) _drawLotBoundary(lotPoly);
-
-  // Remove generic placeholders — we're about to draw better shapes.
-  placeholderIds.forEach(id => {
-    const s = shapes.get(id);
-    if (s) { drawnItems.removeLayer(s.layer); shapes.delete(id); }
-  });
-  deselect();
 
   let drawn = 0;
 
-  // Draw the high-accuracy building footprint first.
+  // 1. Lot polygon → Lawn zone (actual parcel shape, not a rectangle).
+  //    Draw this first so the building footprint renders on top of it.
+  if (lotPoly) {
+    addSurfaceShape(lotPoly, 'lawn', {});
+    drawn++;
+  }
+
+  // 2. Building footprint → No-Water Zone (high-accuracy shape).
   if (bldg) {
-    // When we have a lot, verify the building centroid is actually inside it.
     const insideLot = !lotPoly || _wayInsideLot(bldg.geometry, lotPoly);
     if (insideLot) {
       addSurfaceShape(bldg.geometry.map(n => [n.lat, n.lon]), 'nowater', bldg.tags);
@@ -994,7 +986,7 @@ async function _refineWithLot(lat, lng, placeholderIds) {
     }
   }
 
-  // Draw other OSM features (gardens, driveways, pools) — lot-filtered.
+  // 3. Any OSM detail features (pool, driveway, garden bed) inside the lot.
   for (const way of osmWays) {
     const insideLot = !lotPoly || _wayInsideLot(way.geometry, lotPoly);
     if (!insideLot) continue;
@@ -1002,15 +994,13 @@ async function _refineWithLot(lat, lng, placeholderIds) {
     drawn++;
   }
 
-  // If neither source gave us anything, fall back to proportional zones.
   if (drawn === 0) {
-    _drawGenericZones(lat, lng, lotPoly);
-    const msg = lotPoly
-      ? 'Surfaces fitted to your lot — reshape to fine-tune'
-      : 'Approximate surfaces placed — reshape to match your property';
-    hint(msg, 6000);
+    // Nothing at all — just tell the user to draw manually.
+    hint('Lot not found — draw your zones using the tools on the right', 6000);
+  } else if (lotPoly) {
+    hint('Lot boundary mapped — subdivide the lawn and add zones as needed', 6000);
   } else {
-    hint(`${drawn} surface${drawn > 1 ? 's' : ''} mapped from your lot — edit or add more`, 5000);
+    hint('Building marked — draw the rest of your zones within the lot', 6000);
   }
 
   updateList();
