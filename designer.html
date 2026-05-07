@@ -619,7 +619,7 @@ const ZONES = {
   pool:     { label:'Pool / Pond',     color:'#29b6f6', fill:'#0288d1', icon:'<img src="assets/icons/pool.svg"    width="16" height="16" style="vertical-align:middle">' },
   driveway: { label:'Driveway',       color:'#9eaab8', fill:'#708090', icon:'<img src="assets/icons/driveway.svg" width="16" height="16" style="vertical-align:middle">' },
   path:     { label:'Walkway',        color:'#d4aa6a', fill:'#b08040', icon:'<img src="assets/icons/walkway.svg"  width="16" height="16" style="vertical-align:middle">' },
-  nowater:  { label:'House',           color:'#e05555', fill:'#cc3030', icon:'<img src="assets/icons/nowater.svg"  width="16" height="16" style="vertical-align:middle">' },
+  nowater:  { label:'House',           color:'#1c1c1a', fill:'none',    icon:'<img src="assets/icons/nowater.svg"  width="16" height="16" style="vertical-align:middle">' },
 };
 
 // ─────────────────────────────────────────
@@ -1011,8 +1011,13 @@ async function _refineWithLot(lat, lng) {
 function addSurfaceShape(latlngs, zoneType, tags) {
   const z     = ZONES[zoneType];
   const label = (tags?.name) || z.label;
+  const isHouse = zoneType === 'nowater';
   const layer = L.polygon(latlngs, {
-    color: z.color, fillColor: z.fill, fillOpacity: 0.28, weight: 2,
+    color:       z.color,
+    fillColor:   isHouse ? '#000' : z.fill,
+    fillOpacity: isHouse ? 0.10 : 0.28,
+    weight:      isHouse ? 2.5  : 2,
+    dashArray:   isHouse ? '6 4' : null,
   });
   drawnItems.addLayer(layer);
 
@@ -1020,7 +1025,7 @@ function addSurfaceShape(latlngs, zoneType, tags) {
   const area = calcArea(layer.getLatLngs()[0]);
   shapes.set(id, { layer, type: zoneType, name: label, area });
 
-  layer.bindTooltip(`${z.icon} ${label}`, {
+  layer.bindTooltip(label, {
     permanent: true, direction: 'center', className: 'lf-zone-lbl',
   });
   layer.on('mouseover', () => {
@@ -1121,7 +1126,14 @@ function onShapeCreated(e) {
   const type  = activeZoneType;
   const z     = ZONES[type];
 
-  layer.setStyle({ color:z.color, fillColor:z.fill, fillOpacity:0.28, weight:2 });
+  const _isHouse = type === 'nowater';
+  layer.setStyle({
+    color:       z.color,
+    fillColor:   _isHouse ? '#000' : z.fill,
+    fillOpacity: _isHouse ? 0.10 : 0.28,
+    weight:      _isHouse ? 2.5  : 2,
+    dashArray:   _isHouse ? '6 4' : null,
+  });
   drawnItems.addLayer(layer);
 
   const id   = L.stamp(layer);
@@ -1130,7 +1142,7 @@ function onShapeCreated(e) {
 
   shapes.set(id, { layer, type, name, area });
 
-  layer.bindTooltip(`${z.icon} ${name}`, {
+  layer.bindTooltip(name, {
     permanent:true, direction:'center', className:'lf-zone-lbl'
   });
 
@@ -1217,6 +1229,8 @@ function onDragMove(e) {
   const dLat = e.latlng.lat - start.lat;
   const dLng = e.latlng.lng - start.lng;
   s.layer.setLatLngs(orig.map(o => [o.lat + dLat, o.lng + dLng]));
+  const tt = s.layer.getTooltip();
+  if (tt) tt.setLatLng(s.layer.getCenter());
 }
 
 function onDragEnd() {
@@ -1246,9 +1260,16 @@ function updateType(type) {
   const s = shapes.get(selectedId); if (!s) return;
   s.type = type;
   const z = ZONES[type];
-  s.layer.setStyle({ color:z.color, fillColor:z.fill, fillOpacity:0.28 });
+  const _h = type === 'nowater';
+  s.layer.setStyle({
+    color:       z.color,
+    fillColor:   _h ? '#000' : z.fill,
+    fillOpacity: _h ? 0.10 : 0.28,
+    weight:      _h ? 2.5  : 2,
+    dashArray:   _h ? '6 4' : null,
+  });
   if (!document.getElementById('prop-name').value) s.name = z.label;
-  s.layer.setTooltipContent(`${z.icon} ${s.name}`);
+  s.layer.setTooltipContent(s.name);
   updateList();
 }
 
@@ -1256,7 +1277,7 @@ function updateName(val) {
   if (selectedId === null) return;
   const s = shapes.get(selectedId); if (!s) return;
   s.name = val || ZONES[s.type].label;
-  s.layer.setTooltipContent(`${ZONES[s.type].icon} ${s.name}`);
+  s.layer.setTooltipContent(s.name);
   updateList();
 }
 
