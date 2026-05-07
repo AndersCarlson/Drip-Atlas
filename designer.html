@@ -288,6 +288,21 @@
       background:rgba(255,255,255,0.55);border:1.5px dashed #253319;border-radius:50%;
       cursor:copy;box-shadow:0 1px 4px rgba(0,0,0,.18);
     }
+    .arc-handle {
+      width:12px!important; height:12px!important;
+      border-radius:50%; cursor:grab;
+      box-shadow:0 1px 4px rgba(0,0,0,.28);
+    }
+    .arc-rotate-handle { background:#fff; border:2px solid #2980e8; }
+    .arc-width-handle  { background:#fff; border:2px dashed #2980e8; }
+    .arc-handle:active { cursor:grabbing; }
+    .head-row { display:flex; align-items:center; gap:8px; padding:6px 4px; font-size:12px;
+      border-bottom:1px solid var(--border); cursor:pointer; border-radius:4px; }
+    .head-row:last-child { border-bottom:none; }
+    .head-row:hover { background:rgba(37,51,25,.04); }
+    .head-row.sel { background:rgba(37,51,25,.08); }
+    .head-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; border:2px solid #fff;
+      box-shadow:0 0 0 1.5px rgba(0,0,0,.2); }
     /* Leaflet.draw polygon-drawing vertex markers → match circle handle style */
     .leaflet-editing-icon{
       width:10px!important;height:10px!important;
@@ -614,6 +629,27 @@
           Draw your zones first, then generate the water plan to see sprinkler head placement and pipe routing.
         </div>
         <div id="water-plan-list"></div>
+        <!-- Selected head props -->
+        <div class="tp-props" id="head-props" style="display:none">
+          <div class="tp-props-lbl">Selected Head</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <span style="font-size:12px;font-weight:600;color:var(--charcoal)" id="hp-type">Rotor</span>
+            <span style="font-size:11px;color:var(--gray)" id="hp-zone">Lawn</span>
+          </div>
+          <div class="stat-box" style="margin-bottom:6px">
+            <div class="stat-val" id="hp-gpm">1.5</div>
+            <div class="stat-unit">GPM</div>
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:8px;font-size:11px;color:var(--gray)">
+            <span>Radius: <strong id="hp-radius" style="color:var(--charcoal)">15 ft</strong></span>
+            <span>Arc: <strong id="hp-arc" style="color:var(--charcoal)">180°</strong></span>
+          </div>
+          <div class="draw-btns">
+            <button class="draw-btn danger full" onclick="deleteSelectedHead()">
+              <svg viewBox="0 0 16 16" fill="none" width="13" height="13"><path d="M2 4h12M6 4V2h4v2M5 4l.4 9h5.2L11 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Delete Head
+            </button>
+          </div>
+        </div>
         <div id="water-plan-summary" style="display:none;font-size:11px;color:var(--gray);
           background:var(--cream);border-radius:7px;padding:8px 10px;line-height:1.7"></div>
         <button id="btn-clear-layer" onclick="clearIrrigationLayer()"
@@ -798,6 +834,14 @@ let dragState   = null;
 let _shapeWasClicked = false;
 let _coords     = null;
 
+// Head state
+const heads = new Map();   // headId → headData
+let selectedHeadId = null;
+let _headDragState = null;
+let _arcHandles    = [];
+let _arcHoverTmo   = null;
+let _arcHandleDrag = false;
+
 // Vertex reshape handles
 const HANDLE_ICON = L.divIcon({ className:'vertex-handle', iconSize:[10,10], iconAnchor:[5,5] });
 const GHOST_ICON  = L.divIcon({ className:'ghost-handle',  iconSize:[10,10], iconAnchor:[5,5] });
@@ -854,7 +898,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     plants.forEach((s, id) => refreshPlantIcon(id));
   });
   map.on(L.Draw.Event.CREATED, onShapeCreated);
-  map.on('click', () => { if (_shapeWasClicked) { _shapeWasClicked = false; return; } if (currentTool === 'select') deselect(); });
+  map.on('click', () => { if (_shapeWasClicked) { _shapeWasClicked = false; return; } if (currentTool === 'select') { deselect(); deselectHead(); } });
 
   initViewToggle();
 
@@ -2238,7 +2282,223 @@ function headArc(headPt, latlngs) {
 
 let irrigationLayer = null;
 
+// ─────────────────────────────────────────
+// INTERACTIVE HEAD HELPERS
+// ─────────────────────────────────────────
+
+function _headPtFromAngle(h, angleDeg, distFt) {
+  const dLat = degPerFtLat(), dLng = degPerFtLng(h.lat);
+  const rad = angleDeg * Math.PI / 180;
+  return L.latLng(h.lat + Math.cos(rad) * distFt * dLat,
+                  h.lng + Math.sin(rad) * distFt * dLng);
+}
+
+function _angleFromHead(h, lat, lng) {
+  const dLat = degPerFtLat(), dLng = degPerFtLng(h.lat);
+  return Math.atan2((lng - h.lng) / dLng, (lat - h.lat) / dLat) * 180 / Math.PI;
+}
+
+function _redrawHeadArc(id) {
+  const h = heads.get(id);
+  if (!h || !irrigationLayer) return;
+  if (h.arcLayer) irrigationLayer.removeLayer(h.arcLayer);
+  if (h.arcDeg >= 360) {
+    h.arcLayer = L.circle([h.lat, h.lng], {
+      radius: h.radiusFt * M_PER_FT,
+      color: h.color, fillColor: h.color, fillOpacity: 0.12, weight: 0.5, interactive: true,
+    });
+  } else {
+    const s = arcSectorLatLngs(h.lat, h.lng, h.radiusFt, h.dirDeg - h.arcDeg / 2, h.dirDeg + h.arcDeg / 2);
+    h.arcLayer = L.polygon(s, {
+      color: h.color, fillColor: h.color, fillOpacity: 0.12, weight: 0.5, opacity: 0.5, interactive: true,
+    });
+  }
+  irrigationLayer.addLayer(h.arcLayer);
+  if (selectedHeadId === id) _wireArcHover(id);
+}
+
+function _clearArcHandles() {
+  _arcHandles.forEach(m => { try { map.removeLayer(m); } catch(_){} });
+  _arcHandles = [];
+}
+
+function _showArcHandles(id) {
+  _clearArcHandles();
+  const h = heads.get(id);
+  if (!h || h.arcDeg >= 360) return;
+  const mkHandle = (ll, cls) => L.marker(ll, {
+    icon: L.divIcon({ className: 'arc-handle ' + cls, iconSize:[12,12], iconAnchor:[6,6] }),
+    draggable: true, zIndexOffset: 600, interactive: true,
+  }).addTo(map);
+
+  const rotLl = _headPtFromAngle(h, h.dirDeg, h.radiusFt);
+  const rot = mkHandle(rotLl, 'arc-rotate-handle');
+  rot.on('mousedown', e => { _arcHandleDrag = true; L.DomEvent.stopPropagation(e); });
+  rot.on('drag', () => {
+    const ll = rot.getLatLng();
+    h.dirDeg = _angleFromHead(h, ll.lat, ll.lng);
+    _redrawHeadArc(id);
+    if (_arcHandles[1]) _arcHandles[1].setLatLng(_headPtFromAngle(h, h.dirDeg + h.arcDeg / 2, h.radiusFt));
+    _updateHeadPropsPanel(id);
+  });
+  rot.on('dragend', () => { _arcHandleDrag = false; });
+  rot.on('mouseover', () => { if (_arcHoverTmo) { clearTimeout(_arcHoverTmo); _arcHoverTmo = null; } });
+  rot.on('mouseout', () => { if (!_arcHandleDrag) _arcHoverTmo = setTimeout(_clearArcHandles, 200); });
+
+  const wLl = _headPtFromAngle(h, h.dirDeg + h.arcDeg / 2, h.radiusFt);
+  const wid = mkHandle(wLl, 'arc-width-handle');
+  wid.on('mousedown', e => { _arcHandleDrag = true; L.DomEvent.stopPropagation(e); });
+  wid.on('drag', () => {
+    const ll = wid.getLatLng();
+    let diff = _angleFromHead(h, ll.lat, ll.lng) - h.dirDeg;
+    while (diff > 180) diff -= 360; while (diff < -180) diff += 360;
+    h.arcDeg = Math.max(10, Math.min(350, Math.abs(diff) * 2));
+    _redrawHeadArc(id);
+    if (_arcHandles[0]) _arcHandles[0].setLatLng(_headPtFromAngle(h, h.dirDeg, h.radiusFt));
+    _updateHeadPropsPanel(id);
+  });
+  wid.on('dragend', () => { _arcHandleDrag = false; });
+  wid.on('mouseover', () => { if (_arcHoverTmo) { clearTimeout(_arcHoverTmo); _arcHoverTmo = null; } });
+  wid.on('mouseout', () => { if (!_arcHandleDrag) _arcHoverTmo = setTimeout(_clearArcHandles, 200); });
+
+  _arcHandles = [rot, wid];
+}
+
+function _wireArcHover(id) {
+  const h = heads.get(id);
+  if (!h || !h.arcLayer) return;
+  h.arcLayer.off('mouseover mouseout');
+  if (h.arcDeg >= 360) return;
+  h.arcLayer.on('mouseover', () => {
+    if (_arcHoverTmo) { clearTimeout(_arcHoverTmo); _arcHoverTmo = null; }
+    _showArcHandles(id);
+  });
+  h.arcLayer.on('mouseout', () => {
+    if (!_arcHandleDrag) _arcHoverTmo = setTimeout(_clearArcHandles, 200);
+  });
+}
+
+function _updateHeadPropsPanel(id) {
+  const h = heads.get(id);
+  if (!h) return;
+  document.getElementById('hp-type').textContent = h.type;
+  document.getElementById('hp-zone').textContent = h.zoneName;
+  document.getElementById('hp-gpm').textContent  = h.gpm.toFixed(1);
+  document.getElementById('hp-radius').textContent = h.radiusFt + ' ft';
+  document.getElementById('hp-arc').textContent  = h.arcDeg >= 360 ? '360°' : Math.round(h.arcDeg) + '°';
+}
+
+function selectHead(id) {
+  deselectHead(false);
+  deselectIfShape();
+  selectedHeadId = id;
+  const h = heads.get(id);
+  if (!h) return;
+  // highlight marker
+  h.marker.setStyle({ weight: 2.5, radius: 6 });
+  // panel
+  document.getElementById('head-props').style.display = '';
+  _updateHeadPropsPanel(id);
+  // highlight row
+  document.querySelectorAll('.head-row').forEach(r =>
+    r.classList.toggle('sel', r.dataset.headId === id));
+  // wire arc hover for rotation/width handles
+  _wireArcHover(id);
+}
+
+function deselectHead(reset = true) {
+  if (selectedHeadId !== null) {
+    const h = heads.get(selectedHeadId);
+    if (h) h.marker.setStyle({ weight: 1.5, radius: 5 });
+    if (h && h.arcLayer) h.arcLayer.off('mouseover mouseout');
+  }
+  _clearArcHandles();
+  if (reset) {
+    selectedHeadId = null;
+    document.getElementById('head-props').style.display = 'none';
+    document.querySelectorAll('.head-row').forEach(r => r.classList.remove('sel'));
+  }
+}
+
+function deselectIfShape() {
+  if (selectedId !== null) deselect();
+}
+
+function deleteSelectedHead() {
+  if (!selectedHeadId) return;
+  const h = heads.get(selectedHeadId);
+  if (h) {
+    if (h.arcLayer && irrigationLayer) irrigationLayer.removeLayer(h.arcLayer);
+    if (h.marker && irrigationLayer) irrigationLayer.removeLayer(h.marker);
+  }
+  heads.delete(selectedHeadId);
+  selectedHeadId = null;
+  document.getElementById('head-props').style.display = 'none';
+  _clearArcHandles();
+  _buildHeadPanelList();
+  // update badge
+  const badge = document.getElementById('tp-head-count');
+  if (badge) badge.textContent = heads.size;
+}
+
+function _onHeadDragMove(e) {
+  if (!_headDragState) return;
+  const { id, startLatlng, origLat, origLng } = _headDragState;
+  const h = heads.get(id);
+  if (!h) return;
+  const dLat = e.latlng.lat - startLatlng.lat;
+  const dLng = e.latlng.lng - startLatlng.lng;
+  h.lat = origLat + dLat;
+  h.lng = origLng + dLng;
+  h.marker.setLatLng([h.lat, h.lng]);
+  _redrawHeadArc(id);
+}
+
+function _onHeadDragEnd() {
+  if (!_headDragState) return;
+  const { id } = _headDragState;
+  _headDragState = null;
+  map.dragging.enable();
+  map.off('mousemove', _onHeadDragMove);
+  map.off('mouseup', _onHeadDragEnd);
+  document.removeEventListener('mouseup', _onHeadDragEnd);
+  map.getContainer().style.cursor = '';
+  if (id === selectedHeadId) _wireArcHover(id);
+}
+
+function _startHeadDrag(e, id) {
+  if (id !== selectedHeadId) return;
+  L.DomEvent.stopPropagation(e);
+  const h = heads.get(id);
+  if (!h) return;
+  _clearArcHandles();
+  map.dragging.disable();
+  map.getContainer().style.cursor = 'grabbing';
+  _headDragState = { id, startLatlng: e.latlng, origLat: h.lat, origLng: h.lng };
+  map.on('mousemove', _onHeadDragMove);
+  map.on('mouseup', _onHeadDragEnd);
+  document.addEventListener('mouseup', _onHeadDragEnd);
+}
+
+function _buildHeadPanelList() {
+  const list = document.getElementById('water-plan-list');
+  if (!list) return;
+  if (heads.size === 0) { list.innerHTML = ''; return; }
+  const rows = [];
+  let i = 1;
+  heads.forEach((h, id) => {
+    rows.push(`<div class="head-row${selectedHeadId === id ? ' sel' : ''}" data-head-id="${id}" onclick="selectHead('${id}')">
+      <span class="head-dot" style="background:${h.color}"></span>
+      <span style="flex:1;font-weight:600;color:var(--charcoal)">${h.type} #${i++}</span>
+      <span style="font-size:11px;color:var(--gray)">${h.gpm.toFixed(1)} GPM</span>
+    </div>`);
+  });
+  list.innerHTML = rows.join('');
+}
+
 function clearIrrigationLayer() {
+  heads.clear();
+  deselectHead();
   if (irrigationLayer) { irrigationLayer.clearLayers(); irrigationLayer = null; }
   document.getElementById('btn-clear-layer').style.display = 'none';
   const badge = document.getElementById('tp-head-count');
@@ -2269,72 +2529,85 @@ function generateWaterPlan() {
   let totalHeads = 0;
   let totalPipeFt = 0;
   const zoneCentroids = [];   // for main-supply pipe routing
+  let headIdSeq = 0;
 
   shapes.forEach(s => {
     const cfg = HEAD_CONFIG[s.type];
     if (!cfg) return;   // driveway / path / nowater — skip
 
     const latlngs = s.layer.getLatLngs()[0].map(p => [p.lat, p.lng]);
+    const isDrip = s.type === 'garden';
+    const gpm = cfg.type === 'Rotor' ? 1.5 : cfg.type === 'Drip' ? 0.5 : 2.0;
 
     // ── place heads ──────────────────────────────────
-    const heads = placeHeadsInZone(latlngs, cfg.spacingFt);
-    totalHeads += heads.length;
+    const headPts = placeHeadsInZone(latlngs, cfg.spacingFt);
+    totalHeads += headPts.length;
 
-    // ── spray arcs ───────────────────────────────────
-    heads.forEach(([hLat, hLng]) => {
+    // ── spray arcs + interactive markers ─────────────
+    headPts.forEach(([hLat, hLng]) => {
       const arcDeg = headArc([hLat, hLng], latlngs);
 
       // Direction: bearing from head toward centroid
       const cen = polyCentroid(latlngs);
       const bearingRad = Math.atan2(hLng - cen[1], hLat - cen[0]);
       const bearingDeg = bearingRad * 180 / Math.PI;
-      const half       = arcDeg / 2;
-      const startDeg   = bearingDeg - half + 90;   // rotate so 0° = East on map
-      const endDeg     = bearingDeg + half + 90;
+      const dirDeg = bearingDeg + 90;   // stored center direction
 
-      if (arcDeg < 360) {
-        const sector = arcSectorLatLngs(hLat, hLng, cfg.radiusFt, startDeg, endDeg);
-        L.polygon(sector, {
-          color: cfg.color, fillColor: cfg.color,
-          fillOpacity: 0.12, weight: 0.5, opacity: 0.5,
-        }).addTo(irrigationLayer);
-      } else {
-        // full circle for interior heads
-        const dLat = degPerFtLat(), dLng = degPerFtLng(hLat);
-        const rLat = cfg.radiusFt * dLat, rLng = cfg.radiusFt * dLng;
-        L.ellipse ? L.ellipse([hLat, hLng], [rLat * 111320, rLng * 111320], 0, {
-          color: cfg.color, fillColor: cfg.color, fillOpacity: 0.1, weight: 0.5,
-        }).addTo(irrigationLayer) : L.circle([hLat, hLng], {
-          radius: cfg.radiusFt * M_PER_FT,
-          color: cfg.color, fillColor: cfg.color, fillOpacity: 0.1, weight: 0.5,
-        }).addTo(irrigationLayer);
-      }
+      const id = 'h' + (++headIdSeq);
+      const headData = {
+        id,
+        lat: hLat, lng: hLng,
+        zoneName: s.name || s.type,
+        zoneType: s.type,
+        type: cfg.type,
+        color: cfg.color,
+        radiusFt: cfg.radiusFt,
+        arcDeg,
+        dirDeg,
+        gpm,
+        marker: null,
+        arcLayer: null,
+      };
+      heads.set(id, headData);
 
-      // head dot
-      L.circleMarker([hLat, hLng], {
-        radius: 4, color: '#fff', fillColor: cfg.color,
-        fillOpacity: 1, weight: 1.5,
+      // arc layer via helper
+      _redrawHeadArc(id);
+
+      // interactive head dot
+      const marker = L.circleMarker([hLat, hLng], {
+        radius: 5, color: '#fff', fillColor: cfg.color,
+        fillOpacity: 1, weight: 1.5, interactive: true,
       }).addTo(irrigationLayer);
+      headData.marker = marker;
+      marker.on('click', e => {
+        _shapeWasClicked = true;
+        L.DomEvent.stopPropagation(e);
+        selectHead(id);
+      });
+      marker.on('mousedown', e => {
+        _shapeWasClicked = true;
+        _startHeadDrag(e, id);
+      });
     });
 
     // ── lateral pipes (thin dashed lines connecting heads) ───
-    const approxPipeFt = heads.length * cfg.spacingFt * 0.9;
+    const approxPipeFt = headPts.length * cfg.spacingFt * 0.9;
     totalPipeFt += approxPipeFt;
-    if (heads.length > 1) {
+    if (headPts.length > 1) {
       // simple nearest-neighbour chain
       const visited = new Set();
-      const chain   = [heads[0]];
+      const chain   = [headPts[0]];
       visited.add(0);
-      while (chain.length < heads.length) {
+      while (chain.length < headPts.length) {
         const cur = chain[chain.length - 1];
         let best = -1, bestD = Infinity;
-        heads.forEach((h, i) => {
+        headPts.forEach((h, i) => {
           if (visited.has(i)) return;
           const d = Math.hypot(h[0] - cur[0], h[1] - cur[1]);
           if (d < bestD) { bestD = d; best = i; }
         });
         if (best === -1) break;
-        chain.push(heads[best]);
+        chain.push(headPts[best]);
         visited.add(best);
       }
       L.polyline(chain, {
@@ -2346,6 +2619,8 @@ function generateWaterPlan() {
     const cen = polyCentroid(latlngs);
     zoneCentroids.push(cen);
   });
+
+  _buildHeadPanelList();
 
   // ── main supply pipes (water source → zone centroids) ────
   if (wsLat !== null && zoneCentroids.length > 0) {
@@ -2700,7 +2975,9 @@ document.addEventListener('keydown', e => {
       setTool('select');
       break;
     case 'Delete': case 'Backspace':
-      if (selPlantId !== null) deletePlant(); else deleteSelected();
+      if (selPlantId !== null) deletePlant();
+      else if (selectedHeadId !== null) deleteSelectedHead();
+      else deleteSelected();
       break;
   }
 });
