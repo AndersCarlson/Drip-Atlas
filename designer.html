@@ -255,6 +255,27 @@
     }
     .lf-zone-lbl::before{display:none!important}
 
+    /* ── VIEW TOGGLE (satellite ↔ plan grid) ── */
+    .view-toggle{
+      position:absolute;top:12px;left:50%;transform:translateX(-50%);
+      z-index:1000;display:flex;
+      background:rgba(255,255,255,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+      border:1px solid rgba(0,0,0,.12);border-radius:10px;padding:3px;
+      box-shadow:0 2px 14px rgba(0,0,0,.16);pointer-events:all;
+    }
+    .view-toggle button{
+      font-family:'Inter',sans-serif;font-size:12px;font-weight:600;
+      border:none;background:transparent;padding:6px 15px;border-radius:7px;
+      cursor:pointer;color:#888;transition:all .16s ease;
+      white-space:nowrap;display:flex;align-items:center;gap:5px;
+    }
+    .view-toggle button.active{
+      background:#fff;box-shadow:0 1px 5px rgba(0,0,0,.18);color:#1a1a1a;
+    }
+    /* map container background in plan mode */
+    #map.grid-view{ background:#dce8f2; }
+    #map.grid-view .leaflet-container{ background:#dce8f2 !important; }
+
     /* hint toast */
     #hint{
       position:fixed;bottom:36px;left:50%;transform:translateX(-50%);
@@ -623,6 +644,94 @@ const ZONES = {
 };
 
 // ─────────────────────────────────────────
+// SCALE GRID LAYER
+// ─────────────────────────────────────────
+const ScaleGrid = L.GridLayer.extend({
+  createTile(coords) {
+    const size = this.getTileSize().x;
+    const tile = document.createElement('canvas');
+    tile.width = tile.height = size;
+    const ctx = tile.getContext('2d');
+
+    // Minor lines — 8×8 sub-divisions per tile
+    const minor = size / 8;
+    ctx.strokeStyle = 'rgba(120,165,205,0.30)';
+    ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    for (let i = 0; i <= 8; i++) {
+      ctx.moveTo(i * minor, 0); ctx.lineTo(i * minor, size);
+      ctx.moveTo(0, i * minor); ctx.lineTo(size, i * minor);
+    }
+    ctx.stroke();
+
+    // Major lines — 4×4 per tile (every 2 minor cells)
+    const major = size / 4;
+    ctx.strokeStyle = 'rgba(80,130,175,0.55)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let i = 0; i <= 4; i++) {
+      ctx.moveTo(i * major, 0); ctx.lineTo(i * major, size);
+      ctx.moveTo(0, i * major); ctx.lineTo(size, i * major);
+    }
+    ctx.stroke();
+
+    return tile;
+  }
+});
+
+// ─────────────────────────────────────────
+// VIEW TOGGLE  (satellite ↔ plan grid)
+// ─────────────────────────────────────────
+let _mapLayers = null;   // set in boot after initMapLayers()
+let _gridLayer = null;
+let _currentView = 'satellite';
+
+function initViewToggle() {
+  _gridLayer = new ScaleGrid({ zIndex: 1, opacity: 1 });
+
+  const ctrl = document.createElement('div');
+  ctrl.className = 'view-toggle';
+  ctrl.innerHTML = `
+    <button id="vt-sat" class="active" onclick="setMapView('satellite')">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M20.2 20.2c2-2.04-.03-7.37-4.52-11.9C11.16 3.74 5.83 1.72 3.8 3.76c-2.04 2.04-.02 7.37 4.5 11.9s9.9 6.56 11.9 4.54z"/>
+      </svg>
+      Satellite
+    </button>
+    <button id="vt-plan" onclick="setMapView('plan')">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+      </svg>
+      Plan
+    </button>`;
+  map.getContainer().appendChild(ctrl);
+  L.DomEvent.disableClickPropagation(ctrl);
+}
+
+function setMapView(mode) {
+  _currentView = mode;
+  document.getElementById('vt-sat').classList.toggle('active', mode === 'satellite');
+  document.getElementById('vt-plan').classList.toggle('active', mode === 'plan');
+
+  if (mode === 'satellite') {
+    map.getContainer().classList.remove('grid-view');
+    if (_mapLayers?.imageryLayer)   _mapLayers.imageryLayer.addTo(map);
+    if (_mapLayers?.referenceLayer) _mapLayers.referenceLayer.addTo(map);
+    if (_mapLayers?.parcelLayer)    _mapLayers.parcelLayer.addTo(map);
+    if (_gridLayer) map.removeLayer(_gridLayer);
+  } else {
+    map.getContainer().classList.add('grid-view');
+    if (_mapLayers?.imageryLayer)   map.removeLayer(_mapLayers.imageryLayer);
+    if (_mapLayers?.referenceLayer) map.removeLayer(_mapLayers.referenceLayer);
+    if (_mapLayers?.parcelLayer)    map.removeLayer(_mapLayers.parcelLayer);
+    _gridLayer.addTo(map);
+    // drawnItems and lot outline always stay on top — no adjustment needed
+  }
+}
+
+// ─────────────────────────────────────────
 // STATE
 // ─────────────────────────────────────────
 let map, drawnItems, drawHandler;
@@ -667,7 +776,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   // Init map
   map = L.map('map', { zoomControl:false, attributionControl:false, zoomSnap:0.5 });
-  initMapLayers(map);
+  _mapLayers = initMapLayers(map);
 
   drawnItems = new L.FeatureGroup().addTo(map);
   map.setView([lat, lng], 20);
@@ -680,6 +789,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   map.on(L.Draw.Event.CREATED, onShapeCreated);
   map.on('click', () => { if (currentTool === 'select') deselect(); });
 
+  initViewToggle();
 
   document.getElementById('loader').style.display = 'none';
 
