@@ -757,11 +757,71 @@ async function _fetchLotPolygon(lat, lng) {
   return feat.geometry.rings[0].map(([x, y]) => [y, x]);
 }
 
-// ── OSM detailed features (buildings, driveways, gardens) ───────────────────
+// ── Building footprint — ArcGIS Living Atlas → OSM fallback ─────────────────
+// Tries the ArcGIS USA Structures service (high-res imagery trace) first.
+// Falls back to OSM, selecting the building whose polygon CONTAINS the
+// geocoded point, then the closest centroid within 30 m.
+
+async function _fetchBuildingFootprint(lat, lng) {
+  // 1. ArcGIS Living Atlas — USA Structures (HIFLD / high-accuracy)
+  try {
+    const base   = 'https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services' +
+                   '/USA_structures/FeatureServer/0/query';
+    const params = new URLSearchParams({
+      geometry:       JSON.stringify({ x: lng, y: lat, spatialReference: { wkid: 4326 } }),
+      geometryType:   'esriGeometryPoint',
+      spatialRel:     'esriSpatialRelIntersects',
+      outFields:      'BUILD_ID',
+      returnGeometry: 'true',
+      outSR:          '4326',
+      f:              'json',
+      token:          ARCGIS_API_KEY,
+    });
+    const res  = await fetch(`${base}?${params}`);
+    const data = await res.json();
+    const feat = (data.features || [])[0];
+    if (feat?.geometry?.rings?.length) {
+      // Esri [lng, lat] → Leaflet [lat, lng]
+      const ring = feat.geometry.rings[0].map(([x, y]) => ({ lat: y, lon: x }));
+      return { geometry: ring, tags: { building: 'yes' }, zoneType: 'nowater', source: 'arcgis' };
+    }
+  } catch (_) {}
+
+  // 2. OSM fallback — find building containing the point, else nearest within 30 m
+  try {
+    const query = `[out:json][timeout:10];
+way[building](around:60,${lat},${lng});
+out geom;`;
+    const res  = await fetch('https://overpass-api.de/api/interpreter', {
+      method: 'POST', body: 'data=' + encodeURIComponent(query),
+    });
+    const data = await res.json();
+    const ways = (data.elements || []).filter(e => e.type === 'way' && e.geometry?.length >= 3);
+    if (!ways.length) return null;
+
+    // Prefer any building whose polygon contains the geocoded point.
+    const containing = ways.find(w =>
+      _pointInPoly(lat, lng, w.geometry.map(n => [n.lat, n.lon]))
+    );
+    if (containing) return { ...containing, zoneType: 'nowater' };
+
+    // Otherwise take the nearest centroid, but only within 30 m (~0.00027 deg).
+    const nearest = ways.reduce((best, w) => {
+      const n    = w.geometry.length;
+      const cLat = w.geometry.reduce((s, p) => s + p.lat, 0) / n;
+      const cLng = w.geometry.reduce((s, p) => s + p.lon, 0) / n;
+      const d    = (cLat - lat) ** 2 + (cLng - lng) ** 2;
+      return d < best.d ? { w, d } : best;
+    }, { w: null, d: 0.00027 ** 2 });   // beyond 30 m → reject
+
+    return nearest.w ? { ...nearest.w, zoneType: 'nowater' } : null;
+  } catch (_) { return null; }
+}
+
+// ── OSM detailed features (gardens, driveways, pools — no buildings) ─────────
 
 async function _fetchOSMFeatures(lat, lng) {
   const osmTagToZone = t => {
-    if (t.building)                                                    return 'nowater';
     if (t.leisure === 'swimming_pool')                                 return 'pool';
     if (t.landuse === 'garden' || t.leisure === 'garden')             return 'garden';
     if (t.landuse === 'grass'  || t.landuse === 'meadow' ||
@@ -772,7 +832,6 @@ async function _fetchOSMFeatures(lat, lng) {
   };
   const query = `[out:json][timeout:10];
 (
-  way[building](around:60,${lat},${lng});
   way[landuse~"grass|garden|meadow"](around:90,${lat},${lng});
   way[leisure~"garden|swimming_pool|park"](around:90,${lat},${lng});
   way[natural=grass](around:90,${lat},${lng});
@@ -901,14 +960,17 @@ function _drawGenericZones(lat, lng, lotPoly) {
 // ── Main refinement routine ──────────────────────────────────────────────────
 
 async function _refineWithLot(lat, lng, placeholderIds) {
-  // Fetch parcel polygon and OSM features in parallel.
-  const [lotResult, osmResult] = await Promise.allSettled([
+  // Fetch lot polygon, high-accuracy building footprint, and other OSM
+  // features (gardens, driveways, pools) all in parallel.
+  const [lotResult, bldgResult, osmResult] = await Promise.allSettled([
     _fetchLotPolygon(lat, lng),
+    _fetchBuildingFootprint(lat, lng),
     _fetchOSMFeatures(lat, lng),
   ]);
 
-  const lotPoly  = lotResult.status  === 'fulfilled' ? lotResult.value  : null;
-  const osmWays  = osmResult.status  === 'fulfilled' ? osmResult.value  : [];
+  const lotPoly = lotResult.status  === 'fulfilled' ? lotResult.value  : null;
+  const bldg    = bldgResult.status === 'fulfilled' ? bldgResult.value : null;
+  const osmWays = osmResult.status  === 'fulfilled' ? osmResult.value  : [];
 
   // Draw lot boundary outline if we got the parcel.
   if (lotPoly) _drawLotBoundary(lotPoly);
@@ -920,43 +982,35 @@ async function _refineWithLot(lat, lng, placeholderIds) {
   });
   deselect();
 
-  // Draw detailed OSM features — only those whose centroid falls inside the lot.
-  // Without a lot polygon, accept only the single nearest building to the
-  // geocoded point (prevents features from neighbouring properties slipping in).
-  let osmDrawn = 0;
-  if (lotPoly) {
-    for (const way of osmWays) {
-      if (!_wayInsideLot(way.geometry, lotPoly)) continue;
-      addSurfaceShape(way.geometry.map(n => [n.lat, n.lon]), way.zoneType, way.tags);
-      osmDrawn++;
-    }
-  } else {
-    // No parcel boundary — accept at most the closest building to the address point.
-    const buildings = osmWays.filter(w => w.zoneType === 'nowater');
-    if (buildings.length) {
-      const nearest = buildings.reduce((best, w) => {
-        const n  = w.geometry.length;
-        const cLat = w.geometry.reduce((s, p) => s + p.lat, 0) / n;
-        const cLng = w.geometry.reduce((s, p) => s + p.lon, 0) / n;
-        const d  = (cLat - lat) ** 2 + (cLng - lng) ** 2;
-        return d < best.d ? { w, d } : best;
-      }, { w: null, d: Infinity }).w;
-      if (nearest) {
-        addSurfaceShape(nearest.geometry.map(n => [n.lat, n.lon]), 'nowater', nearest.tags);
-        osmDrawn++;
-      }
+  let drawn = 0;
+
+  // Draw the high-accuracy building footprint first.
+  if (bldg) {
+    // When we have a lot, verify the building centroid is actually inside it.
+    const insideLot = !lotPoly || _wayInsideLot(bldg.geometry, lotPoly);
+    if (insideLot) {
+      addSurfaceShape(bldg.geometry.map(n => [n.lat, n.lon]), 'nowater', bldg.tags);
+      drawn++;
     }
   }
 
-  // If OSM gave us nothing, fall back to proportional zones fitted to the lot.
-  if (osmDrawn === 0) {
+  // Draw other OSM features (gardens, driveways, pools) — lot-filtered.
+  for (const way of osmWays) {
+    const insideLot = !lotPoly || _wayInsideLot(way.geometry, lotPoly);
+    if (!insideLot) continue;
+    addSurfaceShape(way.geometry.map(n => [n.lat, n.lon]), way.zoneType, way.tags);
+    drawn++;
+  }
+
+  // If neither source gave us anything, fall back to proportional zones.
+  if (drawn === 0) {
     _drawGenericZones(lat, lng, lotPoly);
     const msg = lotPoly
       ? 'Surfaces fitted to your lot — reshape to fine-tune'
       : 'Approximate surfaces placed — reshape to match your property';
     hint(msg, 6000);
   } else {
-    hint(`${osmDrawn} surface${osmDrawn > 1 ? 's' : ''} mapped from your lot — edit or add more`, 5000);
+    hint(`${drawn} surface${drawn > 1 ? 's' : ''} mapped from your lot — edit or add more`, 5000);
   }
 
   updateList();
