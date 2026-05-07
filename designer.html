@@ -283,6 +283,11 @@
       cursor:grab;box-shadow:0 1px 4px rgba(0,0,0,.28);
     }
     .vertex-handle:active{ cursor:grabbing; }
+    .ghost-handle{
+      width:10px!important;height:10px!important;
+      background:rgba(255,255,255,0.55);border:1.5px dashed #253319;border-radius:50%;
+      cursor:copy;box-shadow:0 1px 4px rgba(0,0,0,.18);
+    }
 
     /* hint toast */
     #hint{
@@ -788,8 +793,13 @@ let _coords     = null;
 
 // Vertex reshape handles
 const HANDLE_ICON = L.divIcon({ className:'vertex-handle', iconSize:[10,10], iconAnchor:[5,5] });
-let _handleMarkers = [];
-let _handleLayerId = null;
+const GHOST_ICON  = L.divIcon({ className:'ghost-handle',  iconSize:[10,10], iconAnchor:[5,5] });
+let _handleMarkers  = [];
+let _handleLayerId  = null;
+let _ghostMarker    = null;
+let _ghostEdgeIdx   = null;
+let _edgeHoverId    = null;
+let _vertexDragging = false;
 
 // Water source placement state
 let wsMarker  = null;
@@ -1335,19 +1345,96 @@ function onShapeCreated(e) {
 }
 
 // ─────────────────────────────────────────
-// VERTEX HANDLES
+// VERTEX HANDLES + EDGE MIDPOINT INSERTION
 // ─────────────────────────────────────────
+
+function _ptSegDist(p, a, b) {
+  const dx = b.x - a.x, dy = b.y - a.y;
+  if (!dx && !dy) return Math.hypot(p.x - a.x, p.y - a.y);
+  const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / (dx * dx + dy * dy)));
+  return Math.hypot(p.x - a.x - t * dx, p.y - a.y - t * dy);
+}
+
+function _clearGhost() {
+  if (_ghostMarker) { try { map.removeLayer(_ghostMarker); } catch(_){} _ghostMarker = null; }
+  _ghostEdgeIdx = null;
+}
+
+function _showGhost(id, edgeIdx, midLl) {
+  if (_ghostEdgeIdx === edgeIdx) return;
+  _clearGhost();
+  _ghostEdgeIdx = edgeIdx;
+  _ghostMarker = L.marker(midLl, { icon: GHOST_ICON, zIndexOffset: 400, interactive: true }).addTo(map);
+  _ghostMarker.on('click', e => {
+    _shapeWasClicked = true;
+    L.DomEvent.stop(e);
+    _insertMidVertex(id, edgeIdx, midLl);
+  });
+}
+
+function _insertMidVertex(id, edgeIdx, midLl) {
+  const s = shapes.get(id);
+  if (!s) return;
+  const ring = s.layer.getLatLngs()[0].slice();
+  ring.splice(edgeIdx + 1, 0, midLl);
+  s.layer.setLatLngs([ring]);
+  const tt = s.layer.getTooltip();
+  if (tt) tt.setLatLng(s.layer.getCenter());
+  s.area = calcArea(ring);
+  updateList();
+  _showHandles(id);
+}
+
+function _onEdgeHover(e) {
+  if (dragState || _vertexDragging || !_edgeHoverId || selectedId !== _edgeHoverId) {
+    _clearGhost(); return;
+  }
+  const s = shapes.get(_edgeHoverId);
+  if (!s) return;
+  const ring   = s.layer.getLatLngs()[0];
+  const n      = ring.length;
+  const cursor = map.latLngToContainerPoint(e.latlng);
+
+  // Don't show ghost when cursor is near an existing vertex
+  const nearVertex = ring.some(ll => Math.hypot(
+    cursor.x - map.latLngToContainerPoint(ll).x,
+    cursor.y - map.latLngToContainerPoint(ll).y
+  ) < 12);
+  if (nearVertex) { _clearGhost(); return; }
+
+  let bestDist = Infinity, bestIdx = -1, bestMid = null;
+  for (let i = 0; i < n; i++) {
+    const a = map.latLngToContainerPoint(ring[i]);
+    const b = map.latLngToContainerPoint(ring[(i + 1) % n]);
+    const d = _ptSegDist(cursor, a, b);
+    if (d < bestDist) {
+      bestDist = d;
+      bestIdx  = i;
+      bestMid  = L.latLng(
+        (ring[i].lat + ring[(i + 1) % n].lat) / 2,
+        (ring[i].lng + ring[(i + 1) % n].lng) / 2
+      );
+    }
+  }
+
+  if (bestDist < 10) _showGhost(_edgeHoverId, bestIdx, bestMid);
+  else _clearGhost();
+}
+
 function _showHandles(id) {
   _clearHandles();
   const s = shapes.get(id);
   if (!s) return;
   _handleLayerId = id;
+  _edgeHoverId   = id;
+  map.on('mousemove', _onEdgeHover);
+
   const ring = s.layer.getLatLngs()[0];
   ring.forEach((ll, i) => {
     const m = L.marker(ll, { icon: HANDLE_ICON, draggable: true, zIndexOffset: 500 });
     m.addTo(map);
-    // Stop mousedown from reaching the polygon body (prevents spurious startDrag)
     m.on('mousedown', e => L.DomEvent.stopPropagation(e));
+    m.on('dragstart', () => { _vertexDragging = true; _clearGhost(); });
     m.on('drag', () => {
       const r = s.layer.getLatLngs()[0];
       r[i] = m.getLatLng();
@@ -1356,6 +1443,7 @@ function _showHandles(id) {
       if (tt) tt.setLatLng(s.layer.getCenter());
     });
     m.on('dragend', () => {
+      _vertexDragging = false;
       s.area = calcArea(s.layer.getLatLngs()[0]);
       updateList();
     });
@@ -1364,9 +1452,13 @@ function _showHandles(id) {
 }
 
 function _clearHandles() {
+  map.off('mousemove', _onEdgeHover);
+  _edgeHoverId    = null;
+  _vertexDragging = false;
+  _clearGhost();
   _handleMarkers.forEach(m => { try { map.removeLayer(m); } catch(_){} });
-  _handleMarkers = [];
-  _handleLayerId = null;
+  _handleMarkers  = [];
+  _handleLayerId  = null;
 }
 
 // ─────────────────────────────────────────
