@@ -2322,17 +2322,37 @@ function _clearArcHandles() {
   _arcHandles = [];
 }
 
+function _showDistTooltip(ft, containerPt) {
+  let el = document.getElementById('dist-tooltip');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'dist-tooltip';
+    el.style.cssText = 'position:absolute;z-index:9999;background:#1c1c1a;color:#fff;' +
+      'font-size:11px;font-weight:700;padding:3px 8px;border-radius:5px;' +
+      'pointer-events:none;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.3);';
+    map.getContainer().appendChild(el);
+  }
+  el.textContent = Math.round(ft) + ' ft';
+  el.style.left = (containerPt.x + 14) + 'px';
+  el.style.top  = (containerPt.y - 26) + 'px';
+  el.style.display = 'block';
+}
+function _hideDistTooltip() {
+  const el = document.getElementById('dist-tooltip');
+  if (el) el.style.display = 'none';
+}
+
 function _showArcHandles(id) {
   _clearArcHandles();
   const h = heads.get(id);
   if (!h) return;
+  const is360 = h.arcDeg >= 360;
   const mkHandle = (ll, cls) => L.marker(ll, {
     icon: L.divIcon({ className: 'arc-handle ' + cls, iconSize:[12,12], iconAnchor:[6,6] }),
     draggable: true, zIndexOffset: 600, interactive: true,
   }).addTo(map);
 
   // ── Direction + radius handle (solid) ─────────────────────────────────────
-  // Drag rotates the arc; drag closer/farther changes the spray radius.
   const rotLl = _headPtFromAngle(h, h.dirDeg, h.radiusFt);
   const rot = mkHandle(rotLl, 'arc-rotate-handle');
   rot.on('mousedown', e => { _arcHandleDrag = true; L.DomEvent.stopPropagation(e); });
@@ -2345,33 +2365,56 @@ function _showArcHandles(id) {
     h.radiusFt = Math.max(3, Math.hypot(northFt, eastFt));
     _redrawHeadArc(id);
     if (_arcHandles[1]) _arcHandles[1].setLatLng(_headPtFromAngle(h, h.dirDeg + h.arcDeg / 2, h.radiusFt));
+    if (_arcHandles[2]) _arcHandles[2].setLatLng(_headPtFromAngle(h, h.dirDeg - h.arcDeg / 2, h.radiusFt));
     _updateHeadPropsPanel(id);
+    _showDistTooltip(h.radiusFt, map.latLngToContainerPoint(ll));
   });
-  rot.on('dragend', () => { _arcHandleDrag = false; });
+  rot.on('dragend', () => { _arcHandleDrag = false; _hideDistTooltip(); });
 
-  // ── Arc-width handle (dashed) ──────────────────────────────────────────────
-  // Only the dragged side moves; the opposite edge stays fixed.
-  // The direction handle always tracks the new arc centre.
-  let fixedEdge = h.dirDeg - h.arcDeg / 2;
-  const wLl = _headPtFromAngle(h, h.dirDeg + h.arcDeg / 2, h.radiusFt);
-  const wid = mkHandle(wLl, 'arc-width-handle');
-  wid.on('mousedown', e => { _arcHandleDrag = true; L.DomEvent.stopPropagation(e); });
-  wid.on('dragstart', () => { fixedEdge = h.dirDeg - h.arcDeg / 2; });
-  wid.on('drag', () => {
-    const ll = wid.getLatLng();
-    let movingEdge = _angleFromHead(h, ll.lat, ll.lng);
-    let newArc = movingEdge - fixedEdge;
+  // ── Right-edge width handle (dashed) ──────────────────────────────────────
+  // Fixed edge = left edge. Only this (right) side moves.
+  let fixedEdgeR = h.dirDeg - h.arcDeg / 2;
+  const wRLl = _headPtFromAngle(h, h.dirDeg + h.arcDeg / 2, h.radiusFt);
+  const wR = mkHandle(wRLl, 'arc-width-handle');
+  wR.on('mousedown', e => { _arcHandleDrag = true; L.DomEvent.stopPropagation(e); });
+  wR.on('dragstart', () => { fixedEdgeR = h.dirDeg - h.arcDeg / 2; });
+  wR.on('drag', () => {
+    const ll = wR.getLatLng();
+    let newArc = _angleFromHead(h, ll.lat, ll.lng) - fixedEdgeR;
     while (newArc < 0) newArc += 360;
     while (newArc >= 360) newArc -= 360;
     h.arcDeg = Math.max(5, Math.min(350, newArc));
-    h.dirDeg = fixedEdge + h.arcDeg / 2;
+    h.dirDeg = fixedEdgeR + h.arcDeg / 2;
     _redrawHeadArc(id);
     if (_arcHandles[0]) _arcHandles[0].setLatLng(_headPtFromAngle(h, h.dirDeg, h.radiusFt));
     _updateHeadPropsPanel(id);
   });
-  wid.on('dragend', () => { _arcHandleDrag = false; });
+  wR.on('dragend', () => { _arcHandleDrag = false; });
 
-  _arcHandles = [rot, wid];
+  _arcHandles = [rot, wR];
+
+  // ── Left-edge width handle (dashed) ───────────────────────────────────────
+  // Not shown for 360° (both edges coincide); shown as soon as arc < 360.
+  if (!is360) {
+    let fixedEdgeL = h.dirDeg + h.arcDeg / 2;
+    const wLLl = _headPtFromAngle(h, h.dirDeg - h.arcDeg / 2, h.radiusFt);
+    const wL = mkHandle(wLLl, 'arc-width-handle');
+    wL.on('mousedown', e => { _arcHandleDrag = true; L.DomEvent.stopPropagation(e); });
+    wL.on('dragstart', () => { fixedEdgeL = h.dirDeg + h.arcDeg / 2; });
+    wL.on('drag', () => {
+      const ll = wL.getLatLng();
+      let newArc = fixedEdgeL - _angleFromHead(h, ll.lat, ll.lng);
+      while (newArc < 0) newArc += 360;
+      while (newArc >= 360) newArc -= 360;
+      h.arcDeg = Math.max(5, Math.min(350, newArc));
+      h.dirDeg = fixedEdgeL - h.arcDeg / 2;
+      _redrawHeadArc(id);
+      if (_arcHandles[0]) _arcHandles[0].setLatLng(_headPtFromAngle(h, h.dirDeg, h.radiusFt));
+      _updateHeadPropsPanel(id);
+    });
+    wL.on('dragend', () => { _arcHandleDrag = false; });
+    _arcHandles.push(wL);
+  }
 }
 
 function _updateHeadPropsPanel(id) {
