@@ -818,6 +818,28 @@ function _lotBounds(lotPoly) {
            cLat: (minLat + maxLat) / 2, cLng: (minLng + maxLng) / 2 };
 }
 
+// Ray-casting point-in-polygon. poly is [[lat, lng], …].
+function _pointInPoly(lat, lng, poly) {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const xi = poly[i][1], yi = poly[i][0];
+    const xj = poly[j][1], yj = poly[j][0];
+    if ((yi > lat) !== (yj > lat) &&
+        lng < (xj - xi) * (lat - yi) / (yj - yi) + xi) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
+// Returns true if the centroid of an OSM way's geometry falls inside lotPoly.
+function _wayInsideLot(geometry, lotPoly) {
+  const n    = geometry.length;
+  const cLat = geometry.reduce((s, p) => s + p.lat, 0) / n;
+  const cLng = geometry.reduce((s, p) => s + p.lon, 0) / n;
+  return _pointInPoly(cLat, cLng, lotPoly);
+}
+
 // ── Zone drawing — generic proportional layout ───────────────────────────────
 // Draws four zones (house / front lawn / back garden / driveway) scaled to fit
 // inside `lotPoly` when provided, or using fixed-ft defaults otherwise.
@@ -898,11 +920,32 @@ async function _refineWithLot(lat, lng, placeholderIds) {
   });
   deselect();
 
-  // Draw detailed OSM features (buildings, pools, garden beds, etc.).
+  // Draw detailed OSM features — only those whose centroid falls inside the lot.
+  // Without a lot polygon, accept only the single nearest building to the
+  // geocoded point (prevents features from neighbouring properties slipping in).
   let osmDrawn = 0;
-  for (const way of osmWays) {
-    addSurfaceShape(way.geometry.map(n => [n.lat, n.lon]), way.zoneType, way.tags);
-    osmDrawn++;
+  if (lotPoly) {
+    for (const way of osmWays) {
+      if (!_wayInsideLot(way.geometry, lotPoly)) continue;
+      addSurfaceShape(way.geometry.map(n => [n.lat, n.lon]), way.zoneType, way.tags);
+      osmDrawn++;
+    }
+  } else {
+    // No parcel boundary — accept at most the closest building to the address point.
+    const buildings = osmWays.filter(w => w.zoneType === 'nowater');
+    if (buildings.length) {
+      const nearest = buildings.reduce((best, w) => {
+        const n  = w.geometry.length;
+        const cLat = w.geometry.reduce((s, p) => s + p.lat, 0) / n;
+        const cLng = w.geometry.reduce((s, p) => s + p.lon, 0) / n;
+        const d  = (cLat - lat) ** 2 + (cLng - lng) ** 2;
+        return d < best.d ? { w, d } : best;
+      }, { w: null, d: Infinity }).w;
+      if (nearest) {
+        addSurfaceShape(nearest.geometry.map(n => [n.lat, n.lon]), 'nowater', nearest.tags);
+        osmDrawn++;
+      }
+    }
   }
 
   // If OSM gave us nothing, fall back to proportional zones fitted to the lot.
