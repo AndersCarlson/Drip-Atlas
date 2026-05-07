@@ -711,8 +711,8 @@ const YardGrid = L.Layer.extend({
     ctx.strokeStyle = 'rgba(150,185,215,0.40)'; ctx.lineWidth = 0.5;
     draw(false, true); draw(false, false);
 
-    // Major grid (5 yd spacing)
-    ctx.strokeStyle = 'rgba(75,125,170,0.70)'; ctx.lineWidth = 1;
+    // Major grid (5 yd spacing) — same stroke width, stronger colour only
+    ctx.strokeStyle = 'rgba(75,125,170,0.70)'; ctx.lineWidth = 0.5;
     draw(true, true); draw(true, false);
 
     // Scale label — bottom-right of canvas
@@ -1172,7 +1172,7 @@ function addSurfaceShape(latlngs, zoneType, tags) {
     color:       z.color,
     fillColor:   isHouse ? '#000' : z.fill,
     fillOpacity: isHouse ? 0.10 : 0.28,
-    weight:      isHouse ? 2.5  : 2,
+    weight:      isHouse ? 1.25 : 1,
     dashArray:   isHouse ? '6 4' : null,
   });
   drawnItems.addLayer(layer);
@@ -1249,7 +1249,7 @@ function setTool(tool) {
   // Draw zone handlers
   if ((tool === 'polygon' || tool === 'rect') && activeZoneType) {
     const z = ZONES[activeZoneType];
-    const opts = { shapeOptions:{ color:z.color, fillColor:z.fill, fillOpacity:0.28, weight:2 } };
+    const opts = { shapeOptions:{ color:z.color, fillColor:z.fill, fillOpacity:0.28, weight:1 } };
     drawHandler = tool === 'polygon'
       ? new L.Draw.Polygon(map, { ...opts, allowIntersection:false })
       : new L.Draw.Rectangle(map, opts);
@@ -1287,7 +1287,7 @@ function onShapeCreated(e) {
     color:       z.color,
     fillColor:   _isHouse ? '#000' : z.fill,
     fillOpacity: _isHouse ? 0.10 : 0.28,
-    weight:      _isHouse ? 2.5  : 2,
+    weight:      _isHouse ? 1.25 : 1,
     dashArray:   _isHouse ? '6 4' : null,
   });
   drawnItems.addLayer(layer);
@@ -1330,7 +1330,7 @@ function selectShape(id) {
   const s = shapes.get(id);
   if (!s) return;
 
-  s.layer.setStyle({ weight:3, opacity:1 });
+  s.layer.setStyle({ weight:1.5, opacity:1 });
   document.getElementById('zone-props').style.display = '';
   document.getElementById('prop-name').value  = s.name;
   document.getElementById('prop-area').textContent = Math.round(s.area).toLocaleString();
@@ -1349,7 +1349,7 @@ function deselect(reset = true) {
   if (selectedId !== null) {
     const s = shapes.get(selectedId);
     if (s) {
-      s.layer.setStyle({ weight:2, opacity:.9 });
+      s.layer.setStyle({ weight:1, opacity:.9 });
       if (s.layer.editing) try { s.layer.editing.disable(); } catch(_){}
     }
   }
@@ -1421,7 +1421,7 @@ function updateType(type) {
     color:       z.color,
     fillColor:   _h ? '#000' : z.fill,
     fillOpacity: _h ? 0.10 : 0.28,
-    weight:      _h ? 2.5  : 2,
+    weight:      _h ? 1.25 : 1,
     dashArray:   _h ? '6 4' : null,
   });
   if (!document.getElementById('prop-name').value) s.name = z.label;
