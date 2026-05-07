@@ -1308,9 +1308,7 @@ function onShapeCreated(e) {
   updateList();
   selectShape(id);
   updateSaveBtn();
-
-  // Re-arm tool so user can draw another zone immediately
-  setTimeout(() => { if (currentTool === 'polygon' || currentTool === 'rect') setTool(currentTool); }, 40);
+  setTool('select');
 }
 
 // ─────────────────────────────────────────
@@ -1381,9 +1379,33 @@ function onDragMove(e) {
   const s = shapes.get(id); if (!s) return;
   const dLat = e.latlng.lat - start.lat;
   const dLng = e.latlng.lng - start.lng;
-  s.layer.setLatLngs(orig.map(o => [o.lat + dLat, o.lng + dLng]));
+  const newRing = orig.map(o => [o.lat + dLat, o.lng + dLng]);
+  s.layer.setLatLngs(newRing);
+
+  // Move tooltip label
   const tt = s.layer.getTooltip();
   if (tt) tt.setLatLng(s.layer.getCenter());
+
+  // Move editing vertex handles and their midpoint markers in real-time.
+  // Leaflet.draw stores its own latlng copies inside _markers and doesn't
+  // listen to setLatLngs, so we update them directly.
+  _moveEditHandles(s.layer, newRing);
+}
+
+function _moveEditHandles(layer, ring) {
+  const ed = layer.editing;
+  if (!ed || !ed._enabled || !ed._verticesHandlers) return;
+  const handler = ed._verticesHandlers[0];
+  if (!handler || !handler._markers) return;
+  const n = handler._markers.length;
+  handler._markers.forEach((m, i) => {
+    const ll = L.latLng(ring[i][0], ring[i][1]);
+    m.setLatLng(ll);
+    const nextLL = L.latLng(ring[(i + 1) % n][0], ring[(i + 1) % n][1]);
+    if (m._middleRight) m._middleRight.setLatLng(
+      L.latLng((ll.lat + nextLL.lat) / 2, (ll.lng + nextLL.lng) / 2)
+    );
+  });
 }
 
 function onDragEnd() {
