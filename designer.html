@@ -1225,6 +1225,13 @@ function setTool(tool) {
 
   currentTool = tool;
 
+  // When entering select mode, clear zone type selection
+  if (tool === 'select') {
+    activeZoneType = null;
+    document.querySelectorAll('.ls-type-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('zone-hint').style.display = 'none';
+  }
+
   // Toolbar active state
   document.querySelectorAll('[data-tool]').forEach(b =>
     b.classList.toggle('active', b.dataset.tool === tool)
