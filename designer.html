@@ -1358,6 +1358,8 @@ function startDrag(e, id) {
   const s = shapes.get(id);
   if (!s) return;
   map.dragging.disable();
+  // Disable vertex handles so they don't stay behind while the polygon moves
+  if (s.layer.editing) try { s.layer.editing.disable(); } catch(_){}
   const el = s.layer.getElement();
   if (el) el.style.cursor = 'grabbing';
   map.getContainer().style.cursor = 'grabbing';
@@ -1381,12 +1383,15 @@ function onDragMove(e) {
 
 function onDragEnd() {
   if (!dragState) return;
-  const s = shapes.get(dragState.id);
+  const { id } = dragState;
+  const s = shapes.get(id);
   if (s) {
     s.area = calcArea(s.layer.getLatLngs()[0]);
     updateList();
     const el = s.layer.getElement();
     if (el) el.style.cursor = 'grab';
+    // Re-enable vertex handles at new positions if shape is still selected
+    if (id === selectedId && s.layer.editing) try { s.layer.editing.enable(); } catch(_){}
   }
   map.getContainer().style.cursor = '';
   dragState = null;
