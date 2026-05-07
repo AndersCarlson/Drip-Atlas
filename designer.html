@@ -275,6 +275,8 @@
     /* map container background in plan mode */
     #map.grid-view{ background:#f7f9fc; }
     #map.grid-view .leaflet-container{ background:#f7f9fc !important; }
+    /* hide vertex editing handles while a shape is being dragged */
+    #map.shape-dragging .leaflet-editing-icon{ visibility:hidden !important; }
 
     /* hint toast */
     #hint{
@@ -1358,8 +1360,11 @@ function startDrag(e, id) {
   const s = shapes.get(id);
   if (!s) return;
   map.dragging.disable();
-  // Disable vertex handles so they don't stay behind while the polygon moves
-  if (s.layer.editing) try { s.layer.editing.disable(); } catch(_){}
+  // Hide editing handles immediately via CSS, then also disable through the API
+  map.getContainer().classList.add('shape-dragging');
+  if (s.layer.editing && s.layer.editing._enabled) {
+    try { s.layer.editing.disable(); } catch(_){}
+  }
   const el = s.layer.getElement();
   if (el) el.style.cursor = 'grabbing';
   map.getContainer().style.cursor = 'grabbing';
@@ -1390,9 +1395,14 @@ function onDragEnd() {
     updateList();
     const el = s.layer.getElement();
     if (el) el.style.cursor = 'grab';
-    // Re-enable vertex handles at new positions if shape is still selected
-    if (id === selectedId && s.layer.editing) try { s.layer.editing.enable(); } catch(_){}
+    // Force editing handles to repaint at new vertex positions
+    if (id === selectedId && s.layer.editing) {
+      try { s.layer.editing.disable(); } catch(_){}
+      try { s.layer.editing.enable();  } catch(_){}
+    }
   }
+  // Remove CSS hide class AFTER re-enabling so handles appear at new positions
+  map.getContainer().classList.remove('shape-dragging');
   map.getContainer().style.cursor = '';
   dragState = null;
   map.dragging.enable();
