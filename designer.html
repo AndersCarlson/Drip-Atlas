@@ -783,6 +783,7 @@ let shapes      = new Map(); // L.stamp(layer) → { layer, type, name }
 let selectedId  = null;
 let currentTool = 'select';
 let dragState   = null;
+let _shapeWasClicked = false;
 let _coords     = null;
 
 // Vertex reshape handles
@@ -836,7 +837,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     plants.forEach((s, id) => refreshPlantIcon(id));
   });
   map.on(L.Draw.Event.CREATED, onShapeCreated);
-  map.on('click', () => { if (currentTool === 'select') deselect(); });
+  map.on('click', () => { if (_shapeWasClicked) { _shapeWasClicked = false; return; } if (currentTool === 'select') deselect(); });
 
   initViewToggle();
 
@@ -1195,8 +1196,8 @@ function addSurfaceShape(latlngs, zoneType, tags) {
     const el = layer.getElement(); if (el) el.style.cursor = dragState ? 'grabbing' : '';
     if (!dragState && drawHandler) try { drawHandler.enable(); } catch(_){}
   });
-  layer.on('click',     ev => { ev.originalEvent.stopPropagation(); ev.originalEvent.stopImmediatePropagation(); selectShape(id); });
-  layer.on('mousedown', ev => { ev.originalEvent.stopPropagation(); startDrag(ev, id); });
+  layer.on('click',     ev => { _shapeWasClicked = true; ev.originalEvent.stopPropagation(); ev.originalEvent.stopImmediatePropagation(); if (currentTool !== 'select') setTool('select'); selectShape(id); });
+  layer.on('mousedown', ev => { ev.originalEvent.stopPropagation(); if (currentTool !== 'select') setTool('select'); startDrag(ev, id); });
   layer.on('edit', () => {
     const s = shapes.get(id); if (!s) return;
     s.area = calcArea(layer.getLatLngs()[0]);
@@ -1253,7 +1254,7 @@ function setTool(tool) {
       const el = layer.getElement(); if (el) el.style.cursor = dragState ? 'grabbing' : '';
       if (!dragState && drawHandler) try { drawHandler.enable(); } catch(_){}
     });
-    layer.on('click', e => { e.originalEvent.stopPropagation(); e.originalEvent.stopImmediatePropagation(); if (currentTool !== 'select') setTool('select'); selectShape(id); });
+    layer.on('click', e => { _shapeWasClicked = true; e.originalEvent.stopPropagation(); e.originalEvent.stopImmediatePropagation(); if (currentTool !== 'select') setTool('select'); selectShape(id); });
     layer.on('mousedown', e => { e.originalEvent.stopPropagation(); if (currentTool !== 'select') setTool('select'); startDrag(e, id); });
   });
 
@@ -1317,8 +1318,8 @@ function onShapeCreated(e) {
     const el = layer.getElement(); if (el) el.style.cursor = dragState ? 'grabbing' : '';
     if (!dragState && drawHandler) try { drawHandler.enable(); } catch(_){}
   });
-  layer.on('click',     ev => { ev.originalEvent.stopPropagation(); ev.originalEvent.stopImmediatePropagation(); selectShape(id); });
-  layer.on('mousedown', ev => { ev.originalEvent.stopPropagation(); startDrag(ev, id); });
+  layer.on('click',     ev => { _shapeWasClicked = true; ev.originalEvent.stopPropagation(); ev.originalEvent.stopImmediatePropagation(); if (currentTool !== 'select') setTool('select'); selectShape(id); });
+  layer.on('mousedown', ev => { ev.originalEvent.stopPropagation(); if (currentTool !== 'select') setTool('select'); startDrag(ev, id); });
   layer.on('edit', () => {
     const s = shapes.get(id); if (!s) return;
     s.area = calcArea(layer.getLatLngs()[0]);
