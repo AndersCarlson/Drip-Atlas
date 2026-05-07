@@ -705,12 +705,147 @@ window.addEventListener('DOMContentLoaded', async () => {
     { icon:'🚫', text:`Don't mix rotor + spray — precip rates differ (<strong>${R.heads.rotor.precipIn_hr}"</strong> vs <strong>${R.heads.spray.precipIn_hr}"</strong>/hr)` },
   ].map(r => `<div class="hd-rule"><span class="hd-rule-icon">${r.icon}</span><span>${r.text}</span></div>`).join('');
 
-  hint('Click to add zone corners, double-click to finish the shape', 4000);
+  autoDrawSurfaces(lat, lng);
 });
 
 // ─────────────────────────────────────────
-// LOAD PROPERTY (OSM)
+// AUTO SURFACE DETECTION
 // ─────────────────────────────────────────
+
+// Step 1 — draw approximate surfaces immediately so the map is never blank.
+// Step 2 — refine in the background with real OSM data; replace fallbacks if
+//           better shapes are found.
+
+function autoDrawSurfaces(lat, lng) {
+  const fallbackIds = _drawFallbackSurfaces(lat, lng);
+  _refineWithOSM(lat, lng, fallbackIds);
+}
+
+// Returns the Leaflet stamp IDs of every shape it created.
+function _drawFallbackSurfaces(lat, lng) {
+  const dLat = degPerFtLat();
+  const dLng = degPerFtLng(lat);
+  const ids  = [];
+
+  // House footprint — 40 ft wide × 30 ft deep, centred on the geocoded point
+  ids.push(addSurfaceShape([
+    [lat + 15*dLat, lng - 20*dLng],
+    [lat + 15*dLat, lng + 20*dLng],
+    [lat - 15*dLat, lng + 20*dLng],
+    [lat - 15*dLat, lng - 20*dLng],
+  ], 'nowater', {}));
+
+  // Front lawn — south of house, ~56 ft wide × 33 ft deep
+  ids.push(addSurfaceShape([
+    [lat - 15*dLat, lng - 28*dLng],
+    [lat - 15*dLat, lng + 28*dLng],
+    [lat - 48*dLat, lng + 28*dLng],
+    [lat - 48*dLat, lng - 28*dLng],
+  ], 'lawn', {}));
+
+  // Back garden — north of house, ~44 ft wide × 37 ft deep
+  ids.push(addSurfaceShape([
+    [lat + 15*dLat, lng - 22*dLng],
+    [lat + 15*dLat, lng + 22*dLng],
+    [lat + 52*dLat, lng + 22*dLng],
+    [lat + 52*dLat, lng - 22*dLng],
+  ], 'garden', {}));
+
+  // Driveway — right side, running from street to house
+  ids.push(addSurfaceShape([
+    [lat + 15*dLat, lng + 20*dLng],
+    [lat + 15*dLat, lng + 32*dLng],
+    [lat - 48*dLat, lng + 32*dLng],
+    [lat - 48*dLat, lng + 20*dLng],
+  ], 'driveway', {}));
+
+  hint('Approximate surfaces placed — reshape them to match your property', 5000);
+  return ids;
+}
+
+async function _refineWithOSM(lat, lng, fallbackIds) {
+  const OSM_TAG_TO_ZONE = t => {
+    if (t.building)                                                    return 'nowater';
+    if (t.leisure === 'swimming_pool')                                 return 'pool';
+    if (t.landuse === 'garden' || t.leisure === 'garden')             return 'garden';
+    if (t.landuse === 'grass'  || t.landuse === 'meadow' ||
+        t.natural === 'grass'  || t.leisure === 'park')               return 'lawn';
+    if (t.service === 'driveway' || t.highway === 'service')          return 'driveway';
+    if (t.highway === 'footway'  || t.footway || t.highway === 'path') return 'path';
+    return null;
+  };
+
+  const query = `[out:json][timeout:10];
+(
+  way[building](around:60,${lat},${lng});
+  way[landuse~"grass|garden|meadow"](around:90,${lat},${lng});
+  way[leisure~"garden|swimming_pool|park"](around:90,${lat},${lng});
+  way[natural=grass](around:90,${lat},${lng});
+  way[service=driveway](around:70,${lat},${lng});
+  way[highway=footway](around:60,${lat},${lng});
+);
+out geom;`;
+
+  try {
+    const res  = await fetch('https://overpass-api.de/api/interpreter', {
+      method: 'POST', body: 'data=' + encodeURIComponent(query),
+    });
+    const data = await res.json();
+    const ways = (data.elements || []).filter(e => e.type === 'way' && e.geometry?.length >= 3);
+
+    let drawn = 0;
+    for (const way of ways) {
+      const zoneType = OSM_TAG_TO_ZONE(way.tags || {});
+      if (!zoneType) continue;
+      addSurfaceShape(way.geometry.map(n => [n.lat, n.lon]), zoneType, way.tags);
+      drawn++;
+    }
+
+    if (drawn > 0) {
+      // Real OSM data found — remove the placeholder fallback shapes
+      fallbackIds.forEach(id => {
+        const s = shapes.get(id);
+        if (s) { drawnItems.removeLayer(s.layer); shapes.delete(id); }
+      });
+      deselect();
+      updateList();
+      updateSaveBtn();
+      hint(`${drawn} surface${drawn > 1 ? 's' : ''} found from map data — edit or add more`, 5000);
+    }
+  } catch (_) { /* network error — keep fallback surfaces as-is */ }
+}
+
+// Returns the Leaflet stamp ID of the created shape.
+function addSurfaceShape(latlngs, zoneType, tags) {
+  const z     = ZONES[zoneType];
+  const label = (tags?.name) || z.label;
+  const layer = L.polygon(latlngs, {
+    color: z.color, fillColor: z.fill, fillOpacity: 0.28, weight: 2,
+  });
+  drawnItems.addLayer(layer);
+
+  const id   = L.stamp(layer);
+  const area = calcArea(layer.getLatLngs()[0]);
+  shapes.set(id, { layer, type: zoneType, name: label, area });
+
+  layer.bindTooltip(`${z.icon} ${label}`, {
+    permanent: true, direction: 'center', className: 'lf-zone-lbl',
+  });
+  layer.on('mouseover', () => {
+    const el = layer.getElement(); if (el) el.style.cursor = 'grab';
+    if (!dragState && drawHandler) try { drawHandler.disable(); } catch(_){}
+  });
+  layer.on('mouseout', () => {
+    const el = layer.getElement(); if (el) el.style.cursor = dragState ? 'grabbing' : '';
+    if (!dragState && drawHandler) try { drawHandler.enable(); } catch(_){}
+  });
+  layer.on('click',     ev => { ev.originalEvent.stopPropagation(); ev.originalEvent.stopImmediatePropagation(); selectShape(id); });
+  layer.on('mousedown', ev => { ev.originalEvent.stopPropagation(); startDrag(ev, id); });
+
+  updateList();
+  updateSaveBtn();
+  return id;
+}
 
 // ─────────────────────────────────────────
 // LOT MODAL
