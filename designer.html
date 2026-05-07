@@ -1374,9 +1374,6 @@ function selectShape(id) {
   document.getElementById('zone-props').style.display = '';
   document.getElementById('prop-name').value  = s.name;
   document.getElementById('prop-area').textContent = Math.round(s.area).toLocaleString();
-  document.querySelectorAll('.ls-type-btn').forEach(b =>
-    b.classList.toggle('active', b.dataset.zone === s.type)
-  );
 
   document.querySelectorAll('.shape-row').forEach(r =>
     r.classList.toggle('sel', r.dataset.id == id)
@@ -1774,7 +1771,6 @@ function setActiveZoneType(type) {
     b.classList.toggle('active', b.dataset.zone === type)
   );
   document.getElementById('zone-hint').style.display = '';
-  if (selectedId !== null) updateType(type);
   if (currentTool !== 'plant') setTool('polygon');
 }
 
