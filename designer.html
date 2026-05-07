@@ -1186,6 +1186,13 @@ function addSurfaceShape(latlngs, zoneType, tags) {
   });
   layer.on('click',     ev => { ev.originalEvent.stopPropagation(); ev.originalEvent.stopImmediatePropagation(); selectShape(id); });
   layer.on('mousedown', ev => { ev.originalEvent.stopPropagation(); startDrag(ev, id); });
+  layer.on('edit', () => {
+    const s = shapes.get(id); if (!s) return;
+    s.area = calcArea(layer.getLatLngs()[0]);
+    const tt = layer.getTooltip();
+    if (tt) tt.setLatLng(layer.getCenter());
+    updateList();
+  });
 
   updateList();
   updateSaveBtn();
@@ -1304,6 +1311,13 @@ function onShapeCreated(e) {
   });
   layer.on('click',     ev => { ev.originalEvent.stopPropagation(); ev.originalEvent.stopImmediatePropagation(); selectShape(id); });
   layer.on('mousedown', ev => { ev.originalEvent.stopPropagation(); startDrag(ev, id); });
+  layer.on('edit', () => {
+    const s = shapes.get(id); if (!s) return;
+    s.area = calcArea(layer.getLatLngs()[0]);
+    const tt = layer.getTooltip();
+    if (tt) tt.setLatLng(layer.getCenter());
+    updateList();
+  });
 
   updateList();
   selectShape(id);
@@ -1354,6 +1368,11 @@ function deselect(reset = true) {
 // DRAG TO MOVE
 // ─────────────────────────────────────────
 function startDrag(e, id) {
+  // Ignore mousedown that bubbled from a vertex/midpoint handle — those belong
+  // to Leaflet.draw's own drag system and should reshape, not move, the shape.
+  const origin = e.originalEvent?.target;
+  if (origin && origin.classList.contains('leaflet-editing-icon')) return;
+
   L.DomEvent.stopPropagation(e);
   const s = shapes.get(id);
   if (!s) return;
