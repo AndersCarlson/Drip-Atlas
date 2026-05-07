@@ -1246,8 +1246,8 @@ function setTool(tool) {
       const el = layer.getElement(); if (el) el.style.cursor = dragState ? 'grabbing' : '';
       if (!dragState && drawHandler) try { drawHandler.enable(); } catch(_){}
     });
-    layer.on('click', e => { e.originalEvent.stopPropagation(); e.originalEvent.stopImmediatePropagation(); selectShape(id); });
-    layer.on('mousedown', e => { e.originalEvent.stopPropagation(); startDrag(e, id); });
+    layer.on('click', e => { e.originalEvent.stopPropagation(); e.originalEvent.stopImmediatePropagation(); if (currentTool !== 'select') setTool('select'); selectShape(id); });
+    layer.on('mousedown', e => { e.originalEvent.stopPropagation(); if (currentTool !== 'select') setTool('select'); startDrag(e, id); });
   });
 
   // Draw zone handlers
