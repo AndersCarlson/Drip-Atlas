@@ -1445,8 +1445,11 @@ function onDragEnd() {
   map.off('mouseup',   onDragEnd);
   document.removeEventListener('mouseup', onDragEnd);
   if (drawHandler) try { drawHandler.enable(); } catch(_){}
-  // Restore handles at new position if shape is still selected
+  // Always select the interacted shape and show handles — covers both the
+  // "already selected + dragged" case and the "click on unselected" case
+  // where the subsequent click event may not fire reliably.
   if (movedId === selectedId) _showHandles(movedId);
+  else selectShape(movedId);
 }
 
 // ─────────────────────────────────────────
