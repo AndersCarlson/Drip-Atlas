@@ -2325,7 +2325,7 @@ function _clearArcHandles() {
 function _showArcHandles(id) {
   _clearArcHandles();
   const h = heads.get(id);
-  if (!h || h.arcDeg >= 360) return;
+  if (!h) return;
   const mkHandle = (ll, cls) => L.marker(ll, {
     icon: L.divIcon({ className: 'arc-handle ' + cls, iconSize:[12,12], iconAnchor:[6,6] }),
     draggable: true, zIndexOffset: 600, interactive: true,
