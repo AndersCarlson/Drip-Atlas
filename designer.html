@@ -276,6 +276,14 @@
     #map.grid-view{ background:#f7f9fc; }
     #map.grid-view .leaflet-container{ background:#f7f9fc !important; }
 
+    /* vertex reshape handles */
+    .vertex-handle{
+      width:10px!important;height:10px!important;
+      background:#fff;border:1.5px solid #253319;border-radius:50%;
+      cursor:grab;box-shadow:0 1px 4px rgba(0,0,0,.28);
+    }
+    .vertex-handle:active{ cursor:grabbing; }
+
     /* hint toast */
     #hint{
       position:fixed;bottom:36px;left:50%;transform:translateX(-50%);
@@ -771,11 +779,16 @@ function setMapView(mode) {
 // STATE
 // ─────────────────────────────────────────
 let map, drawnItems, drawHandler;
-let shapes    = new Map(); // L.stamp(layer) → { layer, type, name }
-let selectedId = null;
+let shapes      = new Map(); // L.stamp(layer) → { layer, type, name }
+let selectedId  = null;
 let currentTool = 'select';
-let dragState  = null;
-let _coords    = null;
+let dragState   = null;
+let _coords     = null;
+
+// Vertex reshape handles
+const HANDLE_ICON = L.divIcon({ className:'vertex-handle', iconSize:[10,10], iconAnchor:[5,5] });
+let _handleMarkers = [];
+let _handleLayerId = null;
 
 // Water source placement state
 let wsMarker  = null;
@@ -1314,6 +1327,41 @@ function onShapeCreated(e) {
 }
 
 // ─────────────────────────────────────────
+// VERTEX HANDLES
+// ─────────────────────────────────────────
+function _showHandles(id) {
+  _clearHandles();
+  const s = shapes.get(id);
+  if (!s) return;
+  _handleLayerId = id;
+  const ring = s.layer.getLatLngs()[0];
+  ring.forEach((ll, i) => {
+    const m = L.marker(ll, { icon: HANDLE_ICON, draggable: true, zIndexOffset: 500 });
+    m.addTo(map);
+    // Stop mousedown from reaching the polygon body (prevents spurious startDrag)
+    m.on('mousedown', e => L.DomEvent.stopPropagation(e));
+    m.on('drag', () => {
+      const r = s.layer.getLatLngs()[0];
+      r[i] = m.getLatLng();
+      s.layer.setLatLngs([r]);
+      const tt = s.layer.getTooltip();
+      if (tt) tt.setLatLng(s.layer.getCenter());
+    });
+    m.on('dragend', () => {
+      s.area = calcArea(s.layer.getLatLngs()[0]);
+      updateList();
+    });
+    _handleMarkers.push(m);
+  });
+}
+
+function _clearHandles() {
+  _handleMarkers.forEach(m => { try { map.removeLayer(m); } catch(_){} });
+  _handleMarkers = [];
+  _handleLayerId = null;
+}
+
+// ─────────────────────────────────────────
 // SELECTION
 // ─────────────────────────────────────────
 function selectShape(id) {
@@ -1333,6 +1381,7 @@ function selectShape(id) {
   document.querySelectorAll('.shape-row').forEach(r =>
     r.classList.toggle('sel', r.dataset.id == id)
   );
+  _showHandles(id);
 }
 
 function deselect(reset = true) {
@@ -1340,6 +1389,7 @@ function deselect(reset = true) {
     const s = shapes.get(selectedId);
     if (s) s.layer.setStyle({ weight:1, opacity:.9 });
   }
+  _clearHandles();
   if (reset) {
     selectedId = null;
     document.getElementById('zone-props').style.display = 'none';
@@ -1354,6 +1404,7 @@ function startDrag(e, id) {
   L.DomEvent.stopPropagation(e);
   const s = shapes.get(id);
   if (!s) return;
+  _clearHandles();
   map.dragging.disable();
   const el = s.layer.getElement();
   if (el) el.style.cursor = 'grabbing';
@@ -1387,13 +1438,15 @@ function onDragEnd() {
     if (el) el.style.cursor = 'grab';
   }
   map.getContainer().style.cursor = '';
+  const movedId = dragState.id;
   dragState = null;
   map.dragging.enable();
   map.off('mousemove', onDragMove);
   map.off('mouseup',   onDragEnd);
   document.removeEventListener('mouseup', onDragEnd);
-  // Re-enable polygon drawing now that drag is finished
   if (drawHandler) try { drawHandler.enable(); } catch(_){}
+  // Restore handles at new position if shape is still selected
+  if (movedId === selectedId) _showHandles(movedId);
 }
 
 // ─────────────────────────────────────────
