@@ -1,59 +1,87 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
   <defs>
-    <filter id="shs" x="-15%" y="-15%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="3.5"/>
+    <filter id="sw" x="-8%" y="-8%" width="116%" height="116%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.07" numOctaves="3" seed="12" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="8" xChannelSelector="R" yChannelSelector="G"/>
     </filter>
+    <clipPath id="sc">
+      <circle cx="100" cy="100" r="78"/>
+    </clipPath>
   </defs>
 
-  <!-- Drop shadow -->
-  <ellipse cx="107" cy="108" rx="58" ry="54" fill="#507220" opacity="0.15" filter="url(#shs)"/>
+  <!-- ── BASE ── -->
+  <circle cx="100" cy="100" r="78" fill="#182a0a"/>
 
-  <!-- Base wash -->
-  <path d="M100 44 C118 42 140 52 152 68 C164 84 164 106 154 124
-           C144 142 124 154 102 154 C80 154 58 144 46 128
-           C34 112 34 88 46 72 C58 54 80 46 100 44 Z"
-        fill="#d0ec98" opacity="0.58"/>
-
-  <!-- 5 branch spokes from center at 72° intervals -->
-  <!-- 0°=top 72°=lower-right 144°=lower-right 216°=lower-left 288°=upper-left -->
-  <g stroke="#3a2010" stroke-linecap="round" fill="none">
-    <line x1="100" y1="100" x2="100" y2="52"  stroke-width="2.2"/>
-    <line x1="100" y1="100" x2="148" y2="84"  stroke-width="2"/>
-    <line x1="100" y1="100" x2="130" y2="144" stroke-width="2"/>
-    <line x1="100" y1="100" x2="70"  y2="144" stroke-width="2"/>
-    <line x1="100" y1="100" x2="52"  y2="84"  stroke-width="2"/>
-    <!-- sub-branches -->
-    <line x1="100" y1="100" x2="116" y2="72"  stroke-width="1.0" opacity="0.50"/>
-    <line x1="100" y1="100" x2="84"  y2="72"  stroke-width="1.0" opacity="0.50"/>
+  <!-- ── SPOKE CHANNELS ── -->
+  <g clip-path="url(#sc)" stroke="#0e1c06" stroke-linecap="round" fill="none">
+    <line x1="100" y1="100" x2="100" y2="28"  stroke-width="4.5" opacity="0.80"/>
+    <line x1="100" y1="100" x2="146" y2="46"  stroke-width="4"   opacity="0.75"/>
+    <line x1="100" y1="100" x2="168" y2="98"  stroke-width="4"   opacity="0.75"/>
+    <line x1="100" y1="100" x2="148" y2="150" stroke-width="4"   opacity="0.75"/>
+    <line x1="100" y1="100" x2="100" y2="170" stroke-width="4.5" opacity="0.80"/>
+    <line x1="100" y1="100" x2="52"  y2="150" stroke-width="4"   opacity="0.75"/>
+    <line x1="100" y1="100" x2="32"  y2="98"  stroke-width="4"   opacity="0.75"/>
+    <line x1="100" y1="100" x2="54"  y2="46"  stroke-width="4"   opacity="0.75"/>
+    <!-- sub-spokes -->
+    <line x1="100" y1="100" x2="124" y2="62"  stroke-width="2"   opacity="0.45"/>
+    <line x1="100" y1="100" x2="130" y2="130" stroke-width="2"   opacity="0.45"/>
+    <line x1="100" y1="100" x2="72"  y2="132" stroke-width="2"   opacity="0.45"/>
+    <line x1="100" y1="100" x2="70"  y2="64"  stroke-width="2"   opacity="0.45"/>
   </g>
 
-  <!-- Lobe base (lighter, slightly larger) -->
-  <!-- 5 lobes: top(100,56), TR(144,88), BR(128,144), BL(72,144), TL(56,88) -->
-  <ellipse cx="100" cy="56"  rx="26" ry="22" fill="#7cbc3a" opacity="0.48"/>
-  <ellipse cx="144" cy="88"  rx="24" ry="26" fill="#6eb030" opacity="0.48" transform="rotate(72,144,88)"/>
-  <ellipse cx="128" cy="144" rx="26" ry="22" fill="#7cbc3a" opacity="0.48" transform="rotate(144,128,144)"/>
-  <ellipse cx="72"  cy="144" rx="26" ry="22" fill="#6eb030" opacity="0.48" transform="rotate(216,72,144)"/>
-  <ellipse cx="56"  cy="88"  rx="24" ry="26" fill="#7cbc3a" opacity="0.48" transform="rotate(288,56,88)"/>
+  <!-- ── CANOPY LOBES ── compact, uniform dark green -->
+  <g clip-path="url(#sc)">
+    <!-- outer ring -->
+    <circle cx="100" cy="36"  r="26" fill="#304e18" opacity="0.90"/>
+    <circle cx="144" cy="54"  r="24" fill="#2a4614" opacity="0.90"/>
+    <circle cx="164" cy="98"  r="24" fill="#304e18" opacity="0.90"/>
+    <circle cx="146" cy="148" r="24" fill="#2a4614" opacity="0.90"/>
+    <circle cx="100" cy="164" r="26" fill="#304e18" opacity="0.90"/>
+    <circle cx="54"  cy="148" r="24" fill="#2a4614" opacity="0.90"/>
+    <circle cx="36"  cy="98"  r="24" fill="#304e18" opacity="0.90"/>
+    <circle cx="56"  cy="54"  r="24" fill="#2a4614" opacity="0.90"/>
 
-  <!-- Lobe main -->
-  <ellipse cx="100" cy="56"  rx="22" ry="19" fill="#68aa28" opacity="0.84"/>
-  <ellipse cx="144" cy="88"  rx="20" ry="23" fill="#5e9e20" opacity="0.84" transform="rotate(72,144,88)"/>
-  <ellipse cx="128" cy="144" rx="22" ry="19" fill="#68aa28" opacity="0.84" transform="rotate(144,128,144)"/>
-  <ellipse cx="72"  cy="144" rx="22" ry="19" fill="#5e9e20" opacity="0.84" transform="rotate(216,72,144)"/>
-  <ellipse cx="56"  cy="88"  rx="20" ry="23" fill="#68aa28" opacity="0.84" transform="rotate(288,56,88)"/>
+    <!-- infill between lobes (tighter) -->
+    <circle cx="128" cy="42"  r="18" fill="#283e12" opacity="0.75"/>
+    <circle cx="156" cy="72"  r="18" fill="#243810" opacity="0.75"/>
+    <circle cx="154" cy="126" r="18" fill="#283e12" opacity="0.75"/>
+    <circle cx="124" cy="158" r="18" fill="#243810" opacity="0.75"/>
+    <circle cx="76"  cy="158" r="18" fill="#283e12" opacity="0.75"/>
+    <circle cx="46"  cy="126" r="18" fill="#243810" opacity="0.75"/>
+    <circle cx="44"  cy="72"  r="18" fill="#283e12" opacity="0.75"/>
+    <circle cx="74"  cy="42"  r="18" fill="#243810" opacity="0.75"/>
 
-  <!-- Highlights -->
-  <ellipse cx="94"  cy="46"  rx="10" ry="7"  fill="#b0dc58" opacity="0.50"/>
-  <ellipse cx="50"  cy="82"  rx="9"  ry="6"  fill="#b0dc58" opacity="0.42"/>
+    <!-- inner fill -->
+    <circle cx="100" cy="62"  r="20" fill="#2e4a16" opacity="0.82"/>
+    <circle cx="130" cy="82"  r="18" fill="#283e12" opacity="0.80"/>
+    <circle cx="128" cy="118" r="18" fill="#2e4a16" opacity="0.80"/>
+    <circle cx="100" cy="138" r="20" fill="#283e12" opacity="0.82"/>
+    <circle cx="70"  cy="118" r="18" fill="#2e4a16" opacity="0.80"/>
+    <circle cx="70"  cy="82"  r="18" fill="#283e12" opacity="0.80"/>
 
-  <!-- Inner shadow on each lobe -->
-  <ellipse cx="100" cy="58"  rx="9"  ry="8"  fill="#2c6c0c" opacity="0.30"/>
-  <ellipse cx="144" cy="90"  rx="8"  ry="9"  fill="#286408" opacity="0.26"/>
-  <ellipse cx="128" cy="144" rx="9"  ry="8"  fill="#2c6c0c" opacity="0.26"/>
-  <ellipse cx="72"  cy="144" rx="9"  ry="8"  fill="#286408" opacity="0.26"/>
-  <ellipse cx="56"  cy="88"  rx="8"  ry="9"  fill="#2c6c0c" opacity="0.26"/>
+    <!-- Highlight caps -->
+    <circle cx="94"  cy="30"  r="11" fill="#406020" opacity="0.55"/>
+    <circle cx="50"  cy="50"  r="10" fill="#3c5a1c" opacity="0.48"/>
+    <circle cx="30"  cy="92"  r="10" fill="#406020" opacity="0.45"/>
 
-  <!-- Center -->
-  <circle cx="100" cy="100" r="12" fill="#1e5808" opacity="0.45"/>
-  <circle cx="100" cy="100" r="5"  fill="#163e06" opacity="0.55"/>
+    <!-- texture scatter -->
+    <circle cx="80"  cy="44"  r="7"  fill="#1c2e0c" opacity="0.60"/>
+    <circle cx="120" cy="40"  r="6"  fill="#182808" opacity="0.55"/>
+    <circle cx="150" cy="66"  r="7"  fill="#1c2e0c" opacity="0.55"/>
+    <circle cx="158" cy="114" r="6"  fill="#182808" opacity="0.55"/>
+    <circle cx="134" cy="158" r="7"  fill="#1c2e0c" opacity="0.55"/>
+    <circle cx="62"  cy="160" r="6"  fill="#182808" opacity="0.55"/>
+    <circle cx="38"  cy="116" r="7"  fill="#1c2e0c" opacity="0.55"/>
+    <circle cx="44"  cy="64"  r="6"  fill="#182808" opacity="0.55"/>
+    <circle cx="108" cy="76"  r="6"  fill="#1c2e0c" opacity="0.42"/>
+    <circle cx="94"  cy="124" r="6"  fill="#182808" opacity="0.42"/>
+  </g>
+
+  <!-- ── CENTER TRUNK ── -->
+  <circle cx="100" cy="100" r="12" fill="#0c1804" opacity="0.88"/>
+  <circle cx="100" cy="100" r="6"  fill="#08100a" opacity="0.92"/>
+
+  <!-- ── ORGANIC EDGE ── -->
+  <circle cx="100" cy="100" r="78" fill="none" filter="url(#sw)"
+          stroke="#081404" stroke-width="9" opacity="0.50"/>
 </svg>

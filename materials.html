@@ -24,7 +24,8 @@
       border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
     .sb-brand{padding:18px 20px 14px;border-bottom:1px solid var(--border);
       display:flex;align-items:center;gap:10px}
-    .sb-logo{display:flex;align-items:center}
+    .sb-logo{display:flex;align-items:center;cursor:pointer;transition:opacity .15s}
+    .sb-logo:hover{opacity:.75}
     .sb-plan-badge{margin-left:auto;font-size:10px;font-weight:700;letter-spacing:.08em;
       background:var(--green);color:#f1ebe2;padding:3px 8px;border-radius:20px}
     .sb-address{padding:9px 20px 13px;border-bottom:1px solid var(--border)}
@@ -60,6 +61,18 @@
       backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
       z-index:5000;align-items:flex-end;justify-content:center}
     #mat-paywall.open{display:flex}
+    /* ── UNSAVED CHANGES MODAL ── */
+    #unsaved-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center}
+    #unsaved-modal.open{display:flex}
+    .um-card{background:#fff;border-radius:16px;padding:32px 28px;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+    .um-icon{font-size:28px;margin-bottom:12px}
+    .um-title{font-size:17px;font-weight:700;color:var(--charcoal);margin-bottom:8px}
+    .um-body{font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:24px}
+    .um-actions{display:flex;gap:10px;justify-content:flex-end}
+    .um-stay{padding:9px 18px;border:1.5px solid var(--border);border-radius:8px;background:transparent;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;font-family:'Inter',sans-serif;transition:border-color .15s}
+    .um-stay:hover{border-color:var(--green);color:var(--green)}
+    .um-leave{padding:9px 18px;border:none;border-radius:8px;background:var(--charcoal);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity .15s}
+    .um-leave:hover{opacity:.82}
     .mpw-sheet{background:#18250f;border:1px solid rgba(255,255,255,.1);border-bottom:none;
       border-radius:20px 20px 0 0;padding:8px 28px 32px;width:100%;max-width:480px;
       animation:mpwUp .22s cubic-bezier(.32,1,.28,1) both}
@@ -86,6 +99,52 @@
       border:none;font-size:12px;color:rgba(255,255,255,.28);font-family:'Inter',sans-serif;
       cursor:pointer;text-align:center}
     .mpw-dismiss:hover{color:rgba(255,255,255,.5)}
+    /* ── GATE / PAYWALL PANEL ── */
+    /* Schedule: show intro, blur content */
+    #tab-schedule.is-locked .schedule-intro{filter:none;pointer-events:auto;user-select:auto}
+    #tab-schedule.is-locked .schedule-table-wrap,
+    #tab-schedule.is-locked .week-grid-wrap,
+    #tab-schedule.is-locked .schedule-notes-card{filter:blur(3.5px);pointer-events:none;user-select:none}
+    /* Manifold: show intro, blur diagram + parts */
+    #tab-manifold.is-locked .manifold-intro{filter:none;pointer-events:auto;user-select:auto}
+    #tab-manifold.is-locked .manifold-diagram-card,
+    #tab-manifold.is-locked .manifold-layout{filter:blur(3.5px);pointer-events:none;user-select:none}
+    /* Blueprint: show toolbar, blur svg */
+    #tab-blueprint.is-locked .bp-toolbar{filter:none;pointer-events:auto;user-select:auto}
+    #tab-blueprint.is-locked .bp-svg-wrap{filter:blur(3.5px);pointer-events:none;user-select:none}
+    /* Guide: show header, blur phases + tip */
+    #tab-guide.is-locked .zones-header{filter:none;pointer-events:auto;user-select:auto}
+    #tab-guide.is-locked .ig-phases,
+    #tab-guide.is-locked .ig-tip-card{filter:blur(3.5px);pointer-events:none;user-select:none}
+    /* Zones tab: show header and zone names/badges, blur only parts/totals */
+    #tab-zones.is-locked .zones-header{filter:none;pointer-events:auto;user-select:auto;max-height:none;overflow:visible}
+    #tab-zones.is-locked #zones-list{max-height:none;overflow:visible;filter:none}
+    #tab-zones.is-locked .zc-header{filter:none;pointer-events:auto;user-select:auto}
+    #tab-zones.is-locked .zc-body{filter:blur(3.5px);pointer-events:none;user-select:none}
+    #tab-zones.is-locked #grand-total-card{filter:blur(3.5px);pointer-events:none;user-select:none}
+    /* Gate panel — fixed bottom sheet */
+    .gate-panel{display:none}
+    .tab-pane.is-locked .gate-panel{
+      display:block;
+      position:fixed;
+      bottom:0;
+      left:var(--sidebar);
+      right:0;
+      background:#0d2530;
+      border-top:4px solid #3dd5e8;
+      padding:28px 40px 32px;
+      z-index:200;
+    }
+    .gate-inner{max-width:560px}
+    .gate-headline{font-family:'Playfair Display',Georgia,serif;font-size:30px;font-weight:700;color:#4ecde0;line-height:1.2;margin-bottom:8px}
+    .gate-price-line{font-size:14px;font-weight:500;color:rgba(255,255,255,.55);margin-bottom:14px;letter-spacing:.01em}
+    .gate-sub{font-size:14px;color:rgba(255,255,255,.72);line-height:1.65;margin-bottom:20px}
+    .gate-features{list-style:none;display:flex;flex-direction:column;gap:7px;margin-bottom:26px}
+    .gate-features li{font-size:13px;color:rgba(255,255,255,.8);display:flex;align-items:baseline;gap:8px;line-height:1.45}
+    .gate-features li::before{content:'✓';color:#3dd5e8;font-weight:700;font-size:12px;flex-shrink:0}
+    .gate-cta-btn{display:inline-block;padding:14px 36px;background:#c8e670;color:#1a3310;border:none;border-radius:8px;font-size:15px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;letter-spacing:.01em;transition:opacity .15s;margin-bottom:14px}
+    .gate-cta-btn:hover{opacity:.88}
+    .gate-guarantee{font-size:12px;color:rgba(255,255,255,.36);line-height:1.55}
     .sb-footer{padding:10px 12px 18px;border-top:1px solid var(--border)}
     .sb-btn{display:flex;align-items:center;gap:8px;width:100%;padding:9px 12px;
       border-radius:8px;border:1.5px solid var(--border);background:transparent;
@@ -112,7 +171,10 @@
     .brand-btn:hover{border-color:var(--text);color:var(--text)}
     .brand-btn.active[data-brand=rainbird]{background:#c8222a;border-color:#c8222a;color:#fff}
     .brand-btn.active[data-brand=hunter]{background:#005baa;border-color:#005baa;color:#fff}
-    .brand-btn.active[data-brand=orbit]{background:#f06020;border-color:#f06020;color:#fff}
+    .grade-btn{padding:5px 12px;border-radius:6px;border:1.5px solid var(--border);background:var(--bg);color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:border-color .15s,background .15s,color .15s}
+    .grade-btn:hover{border-color:var(--text);color:var(--text)}
+    .grade-btn.active[data-grade=standard]{background:#253319;border-color:#253319;color:#c8e670}
+    .grade-btn.active[data-grade=premium]{background:#7c3aed;border-color:#7c3aed;color:#fff}
     .pipe-select{padding:5px 10px;border-radius:6px;border:1.5px solid var(--border);
       font-size:12px;font-weight:600;color:var(--text);background:var(--white);
       font-family:'Inter',sans-serif;cursor:pointer;outline:none;transition:border-color .12s}
@@ -131,14 +193,44 @@
     .tab-pane{display:none}
     .tab-pane.active{display:block}
 
+    /* ── ZONES HEADER CARD ── */
+    .zones-header{background:var(--white);border:1px solid var(--border);
+      border-radius:14px;padding:20px 24px;margin-bottom:16px}
+    .zh-top{display:flex;align-items:flex-start;justify-content:space-between;
+      gap:16px;flex-wrap:wrap;margin-bottom:16px}
+    .zh-text h2{font-family:'Playfair Display',serif;font-size:22px;
+      color:var(--green);margin-bottom:3px}
+    .zh-text p{font-size:13px;color:var(--muted)}
+    .zh-atc{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+    .btn-atc{padding:12px 20px;background:var(--green);color:#f1ebe2;border:none;
+      border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;
+      font-family:'Inter',sans-serif;white-space:nowrap;
+      box-shadow:0 2px 8px rgba(37,51,25,.18);transition:background .15s}
+    .btn-atc:hover{background:var(--green2)}
+    .zh-controls{display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+      padding-top:16px;border-top:1px solid var(--border)}
+
+    /* ── PARTS SUMMARY BAR ── */
+    .parts-summary{display:flex;align-items:center;gap:10px;
+      background:var(--cream);border:1px solid var(--border);border-radius:10px;
+      padding:12px 18px;margin-bottom:16px;flex-wrap:wrap}
+    .ps-total{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;
+      color:var(--green)}
+    .ps-label{font-size:12px;color:var(--muted);font-weight:500}
+    .ps-divider{width:1px;height:18px;background:var(--border);flex-shrink:0}
+
     /* ── ZONE CARD ── */
-    .zones-header{margin-bottom:20px}
-    .zones-header h2{font-family:'Playfair Display',serif;font-size:24px;
-      color:var(--green);margin-bottom:4px}
-    .zones-header p{font-size:13px;color:var(--muted)}
     .zone-card{background:var(--white);border:1px solid var(--border);
-      border-radius:14px;margin-bottom:20px;overflow:hidden}
-    .zc-header{display:flex;align-items:stretch;gap:0;border-bottom:1px solid var(--border)}
+      border-radius:14px;margin-bottom:12px;overflow:hidden}
+    .zc-header{display:flex;align-items:stretch;gap:0;border-bottom:1px solid var(--border);
+      cursor:pointer;user-select:none}
+    .zc-header:hover .zc-toggle{background:var(--cream)}
+    .zc-toggle{margin-left:auto;width:36px;flex-shrink:0;display:flex;align-items:center;
+      justify-content:center;color:var(--muted);font-size:11px;
+      border-left:1px solid var(--border);transition:background .12s}
+    .zc-toggle svg{transition:transform .22s}
+    .zone-card.collapsed .zc-toggle svg{transform:rotate(-90deg)}
+    .zone-card.collapsed .zc-body{display:none}
 
     /* Zone satellite thumbnail */
     .zone-thumb-wrap{width:160px;flex-shrink:0;position:relative;
@@ -630,6 +722,147 @@
       display:flex;align-items:flex-start;justify-content:center}
     #blueprint-svg{display:block}
 
+    /* ── CART DRAWER ── */
+    #cart-overlay{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.4);
+      backdrop-filter:blur(4px);display:none;cursor:pointer}
+    #cart-overlay.open{display:block}
+    #cart-drawer{position:fixed;top:0;right:-440px;width:440px;max-width:100vw;height:100vh;
+      z-index:1001;background:var(--white);box-shadow:-16px 0 64px rgba(0,0,0,.18);
+      display:flex;flex-direction:column;transition:right .3s cubic-bezier(.2,.8,.4,1)}
+    #cart-drawer.open{right:0}
+    .cd-header{display:flex;align-items:center;gap:12px;padding:18px 22px 16px;
+      border-bottom:1px solid var(--border);flex-shrink:0}
+    .cd-title{font-family:'Playfair Display',serif;font-size:20px;color:var(--green);flex:1}
+    .cd-count{font-size:12px;color:var(--muted);font-weight:500;white-space:nowrap}
+    .cd-close{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--border);
+      background:var(--white);cursor:pointer;font-size:14px;color:var(--muted);
+      display:flex;align-items:center;justify-content:center;transition:all .12s;flex-shrink:0}
+    .cd-close:hover{border-color:var(--text);color:var(--text)}
+    .cd-body{flex:1;overflow-y:auto}
+    .cd-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;
+      height:100%;padding:40px 24px;text-align:center;color:var(--muted)}
+    .cd-empty-icon{font-size:42px;margin-bottom:14px}
+    .cd-empty-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px}
+    .cd-empty-sub{font-size:13px;line-height:1.55;max-width:240px}
+    .cd-zone-header{display:flex;align-items:center;gap:8px;padding:10px 22px 7px;
+      font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+      color:var(--muted);background:var(--cream);border-bottom:1px solid var(--border);
+      position:sticky;top:0;z-index:1}
+    .cd-zone-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .cd-item{display:flex;align-items:center;gap:12px;padding:11px 22px;
+      border-bottom:1px solid rgba(0,0,0,.05)}
+    .cd-item-thumb{width:40px;height:40px;border-radius:8px;border:1.5px solid var(--border);
+      background:var(--cream);display:flex;align-items:center;justify-content:center;
+      flex-shrink:0;overflow:hidden}
+    .cd-item-thumb svg{width:30px;height:30px}
+    .cd-item-info{flex:1;min-width:0}
+    .cd-item-name{font-size:13px;font-weight:600;color:var(--text);line-height:1.3;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .cd-item-sku{font-size:11px;color:var(--muted);margin-top:1px}
+    .cd-item-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
+    .cd-item-price{font-size:13px;font-weight:700;color:var(--text)}
+    .cd-item-controls{display:flex;align-items:center;gap:6px}
+    .cd-qty{display:flex;align-items:center;border:1.5px solid var(--border);border-radius:7px;overflow:hidden}
+    .cd-qty-btn{width:26px;height:26px;border:none;background:var(--cream);cursor:pointer;
+      font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;
+      justify-content:center;transition:background .1s;font-family:'Inter',sans-serif;flex-shrink:0}
+    .cd-qty-btn:hover{background:var(--cream2)}
+    .cd-qty-val{min-width:28px;text-align:center;font-size:13px;font-weight:700;
+      line-height:26px;color:var(--text);padding:0 2px}
+    .cd-item-remove{width:24px;height:24px;border:none;background:none;cursor:pointer;
+      color:var(--muted);font-size:15px;display:flex;align-items:center;
+      justify-content:center;transition:all .12s;padding:0;border-radius:4px}
+    .cd-item-remove:hover{color:#c03020;background:#ffeee8}
+    .cd-footer{padding:16px 22px 22px;border-top:1px solid var(--border);
+      background:var(--white);flex-shrink:0}
+    .cd-subtotal-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px}
+    .cd-subtotal-label{font-size:12px;color:var(--muted)}
+    .cd-subtotal-val{font-size:24px;font-weight:800;color:var(--green);
+      font-family:'Playfair Display',serif}
+    .cd-item-count{font-size:11px;color:var(--muted);margin-bottom:14px}
+    .cd-checkout-btn{display:block;width:100%;padding:16px;background:var(--green);
+      color:#f1ebe2;border:none;border-radius:11px;font-size:15px;font-weight:800;
+      cursor:pointer;font-family:'Inter',sans-serif;transition:background .15s,transform .12s;
+      letter-spacing:.01em}
+    .cd-checkout-btn:hover{background:var(--green2);transform:translateY(-1px)}
+    .cd-note{font-size:11px;color:var(--muted);text-align:center;margin-top:10px;line-height:1.4}
+    .tb-cart-btn{display:flex;align-items:center;gap:7px;padding:8px 16px;border-radius:9px;
+      border:1.5px solid var(--border);background:var(--white);color:var(--text);
+      font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;
+      transition:all .12s;white-space:nowrap}
+    .tb-cart-btn:hover{border-color:var(--green);color:var(--green)}
+    .tb-cart-badge{min-width:18px;height:18px;border-radius:9px;background:var(--green);
+      color:#f1ebe2;font-size:10px;font-weight:800;display:inline-flex;
+      align-items:center;justify-content:center;padding:0 4px}
+
+    /* ── PRODUCT DETAIL DRAWER ── */
+    #pd-overlay{position:fixed;inset:0;z-index:1002;background:rgba(0,0,0,.42);
+      display:none;cursor:pointer}
+    #pd-overlay.open{display:block}
+    #pd-drawer{position:fixed;top:0;right:-480px;width:460px;max-width:96vw;height:100vh;
+      background:var(--white);z-index:1003;transition:right .28s cubic-bezier(.4,0,.2,1);
+      display:flex;flex-direction:column;overflow:hidden;
+      box-shadow:-4px 0 40px rgba(0,0,0,.14)}
+    #pd-drawer.open{right:0}
+    .pd-header{padding:18px 18px 0;display:flex;align-items:center;
+      justify-content:space-between;flex-shrink:0}
+    .pd-header-label{font-size:11px;font-weight:700;letter-spacing:.8px;
+      text-transform:uppercase;color:var(--muted)}
+    .pd-close{width:32px;height:32px;border:none;background:var(--cream);
+      border-radius:8px;cursor:pointer;font-size:15px;color:var(--muted);
+      display:flex;align-items:center;justify-content:center;line-height:1}
+    .pd-close:hover{background:var(--border);color:var(--text)}
+    .pd-body{flex:1;overflow-y:auto;padding:18px}
+    .pd-hero{display:flex;align-items:center;gap:14px;
+      background:var(--cream);border-radius:14px;padding:16px;margin-bottom:16px}
+    .pd-hero-icon .prod-thumb{width:72px;height:72px}
+    .pd-hero-icon .prod-thumb svg{width:72px;height:72px}
+    .pd-brand-badge{display:inline-flex;align-items:center;padding:3px 9px;
+      border-radius:20px;font-size:11px;font-weight:700;color:#fff;
+      margin-bottom:6px;letter-spacing:.3px}
+    .pd-name{font-size:16px;font-weight:700;color:var(--text);
+      line-height:1.3;margin-bottom:3px}
+    .pd-sku{font-size:11px;color:var(--muted);font-family:monospace;letter-spacing:.3px}
+    .pd-price-row{display:flex;align-items:baseline;gap:10px;
+      margin-bottom:18px;padding:13px 16px;
+      background:var(--cream);border-radius:10px}
+    .pd-price{font-family:'Playfair Display',serif;font-size:26px;
+      color:var(--green);font-weight:600}
+    .pd-price-ea{font-size:13px;color:var(--muted)}
+    .pd-desc{font-size:13.5px;line-height:1.65;color:var(--text);margin-bottom:18px}
+    .pd-sec{margin-bottom:18px}
+    .pd-sec-title{font-size:11px;font-weight:700;color:var(--muted);
+      letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px;
+      padding-bottom:6px;border-bottom:1px solid var(--border)}
+    .pd-specs{width:100%;border-collapse:collapse}
+    .pd-specs tr{border-bottom:1px solid var(--border)}
+    .pd-specs tr:last-child{border:none}
+    .pd-specs td{padding:8px 4px;font-size:13px;vertical-align:top}
+    .pd-specs td:first-child{color:var(--muted);width:44%;padding-right:8px}
+    .pd-specs td:last-child{font-weight:600;color:var(--text)}
+    .pd-features{list-style:none;padding:0;margin:0}
+    .pd-features li{display:flex;align-items:flex-start;gap:8px;font-size:13px;
+      color:var(--text);line-height:1.5;padding:6px 0;
+      border-bottom:1px solid var(--border)}
+    .pd-features li:last-child{border:none}
+    .pd-features li::before{content:'✓';color:var(--green);font-weight:700;
+      flex-shrink:0;margin-top:1px}
+    .pd-footer{padding:14px 18px;border-top:1px solid var(--border);
+      flex-shrink:0;display:flex;gap:8px}
+    .pd-site-btn{flex:1;padding:12px;background:var(--green);color:var(--cream);
+      border:none;border-radius:10px;font-size:13.5px;font-weight:700;cursor:pointer;
+      font-family:'Inter',sans-serif;text-decoration:none;display:flex;
+      align-items:center;justify-content:center;gap:5px}
+    .pd-site-btn:hover{opacity:.9}
+    .pd-do-swap-btn{padding:12px 14px;background:var(--cream);color:var(--text);
+      border:1.5px solid var(--border);border-radius:10px;font-size:13px;
+      font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap}
+    .pd-do-swap-btn:hover{border-color:var(--green);color:var(--green)}
+    .btn-view{padding:5px 9px;border-radius:6px;border:1.5px solid var(--border);
+      background:none;font-size:11.5px;font-weight:600;color:var(--muted);
+      cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;margin-left:4px}
+    .btn-view:hover{border-color:var(--green);color:var(--green);background:rgba(37,51,25,.04)}
+
     /* ── SWAP SHEET ── */
     #swap-backdrop{position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.5);
       backdrop-filter:blur(4px);display:none;align-items:flex-end;justify-content:center;
@@ -672,7 +905,7 @@
   <!-- ═══════ SIDEBAR ═══════ -->
   <div class="sidebar">
     <div class="sb-brand">
-      <div class="sb-logo"><img src="assets/logo-forest-green.png" alt="Drip Atlas" style="height:28px;display:block"/></div>
+      <div class="sb-logo" style="cursor:pointer" onclick="goHome()"><img src="assets/logo-forest-green.png" alt="Drip Atlas" style="height:28px;display:block"/></div>
       <div class="sb-plan-badge">Irrigation Plan</div>
     </div>
     <div class="sb-address">
@@ -687,42 +920,24 @@
 
       <div class="nav-section" style="margin-top:6px">
         Irrigation Plan
-        <span class="ns-badge">$99</span>
       </div>
       <div class="nav-item" id="nav-zones" data-tab="zones">
         <span class="ni-icon">📋</span> Parts List
         <span class="ni-badge" id="nb-zones">—</span>
-        <span class="ni-lock" id="lock-zones">🔒</span>
       </div>
       <div class="nav-item" id="nav-schedule" data-tab="schedule">
         <span class="ni-icon">💧</span> Water Schedule
-        <span class="ni-lock" id="lock-schedule">🔒</span>
       </div>
       <div class="nav-item" id="nav-manifold" data-tab="manifold">
         <span class="ni-icon">🔧</span> Manifold Assembly
-        <span class="ni-lock" id="lock-manifold">🔒</span>
       </div>
       <div class="nav-item" id="nav-blueprint" data-tab="blueprint">
         <span class="ni-icon">📐</span> Blueprint
-        <span class="ni-lock" id="lock-blueprint">🔒</span>
       </div>
       <div class="nav-item" id="nav-guide" data-tab="guide">
         <span class="ni-icon">📖</span> Installation Guide
-        <span class="ni-lock" id="lock-guide">🔒</span>
       </div>
 
-      <div class="nav-section" style="margin-top:6px">
-        Complete Kit
-        <span class="ns-badge ns-badge-kit">Quote</span>
-      </div>
-      <div class="nav-item nav-locked" id="nav-parts">
-        <span class="ni-icon">🛒</span> Buy Parts
-        <span class="ni-lock" id="lock-parts">🔒</span>
-      </div>
-      <div class="nav-item nav-locked" id="nav-support">
-        <span class="ni-icon">🧑‍🔧</span> Support
-        <span class="ni-lock" id="lock-support">🔒</span>
-      </div>
     </div>
     <div class="sb-footer">
       <button class="sb-btn" onclick="window.print()">🖨️ &nbsp;Print List</button>
@@ -733,25 +948,8 @@
   <div class="main">
     <div class="topbar">
       <span class="tb-title" id="tb-title">Parts List</span>
-      <div class="tb-divider"></div>
-      <div class="brand-group">
-        <span class="brand-label">Brand</span>
-        <button class="brand-btn active" data-brand="rainbird" onclick="setBrand('rainbird')">Rain Bird</button>
-        <button class="brand-btn" data-brand="hunter" onclick="setBrand('hunter')">Hunter</button>
-        <button class="brand-btn" data-brand="orbit" onclick="setBrand('orbit')">Orbit</button>
-      </div>
-      <div class="tb-divider"></div>
-      <div class="pipe-group">
-        <span class="brand-label">Pipe</span>
-        <select class="pipe-select" id="pipe-select" onchange="setPipe(this.value)">
-          <option value="pvc">Schedule 40 PVC</option>
-          <option value="poly">Blue Poly Pipe</option>
-          <option value="pex">PEX</option>
-        </select>
-      </div>
-      <div class="tb-total" style="background:none;padding:0;gap:10px">
+      <div class="tb-total" style="background:none;padding:0;gap:10px;margin-left:auto">
         <span style="font-size:12px;color:var(--muted);font-weight:500">Est. <strong id="tb-total-val" style="color:var(--text)">—</strong></span>
-        <button class="tb-kit-btn" onclick="openKitModal()">📦 Order this Kit</button>
       </div>
     </div>
 
@@ -764,17 +962,46 @@
       <!-- ══ ZONES PARTS ══ -->
       <div class="tab-pane" id="tab-zones">
         <div class="zones-header">
-          <h2>Parts List List</h2>
-          <p>Parts required per zone. Switch brand or pipe type above to reprice instantly.</p>
+          <div class="zh-controls">
+            <div class="brand-group">
+              <span class="brand-label">Brand</span>
+              <button class="brand-btn active" data-brand="rainbird" onclick="setBrand('rainbird')">Rain Bird</button>
+              <button class="brand-btn" data-brand="hunter" onclick="setBrand('hunter')">Hunter</button>
+            </div>
+            <div style="width:1px;height:24px;background:var(--border);flex-shrink:0"></div>
+            <div class="pipe-group">
+              <span class="brand-label">Pipe</span>
+              <select class="pipe-select" id="pipe-select" onchange="setPipe(this.value)">
+                <option value="pvc">Schedule 40 PVC</option>
+                <option value="poly">Blue Poly Pipe</option>
+                <option value="pex">PEX</option>
+              </select>
+            </div>
+          </div>
         </div>
         <div id="zones-list"></div>
         <div id="grand-total-card"></div>
+        <div class="gate-panel">
+          <div class="gate-inner">
+            <h2 class="gate-headline">Buy Your Plan</h2>
+            <p class="gate-price-line">$7.99 — One-Time</p>
+            <p class="gate-sub">Less than a cup of coffee. More useful than three YouTube tutorials. Unlock your custom irrigation plan — everything you need to install it right the first time.</p>
+            <ul class="gate-features">
+              <li>Full parts list with exact quantities &amp; product links</li>
+              <li>Zone-by-zone water schedule (no more guessing)</li>
+              <li>Manifold assembly diagram, wired and ready</li>
+              <li>Printable blueprint for your property</li>
+              <li>Step-by-step installation guide</li>
+            </ul>
+            <button class="gate-cta-btn" onclick="unlockPlan()">Get My Plan — $7.99</button>
+            <p class="gate-guarantee">☕ Money-back guarantee — if this isn't more helpful than a cup of coffee, we'll give you your $7.99 back. No questions, no forms, no drama.</p>
+          </div>
+        </div>
       </div>
 
       <!-- ══ WATER SCHEDULE ══ -->
       <div class="tab-pane" id="tab-schedule">
         <div class="schedule-intro">
-          <h2>Watering Schedule</h2>
           <p>Run times are calculated from head type, precipitation rate, and a 1 inch/week ET target. Adjust for your climate and soil type.</p>
         </div>
         <div class="schedule-table-wrap">
@@ -794,12 +1021,27 @@
           <div class="sn-title">Controller Setup Notes</div>
           <div class="sn-list" id="sn-list"></div>
         </div>
+        <div class="gate-panel">
+          <div class="gate-inner">
+            <h2 class="gate-headline">Buy Your Plan</h2>
+            <p class="gate-price-line">$7.99 — One-Time</p>
+            <p class="gate-sub">Less than a cup of coffee. More useful than three YouTube tutorials. Unlock your custom irrigation plan — everything you need to install it right the first time.</p>
+            <ul class="gate-features">
+              <li>Full parts list with exact quantities &amp; product links</li>
+              <li>Zone-by-zone water schedule (no more guessing)</li>
+              <li>Manifold assembly diagram, wired and ready</li>
+              <li>Printable blueprint for your property</li>
+              <li>Step-by-step installation guide</li>
+            </ul>
+            <button class="gate-cta-btn" onclick="unlockPlan()">Get My Plan — $7.99</button>
+            <p class="gate-guarantee">☕ Money-back guarantee — if this isn't more helpful than a cup of coffee, we'll give you your $7.99 back. No questions, no forms, no drama.</p>
+          </div>
+        </div>
       </div>
 
       <!-- ══ MANIFOLD ══ -->
       <div class="tab-pane" id="tab-manifold">
         <div class="manifold-intro">
-          <h2>Manifold Assembly</h2>
           <p>All zones connect to a single valve manifold near your water source. Each zone gets one 24VAC solenoid valve wired back to your controller.</p>
         </div>
         <div class="manifold-diagram-card">
@@ -816,6 +1058,22 @@
           <div class="wiring-card">
             <div class="wc-title">Controller Wiring</div>
             <div id="wiring-list"></div>
+          </div>
+        </div>
+        <div class="gate-panel">
+          <div class="gate-inner">
+            <h2 class="gate-headline">Buy Your Plan</h2>
+            <p class="gate-price-line">$7.99 — One-Time</p>
+            <p class="gate-sub">Less than a cup of coffee. More useful than three YouTube tutorials. Unlock your custom irrigation plan — everything you need to install it right the first time.</p>
+            <ul class="gate-features">
+              <li>Full parts list with exact quantities &amp; product links</li>
+              <li>Zone-by-zone water schedule (no more guessing)</li>
+              <li>Manifold assembly diagram, wired and ready</li>
+              <li>Printable blueprint for your property</li>
+              <li>Step-by-step installation guide</li>
+            </ul>
+            <button class="gate-cta-btn" onclick="unlockPlan()">Get My Plan — $7.99</button>
+            <p class="gate-guarantee">☕ Money-back guarantee — if this isn't more helpful than a cup of coffee, we'll give you your $7.99 back. No questions, no forms, no drama.</p>
           </div>
         </div>
       </div>
@@ -835,12 +1093,27 @@
             <svg id="blueprint-svg" xmlns="http://www.w3.org/2000/svg"></svg>
           </div>
         </div>
+        <div class="gate-panel">
+          <div class="gate-inner">
+            <h2 class="gate-headline">Buy Your Plan</h2>
+            <p class="gate-price-line">$7.99 — One-Time</p>
+            <p class="gate-sub">Less than a cup of coffee. More useful than three YouTube tutorials. Unlock your custom irrigation plan — everything you need to install it right the first time.</p>
+            <ul class="gate-features">
+              <li>Full parts list with exact quantities &amp; product links</li>
+              <li>Zone-by-zone water schedule (no more guessing)</li>
+              <li>Manifold assembly diagram, wired and ready</li>
+              <li>Printable blueprint for your property</li>
+              <li>Step-by-step installation guide</li>
+            </ul>
+            <button class="gate-cta-btn" onclick="unlockPlan()">Get My Plan — $7.99</button>
+            <p class="gate-guarantee">☕ Money-back guarantee — if this isn't more helpful than a cup of coffee, we'll give you your $7.99 back. No questions, no forms, no drama.</p>
+          </div>
+        </div>
       </div>
 
       <!-- ══ INSTALLATION GUIDE ══ -->
       <div class="tab-pane" id="tab-guide">
         <div class="zones-header">
-          <h2>Installation Guide</h2>
           <p>Follow these steps in order. Each phase builds on the last — don't skip ahead.</p>
         </div>
 
@@ -953,6 +1226,22 @@
             <strong>Pro tip:</strong> Take photos of all trenches before backfilling. If you ever need to repair or expand, you'll know exactly where every pipe runs without digging blind.
           </div>
         </div>
+        <div class="gate-panel">
+          <div class="gate-inner">
+            <h2 class="gate-headline">Buy Your Plan</h2>
+            <p class="gate-price-line">$7.99 — One-Time</p>
+            <p class="gate-sub">Less than a cup of coffee. More useful than three YouTube tutorials. Unlock your custom irrigation plan — everything you need to install it right the first time.</p>
+            <ul class="gate-features">
+              <li>Full parts list with exact quantities &amp; product links</li>
+              <li>Zone-by-zone water schedule (no more guessing)</li>
+              <li>Manifold assembly diagram, wired and ready</li>
+              <li>Printable blueprint for your property</li>
+              <li>Step-by-step installation guide</li>
+            </ul>
+            <button class="gate-cta-btn" onclick="unlockPlan()">Get My Plan — $7.99</button>
+            <p class="gate-guarantee">☕ Money-back guarantee — if this isn't more helpful than a cup of coffee, we'll give you your $7.99 back. No questions, no forms, no drama.</p>
+          </div>
+        </div>
       </div>
 
       <!-- ══ TRACK MY ORDER ══ -->
@@ -1041,6 +1330,19 @@
 </div>
 
 <!-- PAYWALL SHEET -->
+<!-- UNSAVED CHANGES MODAL -->
+<div id="unsaved-modal" onclick="if(event.target===this)closeUnsavedModal()">
+  <div class="um-card">
+    <div class="um-icon">⚠️</div>
+    <div class="um-title">You have unsaved changes</div>
+    <p class="um-body">Your irrigation design has unsaved zones or heads. If you leave now, your work may be lost.</p>
+    <div class="um-actions">
+      <button class="um-stay" onclick="closeUnsavedModal()">Stay on Page</button>
+      <button class="um-leave" onclick="window.location.href='index.html'">Leave Anyway</button>
+    </div>
+  </div>
+</div>
+
 <div id="mat-paywall" onclick="dismissPaywall(event)">
   <div class="mpw-sheet">
     <div class="mpw-handle"></div>
@@ -1067,41 +1369,108 @@
 // ═══════════════════════════════════════════════════════════
 const CATALOG = {
   rainbird:{
-    rotor:      {name:'Rain Bird 5000 Series Rotor',    sku:'RB-5000-SS', price:8.99, icon:'rotor'},
-    spray_head: {name:'Rain Bird 1804 Pop-Up Spray',     sku:'RB-1804VAN',price:3.49, icon:'spray'},
-    funny_pipe: {name:'Rain Bird ½" × 12" Swing Pipe',  sku:'RB-SP12',   price:1.69, icon:'fp'},
-    fp_tee:     {name:'Rain Bird Swing Pipe Tee',         sku:'RB-SPTEE', price:0.89, icon:'tee'},
-    fp_adapter: {name:'Rain Bird ½" MPT Swing Adapter',  sku:'RB-SPAD',  price:1.29, icon:'adapter'},
-    drip_emitter:{name:'Rain Bird Drip Emitter ½ GPH',  sku:'RB-DREM',  price:0.49, icon:'emitter'},
-    drip_tube:  {name:'Rain Bird ½" Drip Tubing (100ft)',sku:'RB-DRIP100',price:24.99,icon:'drip_tube'},
-    valve:      {name:'Rain Bird 100-DV Anti-Siphon',    sku:'RB-100DV', price:18.99, icon:'valve'},
+    standard:{
+      rotor:       {name:'Rain Bird 5004 Adjustable Rotor',         sku:'35000525', price:8.49,  icon:'rotor'},
+      spray_head:  {name:'Hunter Pro-Spray PRS30 4" Pop-Up',        sku:'44011540', price:5.47,  icon:'spray'},
+      funny_pipe:  {name:'1" × 1" × ⅜" Funny Pipe Tee',            sku:'71401129', price:1.29,  icon:'fp'},
+      fp_tee:      {name:'1" Sch. 40 PVC Single Manifold Tee',      sku:'03051001', price:3.97,  icon:'tee'},
+      fp_adapter:  {name:'1" Sch. 40 PVC Swivel Adapter',           sku:'03051032', price:4.47,  icon:'adapter'},
+      drip_emitter:{name:'Rain Bird 5 GPH PC Drip Emitter',         sku:'12005120', price:0.40,  icon:'emitter'},
+      drip_tube:   {name:'¼" Emitter Tubing 100 ft',                sku:'12070210', price:18.97, icon:'drip_tube'},
+      valve:       {name:'Hunter PGV ¾" Anti-Siphon Valve',         sku:'44008620', price:16.97, icon:'valve'},
+    },
+    premium:{
+      rotor:       {name:'Rain Bird 5004 Plus Rotor w/ SAM+PRS',    sku:'35001620', price:11.97, icon:'rotor'},
+      spray_head:  {name:'Hunter Pro-Spray PRS40 6" Pop-Up',        sku:'44012060', price:7.97,  icon:'spray'},
+      funny_pipe:  {name:'1" × 1" × ⅜" Funny Pipe Tee',            sku:'71401129', price:1.29,  icon:'fp'},
+      fp_tee:      {name:'1" Sch. 40 PVC Double Manifold Tee',      sku:'03051002', price:5.47,  icon:'tee'},
+      fp_adapter:  {name:'1" Sch. 40 PVC Swivel Adapter',           sku:'03051032', price:4.47,  icon:'adapter'},
+      drip_emitter:{name:'Xeri-Bird 8 Multi-Outlet Drip Device',    sku:'12005110', price:12.97, icon:'emitter'},
+      drip_tube:   {name:'Rain Bird ½" Subsurface Dripline 500 ft', sku:'12093050', price:89.97, icon:'drip_tube'},
+      valve:       {name:'Hunter PGV 1" Anti-Siphon Valve',         sku:'44008630', price:21.97, icon:'valve'},
+    },
   },
   hunter:{
-    rotor:      {name:'Hunter PGP-ADJ Gear Rotor',       sku:'HU-PGPADJ',price:9.49, icon:'rotor'},
-    spray_head: {name:'Hunter Pro Spray Pop-Up Head',     sku:'HU-PS04',  price:3.99, icon:'spray'},
-    funny_pipe: {name:'Hunter ½" × 12" Swing Pipe',      sku:'HU-SP12',  price:1.89, icon:'fp'},
-    fp_tee:     {name:'Hunter Swing Pipe Tee',             sku:'HU-SPTEE',price:0.99, icon:'tee'},
-    fp_adapter: {name:'Hunter ½" MPT Swing Adapter',      sku:'HU-SPAD', price:1.39, icon:'adapter'},
-    drip_emitter:{name:'Hunter Eco-Mat Emitter ½ GPH',   sku:'HU-DREM', price:0.59, icon:'emitter'},
-    drip_tube:  {name:'Hunter ½" Dripline (100ft)',       sku:'HU-DRIP100',price:27.99,icon:'drip_tube'},
-    valve:      {name:'Hunter ICV-101G Globe Valve',      sku:'HU-ICV101',price:21.99,icon:'valve'},
+    standard:{
+      rotor:       {name:'Rain Bird 5004 Adjustable Rotor',         sku:'35000525', price:8.49,  icon:'rotor'},
+      spray_head:  {name:'Hunter Pro-Spray PRS30 4" Pop-Up',        sku:'44011540', price:5.47,  icon:'spray'},
+      funny_pipe:  {name:'1" × 1" × ⅜" Funny Pipe Tee',            sku:'71401129', price:1.29,  icon:'fp'},
+      fp_tee:      {name:'1" Sch. 40 PVC Single Manifold Tee',      sku:'03051001', price:3.97,  icon:'tee'},
+      fp_adapter:  {name:'1" Sch. 40 PVC Swivel Adapter',           sku:'03051032', price:4.47,  icon:'adapter'},
+      drip_emitter:{name:'Rain Bird 5 GPH PC Drip Emitter',         sku:'12005120', price:0.40,  icon:'emitter'},
+      drip_tube:   {name:'¼" Emitter Tubing 100 ft',                sku:'12070210', price:18.97, icon:'drip_tube'},
+      valve:       {name:'Hunter PGV ¾" Anti-Siphon Valve',         sku:'44008620', price:16.97, icon:'valve'},
+    },
+    premium:{
+      rotor:       {name:'Rain Bird 5006 Plus 6" Full-Circle Rotor',sku:'35001140', price:14.97, icon:'rotor'},
+      spray_head:  {name:'Hunter Pro-Spray PRS40 6" Pop-Up',        sku:'44012060', price:7.97,  icon:'spray'},
+      funny_pipe:  {name:'1" × 1" × ⅜" Funny Pipe Tee',            sku:'71401129', price:1.29,  icon:'fp'},
+      fp_tee:      {name:'1" Sch. 40 PVC Double Manifold Tee',      sku:'03051002', price:5.47,  icon:'tee'},
+      fp_adapter:  {name:'1" Sch. 40 PVC Swivel Adapter',           sku:'03051032', price:4.47,  icon:'adapter'},
+      drip_emitter:{name:'Xeri-Bird 8 Multi-Outlet Drip Device',    sku:'12005110', price:12.97, icon:'emitter'},
+      drip_tube:   {name:'Rain Bird ½" Subsurface Dripline 500 ft', sku:'12093050', price:89.97, icon:'drip_tube'},
+      valve:       {name:'Hunter PGV 1" Anti-Siphon Valve',         sku:'44008630', price:21.97, icon:'valve'},
+    },
   },
-  orbit:{
-    rotor:      {name:'Orbit 54008 Gear Drive Rotor',    sku:'OR-54008', price:7.49, icon:'rotor'},
-    spray_head: {name:'Orbit 55027 Pop-Up Spray Head',   sku:'OR-55027', price:2.79, icon:'spray'},
-    funny_pipe: {name:'Orbit ½" × 12" Riser Tube',       sku:'OR-FP12',  price:1.29, icon:'fp'},
-    fp_tee:     {name:'Orbit Riser Tube Tee',              sku:'OR-RTTEE',price:0.79, icon:'tee'},
-    fp_adapter: {name:'Orbit ½" MPT Riser Adapter',      sku:'OR-RTAD',  price:0.99, icon:'adapter'},
-    drip_emitter:{name:'Orbit Drip Emitter ½ GPH',       sku:'OR-DREM',  price:0.39, icon:'emitter'},
-    drip_tube:  {name:'Orbit ½" Drip Tubing (100ft)',    sku:'OR-DRIP100',price:19.99,icon:'drip_tube'},
-    valve:      {name:'Orbit 57280 In-Line Valve',        sku:'OR-57280', price:14.99,icon:'valve'},
-  }
 };
 
 const PIPE_CAT = {
   pvc: {name:'Schedule 40 PVC', pricePerFt:0.45},
   poly:{name:'Blue Poly Pipe',  pricePerFt:0.32},
   pex: {name:'PEX Pipe',        pricePerFt:0.68},
+};
+
+// ═══════════════════════════════════════════════════════════
+// PRODUCT DETAIL DATA (urls, specs, features per brand/part)
+// ═══════════════════════════════════════════════════════════
+const _PD_FUNNY  = {url:'https://www.ewingoutdoorsupply.com/71401129-1-in-x-1-in-x-3-8-in-funny-pipe-tee',description:'Barbed funny pipe tee for branching lateral lines to sprinkler heads. Available at Ewing.',specs:{'Size':'1" × 1" × ⅜"','Material':'Polypropylene','Connection':'Barbed','Working Pressure':'Up to 150 PSI'},features:['Barbed connections for tool-free assembly','Chemical resistant body','Compatible with ¾"–1" poly tubing']};
+const _PD_ADAPTER = {url:'https://www.ewingoutdoorsupply.com/03051032-1-in-pvc-swivel-adapter',description:'1" PVC swivel adapter connecting mainline to valve inlets. Available at Ewing.',specs:{'Size':'1" socket × 1" MPT','Material':'Schedule 40 PVC','Connection':'Socket × Male Thread','Working Pressure':'Up to 200 PSI'},features:['Swivel design eliminates joint stress','Socket inlet for solvent-weld to mainline','Male thread outlet connects to valve']};
+
+const PRODUCT_DATA = {
+  rainbird:{
+    standard:{
+      rotor:{url:'https://www.ewingoutdoorsupply.com/35000525-5004-4-in-pop-up-adjustable-rotor-w-non-potable-cover',description:'Rain Bird 5004 4" pop-up gear-drive rotor. The industry workhorse — reliable performance for residential lawns. Available at Ewing.',specs:{'Coverage Radius':'25–50 ft','Arc Range':'40–360°','Inlet':'¾" NPT','Flow Rate':'0.4–3.9 GPM','Operating Pressure':'25–70 PSI','Pop-Up Height':'4 in'},features:['Gear-driven for quiet operation','Tool-operated arc adjustment from above ground','Adjustable radius 25–50 ft','Built-in check valve holds up to 8 ft of drainage']},
+      spray_head:{url:'https://www.ewingoutdoorsupply.com/44011540-pro-spray-prs30-4-in-pop-up-w-check-valve',description:'Hunter Pro-Spray PRS30 4" pop-up with check valve and 30 PSI pressure regulation. Available at Ewing.',specs:{'Pop-Up Height':'4 in','Inlet':'½" FNPT','Coverage Radius':'4–15 ft','Operating Pressure':'15–70 PSI','Regulated Pressure':'30 PSI'},features:['PRS30 pressure regulation for consistent nozzle output','Built-in check valve prevents low-head drainage','Ratchet collar for precise nozzle alignment']},
+      funny_pipe: _PD_FUNNY,
+      fp_tee:{url:'https://www.ewingoutdoorsupply.com/03051001-1-in-pvc-single-manifold-tee',description:'Sch. 40 PVC single manifold tee for valve manifold assembly. Available at Ewing.',specs:{'Size':'1" socket × socket × socket','Material':'Schedule 40 PVC','Connection':'Solvent-weld','Working Pressure':'Up to 200 PSI'},features:['Schedule 40 PVC durability','Solvent-weld for permanent joints','Standard single-valve manifold assembly']},
+      fp_adapter: _PD_ADAPTER,
+      drip_emitter:{url:'https://www.ewingoutdoorsupply.com/12005120-5-gph-barbed-pressure-compensating-drip-emitter',description:'Rain Bird 5 GPH pressure-compensating barbed drip emitter. Consistent output 15–50 PSI. Available at Ewing.',specs:{'Flow Rate':'5 GPH','Operating Pressure':'15–50 PSI','Inlet':'Barbed for ½" tubing','Type':'Pressure-compensating'},features:['Pressure-compensating for uniform output','Direct barbed insert — no punch tool','Color-coded for flow-rate identification']},
+      drip_tube:{url:'https://www.ewingoutdoorsupply.com/12070210-1-4-inch-emitter-tubing-100-foot-roll-x-12-inch-spacing',description:'¼" emitter tubing with pre-installed emitters at 12" spacing, 100 ft roll. Available at Ewing.',specs:{'Diameter':'¼"','Length':'100 ft roll','Emitter Spacing':'12 in','Material':'UV-resistant polyethylene'},features:['Pre-installed emitters eliminate punching','UV stabilized','Flexible for easy routing']},
+      valve:{url:'https://www.ewingoutdoorsupply.com/44008620-pgv-3-4-in-anti-siphon-valve-threaded',description:'Hunter PGV ¾" anti-siphon valve. Reliable zone control for residential systems. 20–150 PSI, 24 VAC. Available at Ewing.',specs:{'Inlet/Outlet':'¾" NPT','Operating Pressure':'20–150 PSI','Flow Rate':'0.2–15 GPM','Solenoid':'24 VAC'},features:['Anti-siphon backflow prevention','Manual flow control knob','Manual bleed screw for easy testing']},
+    },
+    premium:{
+      rotor:{url:'https://www.ewingoutdoorsupply.com/35001620-5004-plus-4-in-pop-up-adjustable-rotor-w-flow-shut-off-sam-prs',description:'Rain Bird 5004 Plus with SAM check valve, PRS stem, and flow shut-off. Best-in-class 5004 family. Available at Ewing.',specs:{'Coverage Radius':'25–50 ft','Arc Range':'40–360°','Inlet':'¾" NPT','Flow Rate':'0.4–3.9 GPM','Operating Pressure':'25–70 PSI','Pop-Up Height':'4 in'},features:['Flow shut-off for head replacement without water shutoff','SAM check valve prevents low-head drainage','PRS stem for consistent output regardless of pressure']},
+      spray_head:{url:'https://www.ewingoutdoorsupply.com/44012060-pro-spray-prs40-6-in-pop-up-w-check-valve',description:'Hunter Pro-Spray PRS40 6" pop-up with check valve and 40 PSI regulation. Ideal for dense turf and slopes. Available at Ewing.',specs:{'Pop-Up Height':'6 in','Inlet':'½" FNPT','Coverage Radius':'4–15 ft','Operating Pressure':'15–70 PSI','Regulated Pressure':'40 PSI'},features:['6" pop-up clears dense turf','PRS40 regulation for high-pressure systems','Built-in check valve prevents low-head drainage']},
+      funny_pipe: _PD_FUNNY,
+      fp_tee:{url:'https://www.ewingoutdoorsupply.com/03051002-1-in-pvc-double-manifold-tee',description:'Sch. 40 PVC double manifold tee for dual-valve assembly. Available at Ewing.',specs:{'Size':'1" socket connections','Material':'Schedule 40 PVC','Connection':'Solvent-weld','Working Pressure':'Up to 200 PSI'},features:['Dual-valve manifold in one fitting','Schedule 40 PVC durability','Solvent-weld permanent joints']},
+      fp_adapter: _PD_ADAPTER,
+      drip_emitter:{url:'https://www.ewingoutdoorsupply.com/12005110-xeri-bird-8-multi-outlet-drip-emission-device-w-8-1-gph-emitters',description:'Xeri-Bird 8 multi-outlet drip device — single connection feeds 8 plants at 1 GPH each. Available at Ewing.',specs:{'Outlets':'8','Flow Rate per Outlet':'1 GPH','Total Flow':'8 GPH','Inlet':'Barbed for ½" tubing'},features:['Single barbed connection serves 8 emitter outlets','Eliminates individual emitter punching','Ideal for shrub beds and container plantings']},
+      drip_tube:{url:'https://www.ewingoutdoorsupply.com/12093050-1-2-in-x-500-ft-roll-subsurface-dripline-tubing-with-0-6-gph-emitters-12-in-spacing',description:'Rain Bird ½" subsurface dripline — 0.6 GPH emitters at 12" spacing, 500 ft roll. Available at Ewing.',specs:{'Diameter':'½"','Length':'500 ft roll','Emitter Spacing':'12 in','Flow Rate':'0.6 GPH/emitter','Material':'UV-resistant polyethylene'},features:['Subsurface installation eliminates evaporation','Factory-installed emitters for consistent spacing','500 ft roll for large bed coverage']},
+      valve:{url:'https://www.ewingoutdoorsupply.com/44008630-pgv-1-in-anti-siphon-valve-threaded',description:'Hunter PGV 1" anti-siphon valve. High-flow zone control for larger zones. 20–150 PSI, 24 VAC. Available at Ewing.',specs:{'Inlet/Outlet':'1" NPT','Operating Pressure':'20–150 PSI','Flow Rate':'0.2–20 GPM','Solenoid':'24 VAC'},features:['1" NPT for higher flow capacity','Anti-siphon backflow prevention','Manual flow control and bleed screw','150 PSI max working pressure']},
+    },
+  },
+  hunter:{
+    standard:{
+      rotor:{url:'https://www.ewingoutdoorsupply.com/35000525-5004-4-in-pop-up-adjustable-rotor-w-non-potable-cover',description:'Rain Bird 5004 4" gear-drive rotor. Dependable entry-level rotor for standard residential zones. Available at Ewing.',specs:{'Coverage Radius':'25–50 ft','Arc Range':'40–360°','Inlet':'¾" NPT','Flow Rate':'0.4–3.9 GPM','Operating Pressure':'25–70 PSI','Pop-Up Height':'4 in'},features:['Gear-driven for quiet operation','Tool-operated arc adjustment','Adjustable radius 25–50 ft','Built-in check valve']},
+      spray_head:{url:'https://www.ewingoutdoorsupply.com/44011540-pro-spray-prs30-4-in-pop-up-w-check-valve',description:'Hunter Pro-Spray PRS30 4" pop-up with check valve and 30 PSI regulation. Industry-standard spray body. Available at Ewing.',specs:{'Pop-Up Height':'4 in','Inlet':'½" FNPT','Coverage Radius':'4–15 ft','Operating Pressure':'15–70 PSI','Regulated Pressure':'30 PSI'},features:['PRS30 pressure regulation','Built-in check valve','Ratchet nozzle collar','Stainless steel retract spring']},
+      funny_pipe: _PD_FUNNY,
+      fp_tee:{url:'https://www.ewingoutdoorsupply.com/03051001-1-in-pvc-single-manifold-tee',description:'Sch. 40 PVC single manifold tee for valve manifold assembly. Available at Ewing.',specs:{'Size':'1" socket × socket × socket','Material':'Schedule 40 PVC','Connection':'Solvent-weld','Working Pressure':'Up to 200 PSI'},features:['Schedule 40 PVC durability','Solvent-weld for permanent joints','Standard single-valve manifold']},
+      fp_adapter: _PD_ADAPTER,
+      drip_emitter:{url:'https://www.ewingoutdoorsupply.com/12005120-5-gph-barbed-pressure-compensating-drip-emitter',description:'Rain Bird 5 GPH pressure-compensating barbed drip emitter. Consistent output 15–50 PSI. Available at Ewing.',specs:{'Flow Rate':'5 GPH','Operating Pressure':'15–50 PSI','Inlet':'Barbed for ½" tubing','Type':'Pressure-compensating'},features:['Pressure-compensating for uniform output','Direct barbed insert','Color-coded identification']},
+      drip_tube:{url:'https://www.ewingoutdoorsupply.com/12070210-1-4-inch-emitter-tubing-100-foot-roll-x-12-inch-spacing',description:'¼" emitter tubing, pre-installed emitters at 12" spacing, 100 ft roll. Available at Ewing.',specs:{'Diameter':'¼"','Length':'100 ft roll','Emitter Spacing':'12 in','Material':'UV-resistant polyethylene'},features:['Pre-installed emitters','UV stabilized','Flexible for easy routing']},
+      valve:{url:'https://www.ewingoutdoorsupply.com/44008620-pgv-3-4-in-anti-siphon-valve-threaded',description:'Hunter PGV ¾" anti-siphon valve. The most-specified residential zone valve. 20–150 PSI, 24 VAC. Available at Ewing.',specs:{'Inlet/Outlet':'¾" NPT','Operating Pressure':'20–150 PSI','Flow Rate':'0.2–15 GPM','Solenoid':'24 VAC'},features:['Anti-siphon backflow prevention','Manual flow control knob','Manual bleed screw']},
+    },
+    premium:{
+      rotor:{url:'https://www.ewingoutdoorsupply.com/35001140-5006-plus-6-in-pop-up-full-circle-rotor-w-flow-shut-off-sam',description:'Rain Bird 5006 Plus 6" rotor with SAM check valve and flow shut-off. Extra pop-up for dense turf. Available at Ewing.',specs:{'Coverage Radius':'25–50 ft','Arc Range':'Full circle','Inlet':'¾" NPT','Flow Rate':'0.5–4.0 GPM','Operating Pressure':'25–70 PSI','Pop-Up Height':'6 in'},features:['6" pop-up height for dense turf','SAM check valve prevents low-head drainage','Flow shut-off for easy head replacement']},
+      spray_head:{url:'https://www.ewingoutdoorsupply.com/44012060-pro-spray-prs40-6-in-pop-up-w-check-valve',description:'Hunter Pro-Spray PRS40 6" pop-up with check valve and 40 PSI regulation. Pro choice for high-pressure systems. Available at Ewing.',specs:{'Pop-Up Height':'6 in','Inlet':'½" FNPT','Coverage Radius':'4–15 ft','Operating Pressure':'15–70 PSI','Regulated Pressure':'40 PSI'},features:['6" pop-up height','PRS40 for high-pressure zones','Built-in check valve','Ratchet nozzle collar']},
+      funny_pipe: _PD_FUNNY,
+      fp_tee:{url:'https://www.ewingoutdoorsupply.com/03051002-1-in-pvc-double-manifold-tee',description:'Sch. 40 PVC double manifold tee for dual-valve assembly. Available at Ewing.',specs:{'Size':'1" socket connections','Material':'Schedule 40 PVC','Connection':'Solvent-weld','Working Pressure':'Up to 200 PSI'},features:['Dual-valve manifold in one fitting','Schedule 40 PVC','Solvent-weld permanent joints']},
+      fp_adapter: _PD_ADAPTER,
+      drip_emitter:{url:'https://www.ewingoutdoorsupply.com/12005110-xeri-bird-8-multi-outlet-drip-emission-device-w-8-1-gph-emitters',description:'Xeri-Bird 8 multi-outlet drip device. One barbed connection, eight 1 GPH outlets. Available at Ewing.',specs:{'Outlets':'8','Flow Rate per Outlet':'1 GPH','Total Flow':'8 GPH','Inlet':'Barbed for ½" tubing'},features:['Single connection for 8 plant outlets','No individual emitter punching','Ideal for shrub beds']},
+      drip_tube:{url:'https://www.ewingoutdoorsupply.com/12093050-1-2-in-x-500-ft-roll-subsurface-dripline-tubing-with-0-6-gph-emitters-12-in-spacing',description:'Rain Bird ½" subsurface dripline — 0.6 GPH emitters at 12" spacing, 500 ft roll. Available at Ewing.',specs:{'Diameter':'½"','Length':'500 ft roll','Emitter Spacing':'12 in','Flow Rate':'0.6 GPH/emitter'},features:['Subsurface installation reduces evaporation','Factory-installed emitters','500 ft roll for large coverage']},
+      valve:{url:'https://www.ewingoutdoorsupply.com/44008630-pgv-1-in-anti-siphon-valve-threaded',description:'Hunter PGV 1" anti-siphon valve. High-flow zone control, 20–150 PSI, 24 VAC. Available at Ewing.',specs:{'Inlet/Outlet':'1" NPT','Operating Pressure':'20–150 PSI','Flow Rate':'0.2–20 GPM','Solenoid':'24 VAC'},features:['1" NPT for higher zone flow','Anti-siphon backflow prevention','150 PSI max working pressure']},
+    },
+  },
 };
 
 const MANIFOLD_PARTS = {
@@ -1118,13 +1487,14 @@ const MANIFOLD_PARTS = {
 // STATE
 // ═══════════════════════════════════════════════════════════
 let brand = 'rainbird';
+let grade = 'standard';
 let pipeType = 'pvc';
 let activeTab = 'zones';
 const overrides = {};
 
 // ── Tier system ──────────────────────────────────────────────
 // 'free' | 'plan' | 'kit'
-let currentTier = sessionStorage.getItem('drip_tier') || 'free';
+let currentTier = localStorage.getItem('drip_tier') || 'free';
 const TIER_RANK  = { free: 0, plan: 1, kit: 2 };
 const hasTier = t => (TIER_RANK[currentTier] || 0) >= (TIER_RANK[t] || 0);
 
@@ -1168,14 +1538,14 @@ const MOCK_DESIGN = {
 };
 
 const design = (()=>{
-  try{ const d=JSON.parse(sessionStorage.getItem('drip_design')); return d||MOCK_DESIGN; }
+  try{ const d=JSON.parse(localStorage.getItem('drip_design')); return d||MOCK_DESIGN; }
   catch(e){ return MOCK_DESIGN; }
 })();
 let zones = design.irrigationZones || [];
 
 function refreshZones() {
   try {
-    const d = JSON.parse(sessionStorage.getItem('drip_design') || '{}');
+    const d = JSON.parse(localStorage.getItem('drip_design') || '{}');
     zones = d.irrigationZones || [];
   } catch(e) {}
 }
@@ -1195,8 +1565,10 @@ window.addEventListener('message', e => {
 // ═══════════════════════════════════════════════════════════
 const fmt = n => '$'+(+n).toFixed(2);
 const fmtInt = n => '$'+Math.round(n).toLocaleString();
+const mp = price => price; // Ewing retail price — no markup applied
 const overKey = (iz,k) => `${iz}::${k}`;
-const getBrand = (izId,k) => overrides[overKey(izId,k)] || brand;
+const getBrand  = (izId,k) => overrides[overKey(izId,k)] || brand;
+const catEntry  = (b, k)   => CATALOG[b]?.[grade]?.[k];
 
 function hexToRgb(hex){
   if (!hex||hex.length<7) return '128,128,128';
@@ -1303,12 +1675,12 @@ function calcZoneParts(iz){
   const rotors = heads.filter(h=>h.type==='rotor').length;
   const sprays = heads.filter(h=>h.type==='spray').length;
   const parts = [];
-  if(rotors>0) parts.push({key:'rotor',     category:'head',   ...CATALOG[getBrand(iz.id,'rotor')].rotor,     qty:rotors,        unit:'ea'});
-  if(sprays>0) parts.push({key:'spray_head',category:'head',   ...CATALOG[getBrand(iz.id,'spray_head')].spray_head, qty:sprays,   unit:'ea'});
+  if(rotors>0) parts.push({key:'rotor',     category:'head',   ...catEntry(getBrand(iz.id,'rotor'),'rotor'),         qty:rotors,        unit:'ea'});
+  if(sprays>0) parts.push({key:'spray_head',category:'head',   ...catEntry(getBrand(iz.id,'spray_head'),'spray_head'), qty:sprays,        unit:'ea'});
   if(heads.length>0){
-    parts.push({key:'funny_pipe', category:'fitting',...CATALOG[getBrand(iz.id,'funny_pipe')].funny_pipe, qty:heads.length, unit:'ea'});
-    parts.push({key:'fp_tee',     category:'fitting',...CATALOG[getBrand(iz.id,'fp_tee')].fp_tee,         qty:heads.length, unit:'ea'});
-    parts.push({key:'fp_adapter', category:'fitting',...CATALOG[getBrand(iz.id,'fp_adapter')].fp_adapter, qty:heads.length, unit:'ea'});
+    parts.push({key:'funny_pipe', category:'fitting',...catEntry(getBrand(iz.id,'funny_pipe'),'funny_pipe'), qty:heads.length, unit:'ea'});
+    parts.push({key:'fp_tee',     category:'fitting',...catEntry(getBrand(iz.id,'fp_tee'),'fp_tee'),         qty:heads.length, unit:'ea'});
+    parts.push({key:'fp_adapter', category:'fitting',...catEntry(getBrand(iz.id,'fp_adapter'),'fp_adapter'), qty:heads.length, unit:'ea'});
   }
   const mainFt = Math.round((iz.distFt||40)*1.2);
   const latFt  = estLatFt(iz);
@@ -1335,7 +1707,7 @@ function calcZoneParts(iz){
 
 function calcDripParts(iz){
   const pipe = PIPE_CAT[pipeType];
-  const cat  = CATALOG[brand];
+  const cat  = CATALOG[brand][grade];
   const areaSqFt = iz.area||400;
   const emitters = Math.ceil(areaSqFt*0.044);
   const dripRolls = Math.ceil(areaSqFt*0.15/100);
@@ -1360,7 +1732,7 @@ function calcDripParts(iz){
   ];
 }
 
-const zoneSubtotal = parts => parts.reduce((s,p)=>s+p.price*p.qty, 0);
+const zoneSubtotal = parts => parts.reduce((s,p)=>s+mp(p.price)*p.qty, 0);
 
 // ═══════════════════════════════════════════════════════════
 // RENDER ZONES PARTS
@@ -1380,115 +1752,86 @@ function renderZonesParts(){
         </button>
       </div>`;
     document.getElementById('grand-total-card').innerHTML = '';
+    const atcMeta = document.getElementById('atc-meta');
+    if (atcMeta) atcMeta.textContent = '';
     return;
   }
-  const sprayZones = zones.filter(z=>!z.isDrip);
-  const dripZones  = zones.filter(z=>z.isDrip);
-  let grandTotal=0, html='';
+  let grandTotal=0, html='', totalItems=0;
 
-  sprayZones.forEach(iz=>{
-    const parts=calcZoneParts(iz);
-    const sub=zoneSubtotal(parts);
-    grandTotal+=sub;
-    const warn=iz.pressureAtZone<30?`⚠️ Low pressure (${iz.pressureAtZone} PSI) — consider splitting zone`:'';
-    const thumbUrl=zoneThumbnailUrl(iz);
+  zones.forEach((iz, idx)=>{
+    const zoneNum = idx + 1;
+    const parts = iz.isDrip ? calcDripParts(iz) : calcZoneParts(iz);
+    const sub = zoneSubtotal(parts);
+    grandTotal += sub;
+    totalItems += parts.reduce((s,p)=>s+p.qty, 0);
+    const zoneType = iz.isDrip ? 'Drip' : 'Spray';
+    const zoneIcon = iz.isDrip ? '💧' : '🗺️';
+    const warn = (!iz.isDrip && iz.pressureAtZone<30)
+      ? `⚠️ Low pressure (${iz.pressureAtZone} PSI) — consider splitting zone` : '';
+    const thumbUrl = zoneThumbnailUrl(iz);
+    const chevron = `<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
-    html+=`<div class="zone-card">
-      <div class="zc-header">
-        <div class="zone-thumb-wrap">
-          ${thumbUrl
-            ? `<img class="zone-thumb" src="${thumbUrl}" alt="${iz.name}" onerror="this.parentElement.innerHTML='<div class=zone-thumb-fallback><div class=ztf-icon>🗺️</div><div class=ztf-txt>${iz.name}</div></div>'">`
-            : `<div class="zone-thumb-fallback"><div class="ztf-icon">🗺️</div><div class="ztf-txt">${iz.name}</div></div>`}
-          <div class="zone-thumb-overlay">
-            <div class="zone-thumb-label">${iz.name}</div>
-          </div>
-        </div>
+    html+=`<div class="zone-card" data-zone="${iz.id}">
+      <div class="zc-header" onclick="toggleZone('${iz.id}')">
         <div class="zc-info">
           <div class="zc-name-row">
             <div class="zc-dot" style="background:${iz.color}"></div>
-            <span class="zc-name">${iz.name}</span>
-            <span class="zc-type">Spray</span>
+            <span class="zc-name">Zone ${zoneNum} <span style="font-weight:400;color:var(--muted)">— ${iz.name}</span></span>
+            <span class="zc-type">${zoneType}</span>
           </div>
           <div class="zc-badges">
+            ${!iz.isDrip ? `
             <span class="zc-badge gpm">⚡ ${iz.totalGpm} GPM</span>
             <span class="zc-badge psi">${iz.pressureAtZone} PSI</span>
             <span class="zc-badge pipe">Main: ${iz.mainPipe?.sz||'¾"'}</span>
-            <span class="zc-badge pipe">Lat: ${iz.latPipe?.sz||'½"'}</span>
+            <span class="zc-badge pipe">Lat: ${iz.latPipe?.sz||'½"'}</span>` : `
+            <span class="zc-badge pipe">~${iz.area||400} sq ft</span>`}
             <span class="zc-badge pipe">📏 ${iz.distFt} ft</span>
+            <span class="zc-badge" style="background:#f0f4e8;color:var(--green);font-weight:700">${fmt(sub)}</span>
             ${warn?`<span class="zc-badge warn">${warn}</span>`:''}
           </div>
         </div>
+        <div class="zc-toggle">${chevron}</div>
       </div>
-      <table class="parts-table">
-        <thead><tr>
-          <th style="width:52px"></th>
-          <th style="width:40%">Product</th>
-          <th>Qty</th><th>Unit Price</th>
-          <th class="right">Total</th><th></th>
-        </tr></thead>
-        <tbody>${parts.map(p=>partRow(p,iz.id)).join('')}</tbody>
-      </table>
-      <div class="zc-footer">
-        <span class="zc-warn"></span>
-        <span class="zc-subtotal">Zone Subtotal: ${fmt(sub)}</span>
+      <div class="zc-body">
+        <table class="parts-table">
+          <thead><tr>
+            <th style="width:52px"></th>
+            <th style="width:40%">Product</th>
+            <th>Qty</th><th>Unit Price</th>
+            <th class="right">Total</th><th></th>
+          </tr></thead>
+          <tbody>${parts.map(p=>partRow(p,iz.id)).join('')}</tbody>
+        </table>
+        <div class="zc-footer">
+          <span class="zc-warn">${warn}</span>
+          <span class="zc-subtotal">Zone ${zoneNum} Subtotal: ${fmt(sub)}</span>
+        </div>
       </div>
     </div>`;
   });
 
-  dripZones.forEach(iz=>{
-    const parts=calcDripParts(iz);
-    const sub=zoneSubtotal(parts);
-    grandTotal+=sub;
-    const thumbUrl=zoneThumbnailUrl(iz);
-    html+=`<div class="zone-card">
-      <div class="zc-header">
-        <div class="zone-thumb-wrap">
-          ${thumbUrl
-            ? `<img class="zone-thumb" src="${thumbUrl}" alt="${iz.name}" onerror="this.parentElement.innerHTML='<div class=zone-thumb-fallback><div class=ztf-icon>💧</div><div class=ztf-txt>${iz.name}</div></div>'">`
-            : `<div class="zone-thumb-fallback"><div class="ztf-icon">💧</div><div class="ztf-txt">${iz.name}</div></div>`}
-          <div class="zone-thumb-overlay">
-            <div class="zone-thumb-label">${iz.name}</div>
-          </div>
-        </div>
-        <div class="zc-info">
-          <div class="zc-name-row">
-            <div class="zc-dot" style="background:${iz.color}"></div>
-            <span class="zc-name">${iz.name}</span>
-            <span class="zc-type">Drip</span>
-          </div>
-          <div class="zc-badges">
-            <span class="zc-badge pipe">~${iz.area||400} sq ft</span>
-            <span class="zc-badge pipe">📏 ${iz.distFt} ft</span>
-          </div>
-        </div>
-      </div>
-      <table class="parts-table">
-        <thead><tr>
-          <th style="width:52px"></th><th style="width:40%">Product</th>
-          <th>Qty</th><th>Unit Price</th><th class="right">Total</th><th></th>
-        </tr></thead>
-        <tbody>${parts.map(p=>partRow(p,iz.id)).join('')}</tbody>
-      </table>
-      <div class="zc-footer">
-        <span></span>
-        <span class="zc-subtotal">Zone Subtotal: ${fmt(sub)}</span>
-      </div>
-    </div>`;
-  });
-
-  const valveCost = CATALOG[brand].valve.price * zones.length;
+  const valveCost = mp(catEntry(brand,'valve').price) * zones.length;
   grandTotal += valveCost;
 
   document.getElementById('zones-list').innerHTML = html;
   document.getElementById('nb-zones').textContent = zones.length;
   document.getElementById('tb-total-val').textContent = fmtInt(grandTotal);
 
+  // Update Add to Cart button with total + meta line beneath
+  const atcBtn = document.getElementById('add-to-cart-btn');
+  if (atcBtn) atcBtn.textContent = `Add to Cart — ${fmtInt(grandTotal)}`;
+  const atcMeta = document.getElementById('atc-meta');
+  if (atcMeta) atcMeta.textContent = `${zones.length} zone${zones.length!==1?'s':''} · ${totalItems} items`;
+
   // Grand total card
-  const sprayHeadsSub = sprayZones.reduce((s,z)=>s+zoneSubtotal(calcZoneParts(z).filter(p=>p.category!=='pipe')),0);
-  const pipeSub = sprayZones.reduce((s,z)=>s+zoneSubtotal(calcZoneParts(z).filter(p=>p.category==='pipe')),0)
-                + dripZones.reduce((s,z)=>s+zoneSubtotal(calcDripParts(z).filter(p=>p.category==='pipe')),0);
-  const dripSub = dripZones.reduce((s,z)=>s+zoneSubtotal(calcDripParts(z).filter(p=>p.category!=='pipe')),0);
-  const sprayCount = sprayZones.reduce((s,z)=>s+(z.heads?.length||0),0);
+  const _sprayZones = zones.filter(z=>!z.isDrip);
+  const _dripZones  = zones.filter(z=>z.isDrip);
+  const sprayHeadsSub = _sprayZones.reduce((s,z)=>s+zoneSubtotal(calcZoneParts(z).filter(p=>p.category!=='pipe')),0);
+  const pipeSub = _sprayZones.reduce((s,z)=>s+zoneSubtotal(calcZoneParts(z).filter(p=>p.category==='pipe')),0)
+                + _dripZones.reduce((s,z)=>s+zoneSubtotal(calcDripParts(z).filter(p=>p.category==='pipe')),0);
+  const dripSub = _dripZones.reduce((s,z)=>s+zoneSubtotal(calcDripParts(z).filter(p=>p.category!=='pipe')),0);
+  const sprayCount = _sprayZones.reduce((s,z)=>s+(z.heads?.length||0),0);
 
   document.getElementById('grand-total-card').innerHTML=`
     <div class="grand-total-card">
@@ -1508,7 +1851,8 @@ function renderZonesParts(){
 function partRow(p, izId){
   const catClass={head:'cat-head',fitting:'cat-fitting',pipe:'cat-pipe',drip:'cat-drip'}[p.category]||'';
   const catLabel={head:'Head',fitting:'Fitting',pipe:'Pipe',drip:'Drip'}[p.category]||'';
-  const total=p.price*p.qty;
+  const unitPrice=mp(p.price);
+  const total=unitPrice*p.qty;
   const canSwap=(p.category==='head'||p.category==='fitting');
   const bk = getBrand(izId, p.key)||brand;
   return `<tr>
@@ -1519,9 +1863,12 @@ function partRow(p, izId){
       <div class="prod-sku">${p.sku}</div>
     </td>
     <td class="qty-cell">${p.qty} <span style="font-size:11px;font-weight:400;color:var(--muted)">${p.unit}</span></td>
-    <td class="unit-cell">${fmt(p.price)}</td>
+    <td class="unit-cell">${fmt(unitPrice)}</td>
     <td class="right price-cell">${fmt(total)}</td>
-    <td>${canSwap?`<button class="btn-swap" onclick="openSwap('${izId}','${p.key}')">↕ Swap</button>`:''}</td>
+    <td style="white-space:nowrap">
+      ${canSwap?`<button class="btn-swap" onclick="openSwap('${izId}','${p.key}')">↕ Swap</button>`:''}
+      <button class="btn-view" onclick="openProductDrawer('${bk}','${p.key}','${izId}')">View ↗</button>
+    </td>
   </tr>`;
 }
 
@@ -1585,7 +1932,7 @@ function renderSchedule(){
 // MANIFOLD
 // ═══════════════════════════════════════════════════════════
 function renderManifold(){
-  const cat=CATALOG[brand];
+  const cat=CATALOG[brand][grade];
   const numZones=zones.length;
   const maxDist=Math.max(...zones.map(z=>z.distFt||50));
   const wireFt=Math.round(maxDist*1.3*numZones*0.4+20);
@@ -1628,7 +1975,7 @@ function renderManifold(){
       <div class="mpc-icon">${p.icon}</div>
       <div class="mpc-info"><div class="mpc-name">${p.name}</div><div class="mpc-sku">${p.sku}</div></div>
       <div class="mpc-qty">×${p.qty}</div>
-      <div class="mpc-price">${fmt(p.price*p.qty)}</div>
+      <div class="mpc-price">${fmt(mp(p.price)*p.qty)}</div>
       ${p.key==='valve'?`<button class="mpc-swap" onclick="openManifoldSwap()">↕</button>`:''}
     </div>`).join('');
 
@@ -1885,10 +2232,10 @@ function openSwap(izId,partKey){
   const iz=zones.find(z=>z.id===izId); if(!iz) return;
   const curBrand=getBrand(izId,partKey);
   const opts=Object.entries(CATALOG).map(([bk,bc])=>{
-    const p=bc[partKey]; if(!p) return null;
+    const p=bc[grade]?.[partKey]; if(!p) return null;
     return {...p,brandKey:bk,brandName:BRAND_NAMES[bk]};
   }).filter(Boolean);
-  document.getElementById('ss-title').textContent=`Swap: ${CATALOG[curBrand][partKey]?.name||partKey}`;
+  document.getElementById('ss-title').textContent=`Swap: ${catEntry(curBrand,partKey)?.name||partKey}`;
   document.getElementById('ss-sub').textContent='Choose an equivalent. Applies to this zone only.';
   document.getElementById('ss-options').innerHTML=opts.map(opt=>{
     const cur=opt.brandKey===curBrand;
@@ -1897,7 +2244,7 @@ function openSwap(izId,partKey){
       <div class="so-brand">${opt.brandName}</div>
       <div class="so-name">${opt.name}</div>
       <div class="so-sku">${opt.sku}</div>
-      <div class="so-price">${fmt(opt.price)}/ea</div>
+      <div class="so-price">${fmt(mp(opt.price))}/ea</div>
       <button class="so-use" onclick="applySwap('${izId}','${partKey}','${opt.brandKey}')">
         ${cur?'✓ Using This':'Use This'}
       </button>
@@ -1910,13 +2257,14 @@ function openManifoldSwap(){
   document.getElementById('ss-title').textContent='Swap: Zone Valves';
   document.getElementById('ss-sub').textContent='Changes all zone valves to the selected brand.';
   document.getElementById('ss-options').innerHTML=Object.entries(CATALOG).map(([bk,bc])=>{
+    const v=bc[grade]?.valve; if(!v) return '';
     const cur=bk===brand;
     return `<div class="swap-option ${cur?'current':''}">
       ${cur?'<div class="so-badge">Current</div>':''}
       <div class="so-brand">${BRAND_NAMES[bk]}</div>
-      <div class="so-name">${bc.valve.name}</div>
-      <div class="so-sku">${bc.valve.sku}</div>
-      <div class="so-price">${fmt(bc.valve.price)}/ea</div>
+      <div class="so-name">${v.name}</div>
+      <div class="so-sku">${v.sku}</div>
+      <div class="so-price">${fmt(mp(v.price))}/ea</div>
       <button class="so-use" onclick="setBrand('${bk}');document.getElementById('swap-backdrop').classList.remove('show')">Use This</button>
     </div>`;
   }).join('');
@@ -1976,9 +2324,23 @@ function orderKit(){
 }
 
 // ── TIER MANAGEMENT ─────────────────────────────────────────
+function goHome() {
+  const design = JSON.parse(localStorage.getItem('drip_design') || '{}');
+  const hasZones = design.zones && design.zones.length > 0;
+  const hasHeads = design.irrigationZones && design.irrigationZones.length > 0;
+  if (hasZones || hasHeads) {
+    document.getElementById('unsaved-modal').classList.add('open');
+  } else {
+    window.location.href = 'index.html';
+  }
+}
+function closeUnsavedModal() {
+  document.getElementById('unsaved-modal').classList.remove('open');
+}
+
 function setTier(tier) {
   currentTier = tier;
-  sessionStorage.setItem('drip_tier', tier);
+  localStorage.setItem('drip_tier', tier);
   updateTierUI();
 }
 
@@ -2004,48 +2366,31 @@ function upgradeToKit() {
   setTimeout(() => setTab('track'), 400);
 }
 
+function unlockPlan() {
+  window.location.href = 'https://buy.stripe.com/6oU4gybCM8oDb779Ec8Ra00';
+}
+
 function updateTierUI() {
   // ── badge ─────────────────────────────────────────────────
   const badge = document.querySelector('.sb-plan-badge');
   if (badge) {
     badge.className = 'sb-plan-badge ' + currentTier;
-    badge.textContent = currentTier === 'kit' ? 'Complete Kit'
-                      : currentTier === 'plan' ? 'Irrigation Plan'
-                      : 'Free';
+    badge.textContent = hasTier('plan') ? 'Irrigation Plan' : 'Free';
   }
 
-  // ── plan-tier nav items ───────────────────────────────────
+  // ── plan-tier pages — lock/unlock based on tier ───────────
   ['zones', 'schedule', 'manifold', 'blueprint', 'guide'].forEach(tab => {
-    const el   = document.getElementById('nav-' + tab);
-    const lock = document.getElementById('lock-' + tab);
-    if (!el) return;
+    const navEl = document.getElementById('nav-' + tab);
+    const pane  = document.getElementById('tab-' + tab);
+    if (navEl) navEl.onclick = () => setTab(tab);
+    if (!pane) return;
     if (hasTier('plan')) {
-      el.classList.remove('nav-locked');
-      el.onclick = () => setTab(tab);
-      if (lock) lock.style.display = 'none';
+      pane.classList.remove('is-locked');
     } else {
-      el.classList.add('nav-locked');
-      el.onclick = () => showPaywall('plan');
-      if (lock) lock.style.display = '';
+      pane.classList.add('is-locked');
     }
   });
-
-  // ── kit-tier nav items ────────────────────────────────────
-  const kitActions = { parts: () => openKitModal(), support: () => setTab('pro') };
-  ['parts', 'support'].forEach(key => {
-    const el   = document.getElementById('nav-' + key);
-    const lock = document.getElementById('lock-' + key);
-    if (!el) return;
-    if (hasTier('kit')) {
-      el.classList.remove('nav-locked');
-      el.onclick = kitActions[key];
-      if (lock) lock.style.display = 'none';
-    } else {
-      el.classList.add('nav-locked');
-      el.onclick = () => showPaywall(key === 'parts' ? 'parts' : 'support');
-      if (lock) lock.style.display = '';
-    }
-  });
+  updateGatePadding();
 }
 
 function showToast(msg){
@@ -2227,12 +2572,36 @@ function setTab(tab){
   // hide topbar controls when designer is active (it has its own UI)
   const tbControls = document.querySelector('.topbar');
   if(tbControls) tbControls.style.display = tab==='designer' ? 'none' : '';
-  if(tab==='zones')     { if(hasTier('plan')){ refreshZones(); renderZonesParts(); } else { showPaywall('plan'); return; } }
+  if(tab==='zones')     { refreshZones(); renderZonesParts(); }
   if(tab==='schedule')  renderSchedule();
   if(tab==='manifold')  renderManifold();
   if(tab==='blueprint') renderBlueprint();
   if(tab==='track')     renderTrackOrder();
   if(tab==='pro')       renderMyPro();
+  updateGatePadding();
+}
+
+function updateGatePadding(){
+  const content = document.querySelector('.content');
+  if (!content) return;
+  const activePane = document.querySelector('.tab-pane.active.is-locked');
+  if (activePane) {
+    const gate = activePane.querySelector('.gate-panel');
+    if (gate) {
+      requestAnimationFrame(() => {
+        content.style.paddingBottom = gate.offsetHeight + 'px';
+      });
+      return;
+    }
+  }
+  content.style.paddingBottom = '';
+}
+
+function setGrade(g){
+  grade=g;
+  document.querySelectorAll('.grade-btn').forEach(btn=>btn.classList.toggle('active',btn.dataset.grade===g));
+  renderZonesParts();
+  if(activeTab==='manifold') renderManifold();
 }
 
 function setBrand(b){
@@ -2271,7 +2640,7 @@ renderZonesParts();
   const params = new URLSearchParams(window.location.search);
   if (params.get('upgraded') === 'plan' && !hasTier('plan')) {
     currentTier = 'plan';
-    sessionStorage.setItem('drip_tier', 'plan');
+    localStorage.setItem('drip_tier', 'plan');
     history.replaceState({}, '', 'materials.html');
     setTimeout(() => showToast('✓ Irrigation Plan unlocked!'), 600);
   }
@@ -2370,6 +2739,257 @@ function dismissPaywall(e) {
   if (e && e.target !== document.getElementById('mat-paywall')) return;
   document.getElementById('mat-paywall').classList.remove('open');
 }
+
+// ═══════════════════════════════════════════════════════════
+// CART
+// ═══════════════════════════════════════════════════════════
+let cart = [];
+
+function buildCartFromParts() {
+  const items = [];
+  zones.forEach(iz => {
+    const parts = iz.isDrip ? calcDripParts(iz) : calcZoneParts(iz);
+    parts.forEach(p => {
+      const bk = getBrand(iz.id, p.key) || brand;
+      items.push({
+        cartKey: `${iz.id}::${p.key}`,
+        name: p.name,
+        sku: p.sku,
+        icon: p.icon || p.key,
+        brandKey: bk,
+        category: p.category,
+        unitPrice: mp(p.price),
+        qty: p.qty,
+        unit: p.unit,
+        zoneId: iz.id,
+        zoneName: iz.name,
+        zoneColor: iz.color || '#888',
+      });
+    });
+  });
+  return items;
+}
+
+function cartTotal() { return cart.reduce((s, i) => s + i.unitPrice * i.qty, 0); }
+function cartItemCount() { return cart.reduce((s, i) => s + i.qty, 0); }
+
+function updateCartBadge() {
+  const badge = document.getElementById('tb-cart-badge');
+  if (!badge) return;
+  const n = cartItemCount();
+  badge.textContent = n;
+  badge.style.display = n > 0 ? 'inline-flex' : 'none';
+}
+
+function addAllToCart() {
+  if (zones.length === 0) { showToast('Generate a water plan first.'); return; }
+  cart = buildCartFromParts();
+  updateCartBadge();
+  openCart();
+  showToast('✓ Parts added to cart');
+}
+
+// ═══════════════════════════════════════════════════════════
+// PRODUCT DETAIL DRAWER
+// ═══════════════════════════════════════════════════════════
+let _pdBrand = null, _pdKey = null, _pdZoneId = null;
+
+function openProductDrawer(brandKey, partKey, zoneId) {
+  _pdBrand = brandKey; _pdKey = partKey; _pdZoneId = zoneId;
+  const pd = PRODUCT_DATA[brandKey]?.[grade]?.[partKey];
+  const cat = catEntry(brandKey, partKey);
+  if (!cat) return;
+  const color = BRAND_COLORS[brandKey] || '#888';
+  const brandName = BRAND_NAMES[brandKey] || brandKey;
+  const unitPrice = mp(cat.price);
+  const canSwap = (partKey !== 'main_pipe' && partKey !== 'lat_pipe');
+
+  document.getElementById('pd-body').innerHTML = `
+    <div class="pd-hero">
+      <div class="pd-hero-icon">${prodThumbHTML(cat.icon || partKey, brandKey)}</div>
+      <div style="flex:1;min-width:0">
+        <div class="pd-brand-badge" style="background:${color}">${brandName}</div>
+        <div class="pd-name">${cat.name}</div>
+        <div class="pd-sku">SKU: ${cat.sku}</div>
+      </div>
+    </div>
+    <div class="pd-price-row">
+      <span class="pd-price">${fmt(unitPrice)}</span>
+      <span class="pd-price-ea">per unit (Ewing retail)</span>
+    </div>
+    ${pd?.description ? `<p class="pd-desc">${pd.description}</p>` : ''}
+    ${pd?.specs ? `
+    <div class="pd-sec">
+      <div class="pd-sec-title">Specifications</div>
+      <table class="pd-specs">
+        ${Object.entries(pd.specs).map(([k,v])=>`<tr><td>${k}</td><td>${v}</td></tr>`).join('')}
+      </table>
+    </div>` : ''}
+    ${pd?.features?.length ? `
+    <div class="pd-sec">
+      <div class="pd-sec-title">Features</div>
+      <ul class="pd-features">
+        ${pd.features.map(f=>`<li>${f}</li>`).join('')}
+      </ul>
+    </div>` : ''}
+  `;
+
+  document.getElementById('pd-footer').innerHTML = `
+    ${pd?.url ? `<a class="pd-site-btn" href="${pd.url}" target="_blank" rel="noopener">View on Ewing Outdoor Supply ↗</a>` : ''}
+    ${canSwap && _pdZoneId ? `<button class="pd-do-swap-btn" onclick="closeProductDrawer();openSwap('${zoneId}','${partKey}')">↕ Swap Brand</button>` : ''}
+  `;
+
+  document.getElementById('pd-overlay').classList.add('open');
+  document.getElementById('pd-drawer').classList.add('open');
+}
+
+function closeProductDrawer() {
+  document.getElementById('pd-overlay').classList.remove('open');
+  document.getElementById('pd-drawer').classList.remove('open');
+}
+
+function openCart() {
+  renderCart();
+  document.getElementById('cart-overlay').classList.add('open');
+  document.getElementById('cart-drawer').classList.add('open');
+}
+
+function closeCart() {
+  document.getElementById('cart-overlay').classList.remove('open');
+  document.getElementById('cart-drawer').classList.remove('open');
+}
+
+function updateCartQty(cartKey, delta) {
+  const item = cart.find(i => i.cartKey === cartKey);
+  if (!item) return;
+  item.qty = Math.max(0, item.qty + delta);
+  if (item.qty === 0) cart = cart.filter(i => i.cartKey !== cartKey);
+  updateCartBadge();
+  renderCart();
+}
+
+function removeCartItem(cartKey) {
+  cart = cart.filter(i => i.cartKey !== cartKey);
+  updateCartBadge();
+  renderCart();
+}
+
+function cartThumbSvg(icon, bk) {
+  const c = BRAND_COLORS[bk] || '#7a7a72';
+  const cl = c + '40';
+  const svgs = {
+    rotor:    `<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="15" fill="${cl}" stroke="${c}" stroke-width="1.8"/><path d="M20,20 L20,6 A14,14 0 0,1 32.1,27 Z" fill="${c}70"/><circle cx="20" cy="20" r="5" fill="${c}"/></svg>`,
+    spray:    `<svg viewBox="0 0 40 40"><path d="M20,24 L7,10 Q20,4 33,10 Z" fill="${cl}" stroke="${c}70" stroke-width="1"/><circle cx="20" cy="24" r="5" fill="${c}"/></svg>`,
+    pipe:     `<svg viewBox="0 0 40 40"><rect x="3" y="14" width="34" height="12" rx="6" fill="${cl}" stroke="${c}" stroke-width="1.8"/></svg>`,
+    valve:    `<svg viewBox="0 0 40 40"><rect x="7" y="20" width="26" height="14" rx="4" fill="${cl}" stroke="${c}" stroke-width="1.8"/><rect x="14" y="10" width="12" height="12" rx="3" fill="${c}"/></svg>`,
+    emitter:  `<svg viewBox="0 0 40 40"><rect x="13" y="8" width="14" height="14" rx="3" fill="${c}"/><path d="M20,22 Q15,28 20,34 Q25,28 20,22Z" fill="${c}"/></svg>`,
+    drip_tube:`<svg viewBox="0 0 40 40"><path d="M5,30 Q5,20 20,20 Q35,20 35,10" fill="none" stroke="${c}" stroke-width="5" stroke-linecap="round"/></svg>`,
+    fp:       `<svg viewBox="0 0 40 40"><path d="M8,32 Q8,10 30,10" fill="none" stroke="${c}" stroke-width="7" stroke-linecap="round"/></svg>`,
+    tee:      `<svg viewBox="0 0 40 40"><line x1="5" y1="20" x2="35" y2="20" stroke="${c}" stroke-width="7" stroke-linecap="round"/><line x1="20" y1="20" x2="20" y2="36" stroke="${c}" stroke-width="7" stroke-linecap="round"/></svg>`,
+    adapter:  `<svg viewBox="0 0 40 40"><rect x="3" y="13" width="16" height="14" rx="4" fill="${c}"/><rect x="21" y="16" width="16" height="8" rx="3" fill="${c}"/></svg>`,
+  };
+  return svgs[icon] || svgs.pipe;
+}
+
+function renderCart() {
+  const body   = document.getElementById('cd-body');
+  const footer = document.getElementById('cd-footer');
+  const countEl = document.getElementById('cd-count');
+
+  if (cart.length === 0) {
+    body.innerHTML = `<div class="cd-empty">
+      <div class="cd-empty-icon">🛒</div>
+      <div class="cd-empty-title">Your cart is empty</div>
+      <div class="cd-empty-sub">Go to Parts List and click "Add to Cart" to get started.</div>
+    </div>`;
+    footer.innerHTML = '';
+    if (countEl) countEl.textContent = '';
+    return;
+  }
+
+  const total = cartTotal();
+  const qtyTotal = cartItemCount();
+  if (countEl) countEl.textContent = `${cart.length} line item${cart.length !== 1 ? 's' : ''}`;
+
+  // group by zone
+  const byZone = {};
+  cart.forEach(item => {
+    if (!byZone[item.zoneId]) byZone[item.zoneId] = { name: item.zoneName, color: item.zoneColor, items: [] };
+    byZone[item.zoneId].items.push(item);
+  });
+
+  let html = '';
+  Object.values(byZone).forEach(zone => {
+    html += `<div class="cd-zone-header">
+      <div class="cd-zone-dot" style="background:${zone.color}"></div>${zone.name}
+    </div>`;
+    zone.items.forEach(item => {
+      const lineTotal = item.unitPrice * item.qty;
+      html += `<div class="cd-item">
+        <div class="cd-item-thumb">${cartThumbSvg(item.icon, item.brandKey)}</div>
+        <div class="cd-item-info">
+          <div class="cd-item-name">${item.name}</div>
+          <div class="cd-item-sku">${item.sku}</div>
+        </div>
+        <div class="cd-item-right">
+          <div class="cd-item-price">${fmt(lineTotal)}</div>
+          <div class="cd-item-controls">
+            <div class="cd-qty">
+              <button class="cd-qty-btn" onclick="updateCartQty('${item.cartKey}',-1)">−</button>
+              <span class="cd-qty-val">${item.qty}</span>
+              <button class="cd-qty-btn" onclick="updateCartQty('${item.cartKey}',1)">+</button>
+            </div>
+            <button class="cd-item-remove" onclick="removeCartItem('${item.cartKey}')" title="Remove">✕</button>
+          </div>
+        </div>
+      </div>`;
+    });
+  });
+  body.innerHTML = html;
+
+  const zoneCount = Object.keys(byZone).length;
+  footer.innerHTML = `
+    <div class="cd-subtotal-row">
+      <span class="cd-subtotal-label">Subtotal</span>
+      <span class="cd-subtotal-val">${fmt(total)}</span>
+    </div>
+    <div class="cd-item-count">${qtyTotal} item${qtyTotal !== 1 ? 's' : ''} across ${zoneCount} zone${zoneCount !== 1 ? 's' : ''}</div>
+    <button class="cd-checkout-btn" onclick="goToCheckout()">Checkout — ${fmt(total)}</button>
+    <div class="cd-note">Prices are estimates. Final total confirmed at checkout.</div>`;
+}
+
+function goToCheckout() {
+  sessionStorage.setItem('drip_cart', JSON.stringify(cart));
+  window.location.href = 'checkout.html';
+}
+
+function toggleZone(zoneId) {
+  const card = document.querySelector(`.zone-card[data-zone="${zoneId}"]`);
+  if (card) card.classList.toggle('collapsed');
+}
 </script>
+
+<!-- ═══════ CART DRAWER ═══════ -->
+<!-- Product Detail Drawer -->
+<div id="pd-overlay" onclick="closeProductDrawer()"></div>
+<div id="pd-drawer">
+  <div class="pd-header">
+    <span class="pd-header-label">Product Details</span>
+    <button class="pd-close" onclick="closeProductDrawer()">✕</button>
+  </div>
+  <div class="pd-body" id="pd-body"></div>
+  <div class="pd-footer" id="pd-footer"></div>
+</div>
+
+<div id="cart-overlay" onclick="closeCart()"></div>
+<div id="cart-drawer">
+  <div class="cd-header">
+    <div class="cd-title">Your Cart</div>
+    <span class="cd-count" id="cd-count"></span>
+    <button class="cd-close" onclick="closeCart()">✕</button>
+  </div>
+  <div class="cd-body" id="cd-body"></div>
+  <div class="cd-footer" id="cd-footer"></div>
+</div>
 </body>
 </html>

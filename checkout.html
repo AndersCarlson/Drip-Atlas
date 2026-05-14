@@ -162,7 +162,7 @@
   <div class="form-col">
     <div class="form-head">
       <h1>Complete your order</h1>
-      <p>You're one step away from your full irrigation plan and materials list.</p>
+      <p>You're one step away from your complete parts kit, shipped and labeled by zone.</p>
     </div>
 
     <p class="section-label">Contact</p>
@@ -216,7 +216,7 @@
     </div>
 
     <button class="btn-pay" id="pay-btn" onclick="completePayment()">
-      <span class="btn-label">Complete Purchase — $99</span>
+      <span class="btn-label">Complete Purchase — $949</span>
       <div class="spinner"></div>
     </button>
 
@@ -229,36 +229,36 @@
   <!-- RIGHT: ORDER SUMMARY -->
   <div class="order-card">
     <div class="oc-header">
-      <div class="oc-eyebrow">Irrigation Plan</div>
-      <div class="oc-title">Everything you need<br>to install yourself</div>
+      <div class="oc-eyebrow">Complete Kit</div>
+      <div class="oc-title">Every part, picked and<br>shipped to your door</div>
       <div class="oc-sub">Based on the property and zones you just designed.</div>
     </div>
     <div class="oc-features">
       <div class="oc-feat">
         <div class="oc-check">✓</div>
-        <div><strong>Complete materials list</strong> <span>— every pipe, fitting, head &amp; valve with quantities and part numbers</span></div>
+        <div><strong>All parts included</strong> <span>— every head, pipe, fitting, and valve from your materials list</span></div>
       </div>
       <div class="oc-feat">
         <div class="oc-check">✓</div>
-        <div><strong>Brand flexibility</strong> <span>— switch between Rain Bird, Hunter, or Orbit with one click</span></div>
+        <div><strong>Labeled by zone</strong> <span>— everything organized so you know exactly what goes where</span></div>
       </div>
       <div class="oc-feat">
         <div class="oc-check">✓</div>
-        <div><strong>Zone-by-zone watering schedule</strong> <span>— run times based on head type and precipitation rate</span></div>
+        <div><strong>1:1 specialist support</strong> <span>— a licensed irrigation pro reviews your plan and stays available through install</span></div>
       </div>
       <div class="oc-feat">
         <div class="oc-check">✓</div>
-        <div><strong>Manifold assembly guide</strong> <span>— valve wiring, pipe connections, and controller setup</span></div>
+        <div><strong>Installation walkthrough call</strong> <span>— 15–20 minute call before you start digging</span></div>
       </div>
       <div class="oc-feat">
         <div class="oc-check">✓</div>
-        <div><strong>Lifetime access</strong> <span>— edit your design and regenerate your plan anytime</span></div>
+        <div><strong>90-day satisfaction guarantee</strong> <span>— if anything is missing or wrong, we'll ship a replacement free</span></div>
       </div>
     </div>
     <div class="oc-pricing">
-      <div class="oc-row"><span>Irrigation Plan</span><span>$99.00</span></div>
+      <div class="oc-row"><span>Complete Kit</span><span>$949.00</span></div>
       <div class="oc-row"><span>Tax</span><span>$0.00</span></div>
-      <div class="oc-total"><span>Total</span><span>$99</span></div>
+      <div class="oc-total"><span>Total</span><span>$949</span></div>
     </div>
     <div class="oc-footer">
       <div class="oc-badge"><span class="oc-badge-icon">🛡️</span> 30-day money-back guarantee</div>
@@ -268,14 +268,60 @@
 </main>
 
 <script>
+  const fmt = n => '$'+(+n).toFixed(2);
+
+  // ── Load cart ──
+  const cartData = (()=>{
+    try { return JSON.parse(sessionStorage.getItem('drip_cart') || 'null'); }
+    catch(e) { return null; }
+  })();
+  const cartAmt = cartData ? cartData.reduce((s,i) => s + i.unitPrice * i.qty, 0) : null;
+
+  // ── Render order summary from cart ──
+  function renderOrderSummary() {
+    if (!cartData || cartData.length === 0) return;
+
+    document.querySelector('.oc-eyebrow').textContent = 'Your Parts Order';
+    document.querySelector('.oc-title').innerHTML = 'Complete your<br>parts purchase';
+    document.querySelector('.oc-sub').textContent =
+      'From your irrigation plan — ' + cartData.length + ' item' + (cartData.length !== 1 ? 's' : '') + '.';
+
+    // Group by zone
+    const byZone = {};
+    cartData.forEach(item => {
+      if (!byZone[item.zoneId]) byZone[item.zoneId] = { name: item.zoneName, items: [] };
+      byZone[item.zoneId].items.push(item);
+    });
+
+    let html = '';
+    Object.values(byZone).forEach(zone => {
+      html += `<div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+        color:rgba(241,235,226,.4);padding:10px 0 4px;border-top:1px solid rgba(255,255,255,.08);
+        margin-top:4px">${zone.name}</div>`;
+      zone.items.forEach(item => {
+        html += `<div style="display:flex;justify-content:space-between;align-items:baseline;
+          font-size:13px;color:rgba(241,235,226,.8);padding:3px 0;gap:12px">
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${item.name}
+            <span style="opacity:.5">×${item.qty}</span></span>
+          <span style="font-weight:700;flex-shrink:0">${fmt(item.unitPrice * item.qty)}</span>
+        </div>`;
+      });
+    });
+
+    document.querySelector('.oc-features').innerHTML =
+      `<div style="max-height:220px;overflow-y:auto;padding-right:2px">${html}</div>`;
+
+    document.querySelector('.oc-pricing').innerHTML = `
+      <div class="oc-row"><span>Parts subtotal</span><span>${fmt(cartAmt)}</span></div>
+      <div class="oc-row"><span>Shipping</span><span>Calculated at delivery</span></div>
+      <div class="oc-total"><span>Total</span><span>${fmt(cartAmt)}</span></div>`;
+
+    document.querySelector('.btn-label').textContent = 'Complete Purchase — ' + fmt(cartAmt);
+  }
+
   function fmtCard(el) {
     let v = el.value.replace(/\D/g,'').substring(0,16);
     el.value = v.replace(/(.{4})/g,'$1  ').trim();
-    const icon = document.getElementById('card-icon');
-    if (v.startsWith('4')) icon.textContent='💳';
-    else if (v.startsWith('5')) icon.textContent='💳';
-    else if (v.startsWith('3')) icon.textContent='💳';
-    else icon.textContent='💳';
   }
 
   function fmtExpiry(el) {
@@ -291,46 +337,36 @@
     const exp   = document.getElementById('expiry').value.replace(/\s/g,'');
     const cvv   = document.getElementById('cvv').value;
     const name  = document.getElementById('card-name').value.trim();
-
     function setErr(id, show) {
       document.getElementById(id).classList.toggle('show', show);
       document.getElementById(id.replace('err-','')).classList.toggle('err', show);
     }
-
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    setErr('err-email', !emailOk);
-    if (!emailOk) ok = false;
-
+    setErr('err-email', !emailOk); if (!emailOk) ok = false;
     const cardOk = card.length === 16;
-    setErr('err-card', !cardOk);
-    if (!cardOk) ok = false;
-
+    setErr('err-card', !cardOk); if (!cardOk) ok = false;
     const expOk = /^\d{2}\/\d{2}$/.test(exp.replace(' ',''));
-    setErr('err-expiry', !expOk);
-    if (!expOk) ok = false;
-
+    setErr('err-expiry', !expOk); if (!expOk) ok = false;
     const cvvOk = cvv.length >= 3;
-    setErr('err-cvv', !cvvOk);
-    if (!cvvOk) ok = false;
-
+    setErr('err-cvv', !cvvOk); if (!cvvOk) ok = false;
     const nameOk = name.length > 1;
-    setErr('err-name', !nameOk);
-    if (!nameOk) ok = false;
-
+    setErr('err-name', !nameOk); if (!nameOk) ok = false;
     return ok;
   }
 
   function completePayment() {
+    if (!validate()) return;
     const btn = document.getElementById('pay-btn');
     btn.classList.add('loading');
     btn.querySelector('.btn-label').textContent = 'Processing…';
-    setTimeout(() => { window.location.href = 'materials.html?upgraded=plan'; }, 1400);
+    setTimeout(() => {
+      sessionStorage.removeItem('drip_cart');
+      window.location.href = 'materials.html?ordered=1';
+    }, 1400);
   }
 
-  // Enter key submits
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Enter') completePayment();
-  });
+  document.addEventListener('keydown', e => { if (e.key === 'Enter') completePayment(); });
+  renderOrderSummary();
 </script>
 </body>
 </html>

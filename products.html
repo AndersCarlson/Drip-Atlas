@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Products — Drip Atlas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="icon" type="image/png" href="assets/favicon.png"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --forest:#253319;--lime:#c8e670;--cream:#f1ebe2;--white:#fff;
+      --charcoal:#1c1c1a;--gray:#7a7a72;--border:rgba(37,51,25,.12);
+      --green:#2e5c1e;--pill:100px;
+    }
+    html{scroll-behavior:smooth}
+    body{font-family:'Inter',sans-serif;background:var(--cream);color:var(--charcoal);-webkit-font-smoothing:antialiased}
+
+    /* NAV */
+    nav{position:sticky;top:0;z-index:100;background:var(--white);border-bottom:1px solid var(--border);
+      height:64px;display:flex;align-items:center;padding:0 40px;gap:32px}
+    .nav-logo img{height:32px}
+    .nav-links{display:flex;gap:28px;list-style:none;margin-left:32px;align-items:center}
+    .nav-links a{font-size:14px;font-weight:500;color:var(--charcoal);text-decoration:none;transition:color .2s}
+    .nav-links a:hover,.nav-links a.active{color:var(--forest)}
+    .nav-right{margin-left:auto}
+    .btn-quote{border:1.5px solid rgba(37,51,25,.12);background:transparent;color:#7a7a72;font-size:13px;font-weight:500;padding:6px 14px;border-radius:100px;cursor:pointer;text-decoration:none;transition:border-color .2s,color .2s}
+    .btn-quote:hover,.btn-quote.active{border-color:#253319;color:#253319}
+    .btn-cta{background:#253319;color:#c8e670;font-size:13.5px;font-weight:700;padding:8px 20px;border-radius:100px;cursor:pointer;text-decoration:none;transition:opacity .2s;border:none;white-space:nowrap}
+    .btn-cta:hover{opacity:.87}
+
+    /* LAYOUT */
+    .page-wrap{display:flex;min-height:calc(100vh - 64px);max-width:1280px;margin:0 auto;padding:0 24px}
+
+    /* SIDEBAR */
+    .sidebar{width:220px;flex-shrink:0;padding:28px 0 28px 0;position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto}
+    .sidebar-title{font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+      color:var(--gray);margin-bottom:16px}
+    .filter-group{margin-bottom:24px}
+    .filter-group-title{font-size:12px;font-weight:700;color:var(--charcoal);margin-bottom:10px}
+    .filter-item{display:flex;align-items:center;gap:8px;margin-bottom:7px;cursor:pointer}
+    .filter-item input[type=checkbox]{width:15px;height:15px;accent-color:var(--forest);cursor:pointer}
+    .filter-item label{font-size:13px;color:var(--charcoal);cursor:pointer;user-select:none}
+    .clear-filters{font-size:12px;color:var(--gray);text-decoration:underline;cursor:pointer;
+      background:none;border:none;padding:0;font-family:inherit}
+    .clear-filters:hover{color:var(--forest)}
+    .sidebar-divider{height:1px;background:var(--border);margin:16px 0}
+
+    /* MAIN */
+    .main{flex:1;padding:28px 0 48px 32px;min-width:0}
+    .page-header{margin-bottom:24px}
+    .page-header h1{font-family:'Playfair Display',serif;font-size:32px;color:var(--charcoal);margin-bottom:6px}
+    .page-header p{font-size:14px;color:var(--gray);line-height:1.6}
+
+    /* SEARCH */
+    .search-bar{position:relative;margin-bottom:20px}
+    .search-bar input{width:100%;padding:11px 16px 11px 42px;border:1.5px solid var(--border);
+      border-radius:10px;font-size:14px;font-family:inherit;background:var(--white);
+      color:var(--charcoal);outline:none;transition:border-color .2s}
+    .search-bar input:focus{border-color:var(--forest)}
+    .search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--gray);pointer-events:none}
+    .results-count{font-size:12px;color:var(--gray);margin-bottom:16px}
+
+    /* GRID */
+    .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+    .product-card{background:var(--white);border:1px solid var(--border);border-radius:14px;
+      padding:18px;display:flex;flex-direction:column;gap:10px;transition:box-shadow .2s,transform .15s}
+    .product-card:hover{box-shadow:0 4px 24px rgba(37,51,25,.1);transform:translateY(-1px)}
+    .card-icon{width:56px;height:56px;border-radius:12px;background:var(--cream);
+      display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .card-icon svg{width:36px;height:36px}
+    .card-badges{display:flex;gap:5px;flex-wrap:wrap}
+    .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.2px}
+    .badge-brand{color:#fff}
+    .badge-cat{background:rgba(37,51,25,.08);color:var(--forest)}
+    .card-name{font-size:13.5px;font-weight:700;color:var(--charcoal);line-height:1.35;flex:1}
+    .card-sku{font-size:11px;color:var(--gray);font-family:monospace;letter-spacing:.3px}
+    .card-desc{font-size:12px;color:var(--gray);line-height:1.5}
+    .card-price-row{display:flex;align-items:baseline;gap:6px}
+    .card-price{font-family:'Playfair Display',serif;font-size:20px;color:var(--forest);font-weight:700}
+    .card-cost{font-size:11px;color:var(--gray)}
+    .card-btn{width:100%;padding:9px;background:none;border:1.5px solid var(--border);
+      border-radius:8px;font-size:13px;font-weight:600;color:var(--forest);
+      cursor:pointer;font-family:inherit;transition:background .2s,border-color .2s;text-decoration:none;
+      display:block;text-align:center;margin-top:auto}
+    .card-btn:hover{background:var(--forest);color:var(--white);border-color:var(--forest)}
+    .no-results{text-align:center;padding:60px 24px;color:var(--gray)}
+    .no-results-icon{font-size:40px;margin-bottom:12px}
+    .no-results h3{font-size:17px;font-weight:700;color:var(--charcoal);margin-bottom:6px}
+
+    /* FOOTER */
+    footer{background:var(--forest);color:rgba(255,255,255,.7);text-align:center;
+      padding:24px;font-size:13px}
+    footer a{color:rgba(255,255,255,.5);text-decoration:none;margin:0 12px}
+    footer a:hover{color:#fff}
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo"><a href="index.html"><img src="assets/logo-forest-green.png" alt="Drip Atlas"/></a></div>
+        <ul class="nav-links">
+    <li><a href="index.html#wyg">Irrigation Design</a></li>
+    <li><a href="products.html" class="active">Products</a></li>
+    <li><a href="learn.html">Learn</a></li>
+    <li><a href="quote.html" class="btn-quote">Get a Quote</a></li>
+  </ul>
+        <div class="nav-right">
+    <a href="materials.html" class="btn-cta">Start Designing</a>
+  </div>
+</nav>
+
+<div class="page-wrap">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-title">Filter</div>
+
+    <div class="filter-group">
+      <div class="filter-group-title">Brand</div>
+      <label class="filter-item"><input type="checkbox" class="f-brand" value="rainbird" checked/><span>Rain Bird</span></label>
+      <label class="filter-item"><input type="checkbox" class="f-brand" value="hunter" checked/><span>Hunter</span></label>
+      <label class="filter-item"><input type="checkbox" class="f-brand" value="orbit" checked/><span>Orbit</span></label>
+      <label class="filter-item"><input type="checkbox" class="f-brand" value="general" checked/><span>Drip Atlas</span></label>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="filter-group">
+      <div class="filter-group-title">Category</div>
+      <label class="filter-item"><input type="checkbox" class="f-cat" value="rotors" checked/><span>Rotors</span></label>
+      <label class="filter-item"><input type="checkbox" class="f-cat" value="spray" checked/><span>Spray Heads</span></label>
+      <label class="filter-item"><input type="checkbox" class="f-cat" value="fittings" checked/><span>Fittings</span></label>
+      <label class="filter-item"><input type="checkbox" class="f-cat" value="valves" checked/><span>Valves</span></label>
+      <label class="filter-item"><input type="checkbox" class="f-cat" value="drip" checked/><span>Drip</span></label>
+      <label class="filter-item"><input type="checkbox" class="f-cat" value="tools" checked/><span>Tools &amp; Gauges</span></label>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="filter-group">
+      <div class="filter-group-title">Price</div>
+      <label class="filter-item"><input type="checkbox" class="f-price" value="u5" checked/><span>Under $5</span></label>
+      <label class="filter-item"><input type="checkbox" class="f-price" value="5to15" checked/><span>$5 – $15</span></label>
+      <label class="filter-item"><input type="checkbox" class="f-price" value="15to30" checked/><span>$15 – $30</span></label>
+      <label class="filter-item"><input type="checkbox" class="f-price" value="o30" checked/><span>Over $30</span></label>
+    </div>
+
+    <button class="clear-filters" onclick="clearFilters()">Clear all filters</button>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="page-header">
+      <h1>Products</h1>
+      <p>Professional irrigation components from Rain Bird, Hunter, and Orbit — shipped directly from Amazon.</p>
+    </div>
+
+    <div class="search-bar">
+      <span class="search-icon">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 10L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </span>
+      <input type="text" id="search-input" placeholder="Search products, SKUs, categories…" oninput="applyFilters()"/>
+    </div>
+
+    <div class="results-count" id="results-count"></div>
+    <div class="product-grid" id="product-grid"></div>
+  </main>
+</div>
+
+<footer>
+  <p>© 2026 Drip Atlas &nbsp;·&nbsp;
+    <a href="index.html">Home</a>
+    <a href="products.html">Products</a>
+    <a href="learn.html">Learn</a>
+    <a href="materials.html">Design Tool</a>
+  </p>
+</footer>
+
+<script>
+const BRAND_COLORS = {rainbird:'#c8222a', hunter:'#005baa', orbit:'#f06020', general:'#253319'};
+const BRAND_NAMES  = {rainbird:'Rain Bird', hunter:'Hunter', orbit:'Orbit', general:'Drip Atlas'};
+const CAT_LABELS   = {rotors:'Rotor', spray:'Spray Head', fittings:'Fitting', valves:'Valve', drip:'Drip', tools:'Tool'};
+
+function icon(key, color) {
+  const c = color, cl = c + '28', cm = c + '60';
+  const svgs = {
+    rotor:`<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="15" fill="${cl}" stroke="${c}" stroke-width="1.8"/><path d="M20,20 L20,6 A14,14 0 0,1 32.1,27 Z" fill="${cm}"/><circle cx="20" cy="20" r="5" fill="${c}"/><circle cx="20" cy="20" r="2.5" fill="white" opacity=".7"/></svg>`,
+    spray:`<svg viewBox="0 0 40 40"><path d="M20,25 L7,10 Q20,4 33,10 Z" fill="${cl}" stroke="${cm}" stroke-width="1"/><line x1="20" y1="25" x2="10" y2="9" stroke="${c}" stroke-width=".9" opacity=".6"/><line x1="20" y1="25" x2="20" y2="7" stroke="${c}" stroke-width=".9" opacity=".6"/><line x1="20" y1="25" x2="30" y2="9" stroke="${c}" stroke-width=".9" opacity=".6"/><circle cx="20" cy="25" r="5" fill="${c}" stroke="white" stroke-width="1.2"/><circle cx="20" cy="25" r="2" fill="white" opacity=".8"/></svg>`,
+    fp:`<svg viewBox="0 0 40 40"><path d="M8,32 Q8,10 30,10" fill="none" stroke="${c}" stroke-width="7" stroke-linecap="round"/><path d="M8,32 Q8,10 30,10" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity=".25"/></svg>`,
+    tee:`<svg viewBox="0 0 40 40"><line x1="5" y1="20" x2="35" y2="20" stroke="${c}" stroke-width="7" stroke-linecap="round"/><line x1="20" y1="20" x2="20" y2="36" stroke="${c}" stroke-width="7" stroke-linecap="round"/><line x1="5" y1="20" x2="35" y2="20" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity=".2"/></svg>`,
+    adapter:`<svg viewBox="0 0 40 40"><rect x="3" y="13" width="16" height="14" rx="4" fill="${c}"/><rect x="21" y="16" width="16" height="8" rx="3" fill="${c}"/><rect x="3" y="13" width="16" height="14" rx="4" fill="white" opacity=".2"/><circle cx="20" cy="20" r="2.5" fill="${c}" stroke="white" stroke-width="1"/></svg>`,
+    valve:`<svg viewBox="0 0 40 40"><rect x="7" y="20" width="26" height="14" rx="4" fill="${cl}" stroke="${c}" stroke-width="1.8"/><rect x="14" y="10" width="12" height="12" rx="3" fill="${c}"/><rect x="14" y="10" width="12" height="12" rx="3" fill="white" opacity=".2"/><rect x="18" y="7" width="4" height="5" rx="1" fill="${c}"/></svg>`,
+    emitter:`<svg viewBox="0 0 40 40"><rect x="13" y="8" width="14" height="14" rx="3" fill="${c}"/><rect x="13" y="8" width="14" height="14" rx="3" fill="white" opacity=".2"/><path d="M20,22 Q15,28 20,34 Q25,28 20,22Z" fill="${c}"/></svg>`,
+    drip_tube:`<svg viewBox="0 0 40 40"><path d="M5,30 Q5,20 20,20 Q35,20 35,10" fill="none" stroke="${c}" stroke-width="5" stroke-linecap="round"/><circle cx="10" cy="27" r="2.5" fill="${c}" opacity=".7"/><circle cx="21" cy="22" r="2.5" fill="${c}" opacity=".7"/><circle cx="32" cy="14" r="2.5" fill="${c}" opacity=".7"/></svg>`,
+    gauge:`<svg viewBox="0 0 40 40"><circle cx="20" cy="22" r="14" fill="${cl}" stroke="${c}" stroke-width="1.8"/><path d="M10,28 A12,12 0 0,1 30,28" fill="none" stroke="${cm}" stroke-width="2.5" stroke-linecap="round"/><line x1="20" y1="22" x2="26" y2="14" stroke="${c}" stroke-width="2" stroke-linecap="round"/><circle cx="20" cy="22" r="2.5" fill="${c}"/><line x1="12" y1="28" x2="14" y2="26" stroke="${c}" stroke-width="1.3"/><line x1="20" y1="11" x2="20" y2="13" stroke="${c}" stroke-width="1.3"/><line x1="28" y1="28" x2="26" y2="26" stroke="${c}" stroke-width="1.3"/><rect x="16" y="34" width="8" height="4" rx="2" fill="${c}"/></svg>`,
+  };
+  return svgs[key] || svgs.valve;
+}
+
+const PRODUCTS = [
+  // Rain Bird — via Ewing Outdoor Supply
+  {id:'rb-rotor',    brand:'rainbird', cat:'rotors',   name:'Rain Bird 5004 4" Adjustable Rotor',            sku:'35000525',  price:8.49,  icon:'rotor',     desc:'4" pop-up gear-drive rotor. 25–50 ft throw, 40–360° adjustable arc. Non-potable cover included.',  url:'https://www.ewingoutdoorsupply.com/35000525-5004-4-in-pop-up-adjustable-rotor-w-non-potable-cover'},
+  {id:'rb-rotor2',   brand:'rainbird', cat:'rotors',   name:'Rain Bird 5004 Plus Rotor w/ SAM & PRS',         sku:'35001620',  price:11.97, icon:'rotor',     desc:'4" pop-up with flow shut-off, SAM check valve, and pressure-regulating stem. Best-in-class.',       url:'https://www.ewingoutdoorsupply.com/35001620-5004-plus-4-in-pop-up-adjustable-rotor-w-flow-shut-off-sam-prs'},
+  {id:'rb-rotor3',   brand:'rainbird', cat:'rotors',   name:'Rain Bird 5006 Plus 6" Full-Circle Rotor',       sku:'35001140',  price:14.97, icon:'rotor',     desc:'6" pop-up rotor with SAM check valve. Prevents low-head drainage. 25–50 ft throw.',                url:'https://www.ewingoutdoorsupply.com/35001140-5006-plus-6-in-pop-up-full-circle-rotor-w-flow-shut-off-sam'},
+  {id:'rb-emitter',  brand:'rainbird', cat:'drip',     name:'Rain Bird 5 GPH Barbed PC Drip Emitter',         sku:'12005120',  price:9.97,  icon:'emitter',   desc:'Pressure-compensating barbed emitter. Consistent output 15–50 PSI. Direct-insert into ½" tubing.',  url:'https://www.ewingoutdoorsupply.com/12005120-5-gph-barbed-pressure-compensating-drip-emitter'},
+  {id:'rb-xeribird', brand:'rainbird', cat:'drip',     name:'Xeri-Bird 8 Multi-Outlet Drip Device',           sku:'12005110',  price:12.97, icon:'emitter',   desc:'8-outlet emission device with 1 GPH emitters. Single connection for shrub beds.',                  url:'https://www.ewingoutdoorsupply.com/12005110-xeri-bird-8-multi-outlet-drip-emission-device-w-8-1-gph-emitters'},
+  {id:'rb-dripline', brand:'rainbird', cat:'drip',     name:'Rain Bird ½" Subsurface Dripline 500 ft',        sku:'12093050',  price:89.97, icon:'drip_tube', desc:'0.6 GPH emitters at 12" spacing. UV-resistant ½" poly. 500 ft roll for large garden beds.',         url:'https://www.ewingoutdoorsupply.com/12093050-1-2-in-x-500-ft-roll-subsurface-dripline-tubing-with-0-6-gph-emitters-12-in-spacing'},
+  {id:'rb-tbos',     brand:'rainbird', cat:'valves',   name:'Rain Bird TBOS DC Latching Solenoid w/ Adapter',  sku:'35009420',  price:24.97, icon:'valve',     desc:'DC latching solenoid for battery-operated controllers. Includes 1" NPT adapter.',                  url:'https://www.ewingoutdoorsupply.com/35009420-tbos-dc-latching-solenoid-with-adapter'},
+
+  // Hunter — via Ewing Outdoor Supply
+  {id:'hu-spray4',   brand:'hunter',   cat:'spray',    name:'Hunter Pro-Spray PRS30 4" Pop-Up',               sku:'44011540',  price:5.47,  icon:'spray',     desc:'4" pop-up spray body with built-in check valve and PRS30 pressure regulation.',                    url:'https://www.ewingoutdoorsupply.com/44011540-pro-spray-prs30-4-in-pop-up-w-check-valve'},
+  {id:'hu-spray6',   brand:'hunter',   cat:'spray',    name:'Hunter Pro-Spray PRS30 6" Pop-Up',               sku:'44011560',  price:6.97,  icon:'spray',     desc:'6" pop-up with check valve and PRS30 regulation. Ideal for sloped areas.',                         url:'https://www.ewingoutdoorsupply.com/44011560-pro-spray-prs30-6-in-pop-up-w-check-valve'},
+  {id:'hu-spray4b',  brand:'hunter',   cat:'spray',    name:'Hunter Pro-Spray PRS40 4" Pop-Up',               sku:'44012040',  price:6.47,  icon:'spray',     desc:'4" pop-up with PRS40 pressure regulation (40 PSI). Built-in check valve.',                         url:'https://www.ewingoutdoorsupply.com/44012040-pro-spray-prs40-4-in-pop-up-w-check-valve'},
+  {id:'hu-spray6b',  brand:'hunter',   cat:'spray',    name:'Hunter Pro-Spray PRS40 6" Pop-Up',               sku:'44012060',  price:7.97,  icon:'spray',     desc:'6" pop-up with PRS40 pressure regulation. Anti-drain check valve included.',                       url:'https://www.ewingoutdoorsupply.com/44012060-pro-spray-prs40-6-in-pop-up-w-check-valve'},
+  {id:'hu-valve34',  brand:'hunter',   cat:'valves',   name:'Hunter PGV ¾" Anti-Siphon Valve',               sku:'44008620',  price:16.97, icon:'valve',     desc:'¾" threaded anti-siphon valve. 20–150 PSI, 24 VAC solenoid. Industry-standard reliability.',      url:'https://www.ewingoutdoorsupply.com/44008620-pgv-3-4-in-anti-siphon-valve-threaded'},
+  {id:'hu-valve1',   brand:'hunter',   cat:'valves',   name:'Hunter PGV 1" Anti-Siphon Valve',               sku:'44008630',  price:21.97, icon:'valve',     desc:'1" threaded anti-siphon valve. 20–150 PSI, 24 VAC solenoid.',                                     url:'https://www.ewingoutdoorsupply.com/44008630-pgv-1-in-anti-siphon-valve-threaded'},
+  {id:'hu-pgv2',     brand:'hunter',   cat:'valves',   name:'Hunter PGV 2" Angle Valve',                     sku:'44008860',  price:47.97, icon:'valve',     desc:'2" angle valve for high-flow zone applications. 24 VAC solenoid, manual flow control.',           url:'https://www.ewingoutdoorsupply.com/44008860-pgv-2-in-angle-valve'},
+  {id:'hu-gauge',    brand:'hunter',   cat:'tools',    name:'Hunter MPGauge Pressure Gauge w/ Adapter',       sku:'44005995',  price:14.97, icon:'gauge',     desc:'Inline pressure gauge with ½" MPT adapter. Reads live zone pressure at the head.',               url:'https://www.ewingoutdoorsupply.com/44005995-mpgauge-hunter-pressure-gauge-w-adapter'},
+
+  // Fittings & Tools — via Ewing Outdoor Supply
+  {id:'pvc-tee1',    brand:'general',  cat:'fittings', name:'1" Sch. 40 PVC Single Manifold Tee',            sku:'03051001',  price:3.97,  icon:'tee',       desc:'Schedule 40 PVC tee for single valve manifold assembly. Solvent-weld socket connections.',        url:'https://www.ewingoutdoorsupply.com/03051001-1-in-pvc-single-manifold-tee'},
+  {id:'pvc-tee2',    brand:'general',  cat:'fittings', name:'1" Sch. 40 PVC Double Manifold Tee',            sku:'03051002',  price:5.47,  icon:'tee',       desc:'Schedule 40 PVC double tee for dual-valve manifold assembly.',                                    url:'https://www.ewingoutdoorsupply.com/03051002-1-in-pvc-double-manifold-tee'},
+  {id:'pvc-swivel',  brand:'general',  cat:'fittings', name:'1" Sch. 40 PVC Swivel Adapter',                 sku:'03051032',  price:4.47,  icon:'adapter',   desc:'Swivel adapter for connecting PVC mainline to valve inlets without torque stress.',               url:'https://www.ewingoutdoorsupply.com/03051032-1-in-pvc-swivel-adapter'},
+  {id:'funny-tee',   brand:'general',  cat:'fittings', name:'1" × 1" × ⅜" Funny Pipe Tee',                  sku:'71401129',  price:4.97,  icon:'tee',       desc:'Barbed funny pipe tee for branching lateral lines. Fits standard ¾"–1" poly tubing.',             url:'https://www.ewingoutdoorsupply.com/71401129-1-in-x-1-in-x-3-8-in-funny-pipe-tee'},
+  {id:'emitter-tube',brand:'general',  cat:'drip',     name:'¼" Emitter Tubing 100 ft (12" Spacing)',        sku:'12070210',  price:18.97, icon:'drip_tube', desc:'¼" pre-installed emitter tubing. 100 ft roll, emitters at 12" spacing. For garden beds.',         url:'https://www.ewingoutdoorsupply.com/12070210-1-4-inch-emitter-tubing-100-foot-roll-x-12-inch-spacing'},
+  {id:'irrometer',   brand:'general',  cat:'tools',    name:'Irrometer 30 PSI Pressure Gauge',               sku:'26011030',  price:18.97, icon:'gauge',     desc:'30 PSI dial gauge for low-pressure drip systems. ¾" garden hose thread connection.',             url:'https://www.ewingoutdoorsupply.com/26011030-30-psi-irrometer-pressure-gauge'},
+];
+
+function priceRange(price) {
+  if (price < 5)  return 'u5';
+  if (price < 15) return '5to15';
+  if (price < 30) return '15to30';
+  return 'o30';
+}
+
+function applyFilters() {
+  const q = document.getElementById('search-input').value.trim().toLowerCase();
+  const brands  = [...document.querySelectorAll('.f-brand:checked')].map(el => el.value);
+  const cats    = [...document.querySelectorAll('.f-cat:checked')].map(el => el.value);
+  const prices  = [...document.querySelectorAll('.f-price:checked')].map(el => el.value);
+
+  const filtered = PRODUCTS.filter(p => {
+    if (!brands.includes(p.brand)) return false;
+    if (!cats.includes(p.cat)) return false;
+    if (!prices.includes(priceRange(p.price))) return false;
+    if (q && !`${p.name} ${p.sku} ${p.desc}`.toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  document.getElementById('results-count').textContent = `Showing ${filtered.length} product${filtered.length !== 1 ? 's' : ''}`;
+  const grid = document.getElementById('product-grid');
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div class="no-results" style="grid-column:1/-1">
+      <div class="no-results-icon">🔍</div>
+      <h3>No products found</h3>
+      <p>Try adjusting your filters or search term.</p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(p => {
+    const color = BRAND_COLORS[p.brand];
+    return `<div class="product-card">
+      <div class="card-icon">${icon(p.icon, color)}</div>
+      <div class="card-badges">
+        <span class="badge badge-brand" style="background:${color}">${BRAND_NAMES[p.brand]}</span>
+        <span class="badge badge-cat">${CAT_LABELS[p.cat] || p.cat}</span>
+      </div>
+      <div class="card-name">${p.name}</div>
+      <div class="card-sku">${p.sku}</div>
+      <div class="card-desc">${p.desc}</div>
+      <div class="card-price-row">
+        <span class="card-price">$${p.price.toFixed(2)}</span>
+      </div>
+      <a class="card-btn" href="${p.url}" target="_blank" rel="noopener">Buy at Ewing →</a>
+    </div>`;
+  }).join('');
+}
+
+function clearFilters() {
+  document.querySelectorAll('.f-brand,.f-cat,.f-price').forEach(cb => cb.checked = true);
+  document.getElementById('search-input').value = '';
+  applyFilters();
+}
+
+document.querySelectorAll('.f-brand,.f-cat,.f-price').forEach(cb => cb.addEventListener('change', applyFilters));
+applyFilters();
+</script>
+</body>
+</html>

@@ -90,6 +90,7 @@
     .plant-assigned-sci{font-size:10px;font-style:italic;color:var(--gray);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .plant-assigned-clear{background:none;border:none;cursor:pointer;color:var(--gray);font-size:15px;padding:0 2px;line-height:1;flex-shrink:0}
     .plant-assigned-clear:hover{color:#c0392b}
+    .tool-hint{font-size:10px;color:var(--gray);text-align:center;letter-spacing:.02em;padding:1px 0 2px}
     /* watering card */
     .watering-card{background:var(--cream);border-radius:8px;padding:9px 11px;display:flex;flex-direction:column;gap:6px}
     .watering-row{display:flex;align-items:center;gap:8px}
@@ -253,6 +254,62 @@
       font-family:'Inter',sans-serif!important;pointer-events:none!important;
     }
     .lf-zone-lbl::before{display:none!important}
+
+    /* ── VIEW TOGGLE (satellite ↔ plan grid) ── */
+    .view-toggle{
+      position:absolute;top:12px;left:50%;transform:translateX(-50%);
+      z-index:1000;display:flex;
+      background:rgba(255,255,255,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+      border:1px solid rgba(0,0,0,.12);border-radius:10px;padding:3px;
+      box-shadow:0 2px 14px rgba(0,0,0,.16);pointer-events:all;
+    }
+    .view-toggle button{
+      font-family:'Inter',sans-serif;font-size:12px;font-weight:600;
+      border:none;background:transparent;padding:6px 15px;border-radius:7px;
+      cursor:pointer;color:#888;transition:all .16s ease;
+      white-space:nowrap;display:flex;align-items:center;gap:5px;
+    }
+    .view-toggle button.active{
+      background:#fff;box-shadow:0 1px 5px rgba(0,0,0,.18);color:#1a1a1a;
+    }
+    /* map container background in plan mode */
+    #map.grid-view{ background:#f7f9fc; }
+    #map.grid-view .leaflet-container{ background:#f7f9fc !important; }
+
+    /* vertex reshape handles */
+    .vertex-handle{
+      width:10px!important;height:10px!important;
+      background:#fff;border:1.5px solid #253319;border-radius:50%;
+      cursor:grab;box-shadow:0 1px 4px rgba(0,0,0,.28);
+    }
+    .vertex-handle:active{ cursor:grabbing; }
+    .ghost-handle{
+      width:10px!important;height:10px!important;
+      background:rgba(255,255,255,0.55);border:1.5px dashed #253319;border-radius:50%;
+      cursor:copy;box-shadow:0 1px 4px rgba(0,0,0,.18);
+    }
+    .arc-handle {
+      width:12px!important; height:12px!important;
+      border-radius:50%; cursor:grab;
+      box-shadow:0 1px 4px rgba(0,0,0,.28);
+    }
+    .arc-rotate-handle { background:#fff; border:2px solid #2980e8; }
+    .arc-width-handle  { background:#fff; border:2px dashed #2980e8; }
+    .arc-handle:active { cursor:grabbing; }
+    .head-row { display:flex; align-items:center; gap:8px; padding:6px 4px; font-size:12px;
+      border-bottom:1px solid var(--border); cursor:pointer; border-radius:4px; }
+    .head-row:last-child { border-bottom:none; }
+    .head-row:hover { background:rgba(37,51,25,.04); }
+    .head-row.sel { background:rgba(37,51,25,.08); }
+    .head-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; border:2px solid #fff;
+      box-shadow:0 0 0 1.5px rgba(0,0,0,.2); }
+    /* Leaflet.draw polygon-drawing vertex markers → match circle handle style */
+    .leaflet-editing-icon{
+      width:10px!important;height:10px!important;
+      margin-left:-5px!important;margin-top:-5px!important;
+      background:#fff!important;border:1.5px solid #253319!important;
+      border-radius:50%!important;box-shadow:0 1px 4px rgba(0,0,0,.28)!important;
+    }
 
     /* hint toast */
     #hint{
@@ -466,13 +523,14 @@
         <div id="ls-panel-surfaces">
           <!-- Zone type buttons -->
           <div class="ls-type-grid">
-            <button class="ls-type-btn active" data-zone="lawn"     onclick="setActiveZoneType('lawn')"><img src="assets/icons/lawn.svg" width="20" height="20" alt="Lawn">Lawn</button>
-            <button class="ls-type-btn"        data-zone="garden"   onclick="setActiveZoneType('garden')"><img src="assets/icons/garden.svg" width="20" height="20" alt="Garden Bed">Garden Bed</button>
-            <button class="ls-type-btn"        data-zone="pool"     onclick="setActiveZoneType('pool')"><img src="assets/icons/pool.svg" width="20" height="20" alt="Pool/Pond">Pool/Pond</button>
-            <button class="ls-type-btn"        data-zone="driveway" onclick="setActiveZoneType('driveway')"><img src="assets/icons/driveway.svg" width="20" height="20" alt="Driveway">Driveway</button>
-            <button class="ls-type-btn"        data-zone="path"     onclick="setActiveZoneType('path')"><img src="assets/icons/walkway.svg" width="20" height="20" alt="Walkway">Walkway</button>
-            <button class="ls-type-btn"        data-zone="nowater"  onclick="setActiveZoneType('nowater')"><img src="assets/icons/nowater.svg" width="20" height="20" alt="No-Water">No-Water</button>
+            <button class="ls-type-btn" data-zone="lawn"     onclick="setActiveZoneType('lawn')"><img src="assets/icons/lawn.svg" width="20" height="20" alt="Lawn">Lawn</button>
+            <button class="ls-type-btn" data-zone="garden"   onclick="setActiveZoneType('garden')"><img src="assets/icons/garden.svg" width="20" height="20" alt="Garden Bed">Garden Bed</button>
+            <button class="ls-type-btn" data-zone="pool"     onclick="setActiveZoneType('pool')"><img src="assets/icons/pool.svg" width="20" height="20" alt="Pool/Pond">Pool/Pond</button>
+            <button class="ls-type-btn" data-zone="driveway" onclick="setActiveZoneType('driveway')"><img src="assets/icons/driveway.svg" width="20" height="20" alt="Driveway">Driveway</button>
+            <button class="ls-type-btn" data-zone="path"     onclick="setActiveZoneType('path')"><img src="assets/icons/walkway.svg" width="20" height="20" alt="Walkway">Walkway</button>
+            <button class="ls-type-btn" data-zone="nowater"  onclick="setActiveZoneType('nowater')"><img src="assets/icons/nowater.svg" width="20" height="20" alt="House">House</button>
           </div>
+          <div class="tool-hint" id="zone-hint" style="display:none">Click map to draw</div>
 
           <!-- Zone count -->
           <div style="font-size:11px;color:var(--gray)">Zones: <strong id="tp-zone-count" style="color:var(--forest)">0</strong></div>
@@ -502,15 +560,12 @@
         <!-- Plants panel -->
         <div id="ls-panel-plants" style="display:none">
           <!-- Type picker -->
-          <div class="plant-type-grid" style="margin-bottom:8px">
-            <button class="ptype-btn active" id="ptype-tree"  onclick="setPlantType('tree')"><img src="assets/icons/tree.png" class="ptype-icon" width="22" height="22" alt="Tree">Tree</button>
-            <button class="ptype-btn"        id="ptype-shrub" onclick="setPlantType('shrub')"><img src="assets/icons/shrubs.png" class="ptype-icon" width="22" height="22" alt="Shrub">Shrub</button>
-            <button class="ptype-btn"        id="ptype-grass" onclick="setPlantType('grass')"><img src="assets/icons/grasses.svg" class="ptype-icon" width="22" height="22" alt="Grasses">Grasses</button>
+          <div class="plant-type-grid">
+            <button class="ptype-btn" id="ptype-tree"  onclick="setPlantType('tree')"><img src="assets/icons/tree.png" class="ptype-icon" width="22" height="22" alt="Tree">Tree</button>
+            <button class="ptype-btn" id="ptype-shrub" onclick="setPlantType('shrub')"><img src="assets/icons/shrubs.png" class="ptype-icon" width="22" height="22" alt="Shrub">Shrub</button>
+            <button class="ptype-btn" id="ptype-grass" onclick="setPlantType('grass')"><img src="assets/icons/grasses.svg" class="ptype-icon" width="22" height="22" alt="Grasses">Grasses</button>
           </div>
-          <button class="draw-btn full" id="tool-plant" data-tool="plant" onclick="setTool('plant')">
-            <svg viewBox="0 0 16 16" fill="none" width="13" height="13"><circle cx="8" cy="6" r="4" fill="currentColor" fill-opacity=".2" stroke="currentColor" stroke-width="1.3"/><line x1="8" y1="10" x2="8" y2="15" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><line x1="5.5" y1="13" x2="8" y2="11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-            Click Map to Place
-          </button>
+          <div class="tool-hint" id="plant-hint" style="display:none">Click map to place</div>
 
           <!-- Plant count -->
           <div style="font-size:11px;color:var(--gray)">Plants: <strong id="tp-plant-count" style="color:var(--forest)">0</strong></div>
@@ -570,10 +625,48 @@
           <div class="step-head-sub">Generate your irrigation layout and head placement.</div>
         </div>
         <span class="tp-badge" id="tp-head-count" style="display:none;align-self:flex-start"></span>
+        <div id="head-tool-wrap" style="display:none">
+          <div class="plant-type-grid" style="grid-template-columns:1fr">
+            <button class="ptype-btn" id="btn-place-head" onclick="toggleHeadTool()">
+              <svg class="ptype-icon" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="7" cy="17" r="2.5" fill="currentColor"/>
+                <line x1="7" y1="14.5" x2="7" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M7 8 Q7 4 11 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+                <circle cx="13" cy="6" r="1.4" fill="currentColor" opacity="0.75"/>
+                <circle cx="17" cy="4" r="1.2" fill="currentColor" opacity="0.5"/>
+                <circle cx="16" cy="9" r="1.1" fill="currentColor" opacity="0.6"/>
+                <circle cx="19" cy="7" r="1" fill="currentColor" opacity="0.4"/>
+              </svg>
+              Sprinkler
+            </button>
+          </div>
+          <div class="tool-hint" id="head-tool-hint" style="display:none">Click map to place</div>
+        </div>
         <div id="water-plan-empty" style="font-size:12px;color:var(--gray);line-height:1.65">
           Draw your zones first, then generate the water plan to see sprinkler head placement and pipe routing.
         </div>
         <div id="water-plan-list"></div>
+        <!-- Selected head props -->
+        <div class="tp-props" id="head-props" style="display:none">
+          <div class="tp-props-lbl">Selected Head</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <span style="font-size:12px;font-weight:600;color:var(--charcoal)" id="hp-type">Rotor</span>
+            <span style="font-size:11px;color:var(--gray)" id="hp-zone">Lawn</span>
+          </div>
+          <div class="stat-box" style="margin-bottom:6px">
+            <div class="stat-val" id="hp-gpm">1.5</div>
+            <div class="stat-unit">GPM</div>
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:8px;font-size:11px;color:var(--gray)">
+            <span>Radius: <strong id="hp-radius" style="color:var(--charcoal)">15 ft</strong></span>
+            <span>Arc: <strong id="hp-arc" style="color:var(--charcoal)">180°</strong></span>
+          </div>
+          <div class="draw-btns">
+            <button class="draw-btn danger full" onclick="deleteSelectedHead()">
+              <svg viewBox="0 0 16 16" fill="none" width="13" height="13"><path d="M2 4h12M6 4V2h4v2M5 4l.4 9h5.2L11 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Delete Head
+            </button>
+          </div>
+        </div>
         <div id="water-plan-summary" style="display:none;font-size:11px;color:var(--gray);
           background:var(--cream);border-radius:7px;padding:8px 10px;line-height:1.7"></div>
         <button id="btn-clear-layer" onclick="clearIrrigationLayer()"
@@ -610,6 +703,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
 <script src="map-config.js"></script>
 <script src="irrigation-rules.js"></script>
+<script src="ai-config.js"></script>
 <script>
 // ─────────────────────────────────────────
 // CONSTANTS
@@ -620,18 +714,162 @@ const ZONES = {
   pool:     { label:'Pool / Pond',     color:'#29b6f6', fill:'#0288d1', icon:'<img src="assets/icons/pool.svg"    width="16" height="16" style="vertical-align:middle">' },
   driveway: { label:'Driveway',       color:'#9eaab8', fill:'#708090', icon:'<img src="assets/icons/driveway.svg" width="16" height="16" style="vertical-align:middle">' },
   path:     { label:'Walkway',        color:'#d4aa6a', fill:'#b08040', icon:'<img src="assets/icons/walkway.svg"  width="16" height="16" style="vertical-align:middle">' },
-  nowater:  { label:'No-Water Zone',  color:'#e05555', fill:'#cc3030', icon:'<img src="assets/icons/nowater.svg"  width="16" height="16" style="vertical-align:middle">' },
+  nowater:  { label:'House',           color:'#1c1c1a', fill:'none',    icon:'<img src="assets/icons/nowater.svg"  width="16" height="16" style="vertical-align:middle">' },
 };
+
+// ─────────────────────────────────────────
+// YARD GRID LAYER
+// Fixed world-space grid: each cell = 1 yard (0.9144 m).
+// Grid spacing in pixels grows/shrinks with zoom, but 1 cell always = 1 yard
+// on the ground. Canvas is a direct child of the map container (not a pane)
+// so it is unaffected by Leaflet's pan transforms; all positions are computed
+// via latLngToContainerPoint on every frame.
+// ─────────────────────────────────────────
+const YardGrid = L.Layer.extend({
+  onAdd(map) {
+    this._map = map;
+    const c = document.createElement('canvas');
+    c.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;z-index:350;';
+    map.getContainer().appendChild(c);
+    this._canvas = c;
+    map.on('move zoom viewreset resize zoomend moveend', this._draw, this);
+    this._draw();
+  },
+  onRemove(map) {
+    this._canvas.remove();
+    map.off('move zoom viewreset resize zoomend moveend', this._draw, this);
+  },
+  _draw() {
+    const map  = this._map;
+    const size = map.getSize();
+    const c    = this._canvas;
+    c.width = size.x; c.height = size.y;
+    const ctx = c.getContext('2d');
+    ctx.clearRect(0, 0, size.x, size.y);
+
+    const YARD_M = 0.9144;
+    const lat0   = map.getCenter().lat;
+    // Degrees per yard — latitude is constant; longitude scales with cos(lat)
+    const yLat   = YARD_M / 111320;
+    const yLng   = YARD_M / (111320 * Math.cos(lat0 * Math.PI / 180));
+
+    const b      = map.getBounds();
+    const iLatMn = Math.floor(b.getSouth() / yLat) - 1;
+    const iLatMx = Math.ceil(b.getNorth()  / yLat) + 1;
+    const iLngMn = Math.floor(b.getWest()  / yLng) - 1;
+    const iLngMx = Math.ceil(b.getEast()   / yLng) + 1;
+
+    // Skip if zoomed too far out (would draw thousands of lines)
+    if ((iLatMx - iLatMn) > 1500) return;
+
+    const MAJOR = 5; // one dark line every 5 yards (≈ 15 ft)
+
+    // Convert index → canvas pixel. y uses lat only; x uses lng only.
+    const toY = i => map.latLngToContainerPoint([i * yLat, lat0]).y;
+    const toX = j => map.latLngToContainerPoint([lat0, j * yLng]).x;
+
+    // Single pass — all lines identical
+    ctx.strokeStyle = 'rgba(150,185,215,0.55)';
+    ctx.lineWidth   = 0.5;
+    ctx.beginPath();
+    for (let i = iLatMn; i <= iLatMx; i++) {
+      const y = toY(i); ctx.moveTo(0, y); ctx.lineTo(size.x, y);
+    }
+    for (let j = iLngMn; j <= iLngMx; j++) {
+      const x = toX(j); ctx.moveTo(x, 0); ctx.lineTo(x, size.y);
+    }
+    ctx.stroke();
+
+    // Scale label — bottom-right of canvas
+    ctx.font = 'bold 10px Inter, sans-serif';
+    ctx.fillStyle = 'rgba(120,160,195,0.80)';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText('grid: 1 yd per cell', size.x - 10, size.y - 8);
+  }
+});
+
+// ─────────────────────────────────────────
+// VIEW TOGGLE  (satellite ↔ plan grid)
+// ─────────────────────────────────────────
+let _mapLayers = null;   // set in boot after initMapLayers()
+let _gridLayer = null;
+let _currentView = 'satellite';
+
+function initViewToggle() {
+  _gridLayer = new YardGrid();
+
+  const ctrl = document.createElement('div');
+  ctrl.className = 'view-toggle';
+  ctrl.innerHTML = `
+    <button id="vt-sat" class="active" onclick="setMapView('satellite')">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M20.2 20.2c2-2.04-.03-7.37-4.52-11.9C11.16 3.74 5.83 1.72 3.8 3.76c-2.04 2.04-.02 7.37 4.5 11.9s9.9 6.56 11.9 4.54z"/>
+      </svg>
+      Map View
+    </button>
+    <button id="vt-plan" onclick="setMapView('plan')">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+      </svg>
+      Grid View
+    </button>`;
+  map.getContainer().appendChild(ctrl);
+  L.DomEvent.disableClickPropagation(ctrl);
+}
+
+function setMapView(mode) {
+  _currentView = mode;
+  document.getElementById('vt-sat').classList.toggle('active', mode === 'satellite');
+  document.getElementById('vt-plan').classList.toggle('active', mode === 'plan');
+
+  if (mode === 'satellite') {
+    map.getContainer().classList.remove('grid-view');
+    if (_mapLayers?.imageryLayer)   _mapLayers.imageryLayer.addTo(map);
+    if (_mapLayers?.referenceLayer) _mapLayers.referenceLayer.addTo(map);
+    if (_mapLayers?.parcelLayer)    _mapLayers.parcelLayer.addTo(map);
+    if (_gridLayer) map.removeLayer(_gridLayer);
+  } else {
+    map.getContainer().classList.add('grid-view');
+    if (_mapLayers?.imageryLayer)   map.removeLayer(_mapLayers.imageryLayer);
+    if (_mapLayers?.referenceLayer) map.removeLayer(_mapLayers.referenceLayer);
+    if (_mapLayers?.parcelLayer)    map.removeLayer(_mapLayers.parcelLayer);
+    _gridLayer.addTo(map);
+    // drawnItems and lot outline always stay on top — no adjustment needed
+  }
+}
 
 // ─────────────────────────────────────────
 // STATE
 // ─────────────────────────────────────────
 let map, drawnItems, drawHandler;
-let shapes    = new Map(); // L.stamp(layer) → { layer, type, name }
-let selectedId = null;
+let shapes      = new Map(); // L.stamp(layer) → { layer, type, name }
+let selectedId  = null;
 let currentTool = 'select';
-let dragState  = null;
-let _coords    = null;
+let dragState   = null;
+let _shapeWasClicked = false;
+let _coords     = null;
+
+// Head state
+const heads = new Map();   // headId → headData
+let selectedHeadId = null;
+let _headDragState = null;
+let headIdSeq = 0;
+let _arcHandles    = [];
+let _arcHoverTmo   = null;
+let _arcHandleDrag = false;
+
+// Vertex reshape handles
+const HANDLE_ICON = L.divIcon({ className:'vertex-handle', iconSize:[10,10], iconAnchor:[5,5] });
+const GHOST_ICON  = L.divIcon({ className:'ghost-handle',  iconSize:[10,10], iconAnchor:[5,5] });
+let _handleMarkers  = [];
+let _handleLayerId  = null;
+let _ghostMarker    = null;
+let _ghostEdgeIdx   = null;
+let _edgeHoverId    = null;
+let _vertexDragging = false;
 
 // Water source placement state
 let wsMarker  = null;
@@ -639,7 +877,7 @@ let wsType    = 'hose';
 
 // Flow step state
 let currentStep   = 'ws';
-let activeZoneType = 'lawn';
+let activeZoneType = null;
 
 // ─────────────────────────────────────────
 // EMBEDDED MODE (shown inside materials.html iframe)
@@ -656,7 +894,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   let lng = parseFloat(p.get('lng'));
   let addr = p.get('address') ? decodeURIComponent(p.get('address')) : null;
   if (!lat || !lng) {
-    const saved = JSON.parse(sessionStorage.getItem('drip_design') || '{}');
+    const saved = JSON.parse(localStorage.getItem('drip_design') || '{}');
     lat  = saved.lat  || 42.3601;
     lng  = saved.lng  || -71.0589;
     addr = addr || saved.address || 'Your Property';
@@ -668,7 +906,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   // Init map
   map = L.map('map', { zoomControl:false, attributionControl:false, zoomSnap:0.5 });
-  initMapLayers(map);
+  _mapLayers = initMapLayers(map);
 
   drawnItems = new L.FeatureGroup().addTo(map);
   map.setView([lat, lng], 20);
@@ -679,13 +917,14 @@ window.addEventListener('DOMContentLoaded', async () => {
     plants.forEach((s, id) => refreshPlantIcon(id));
   });
   map.on(L.Draw.Event.CREATED, onShapeCreated);
-  map.on('click', () => { if (currentTool === 'select') deselect(); });
+  map.on('click', () => { if (_shapeWasClicked) { _shapeWasClicked = false; return; } if (currentTool === 'select') { deselect(); deselectHead(); } });
 
+  initViewToggle();
 
   document.getElementById('loader').style.display = 'none';
 
   // Restore saved state
-  const savedDesign = JSON.parse(sessionStorage.getItem('drip_design') || '{}');
+  const savedDesign = JSON.parse(localStorage.getItem('drip_design') || '{}');
   if (savedDesign.water?.srcType) setWsType(savedDesign.water.srcType);
   if (savedDesign.water?.srcLat && savedDesign.water?.srcLng) {
     dropWsMarker(L.latLng(savedDesign.water.srcLat, savedDesign.water.srcLng));
@@ -706,12 +945,320 @@ window.addEventListener('DOMContentLoaded', async () => {
     { icon:'🚫', text:`Don't mix rotor + spray — precip rates differ (<strong>${R.heads.rotor.precipIn_hr}"</strong> vs <strong>${R.heads.spray.precipIn_hr}"</strong>/hr)` },
   ].map(r => `<div class="hd-rule"><span class="hd-rule-icon">${r.icon}</span><span>${r.text}</span></div>`).join('');
 
-  hint('Click to add zone corners, double-click to finish the shape', 4000);
+  autoDrawSurfaces(lat, lng);
 });
 
 // ─────────────────────────────────────────
-// LOAD PROPERTY (OSM)
+// AUTO SURFACE DETECTION
 // ─────────────────────────────────────────
+//
+// Flow:
+//   1. Draw generic placeholder zones immediately (map is never blank).
+//   2. In parallel, fetch the Regrid parcel polygon (via ArcGIS FeatureServer)
+//      and any detailed OSM features (buildings, driveways, etc.).
+//   3. When the parcel polygon arrives:
+//        • Render the lot boundary as a non-interactive yellow dashed outline.
+//        • Remove the generic placeholders.
+//        • Redraw zones scaled and centred to fit inside the actual lot.
+//        • Replace/supplement with any OSM features found within the lot.
+
+function autoDrawSurfaces(lat, lng) {
+  hint('Fetching your property lot…', 4000);
+  _refineWithLot(lat, lng);
+}
+
+// ── Parcel polygon fetch (Regrid via ArcGIS FeatureServer) ──────────────────
+
+async function _fetchLotPolygon(lat, lng) {
+  const base   = 'https://services.arcgis.com/KzeiCaQsMoeCfoCq/arcgis/rest/services' +
+                 '/Regrid_Nationwide_Parcel_Boundaries_v1/FeatureServer/0/query';
+  const params = new URLSearchParams({
+    geometry:     JSON.stringify({ x: lng, y: lat, spatialReference: { wkid: 4326 } }),
+    geometryType: 'esriGeometryPoint',
+    spatialRel:   'esriSpatialRelIntersects',
+    outFields:    'ogc_fid,parcelnumb,address,ll_address',
+    returnGeometry: 'true',
+    outSR:        '4326',
+    f:            'json',
+    token:        ARCGIS_API_KEY,
+  });
+
+  const res  = await fetch(`${base}?${params}`);
+  const data = await res.json();
+  const feat = (data.features || [])[0];
+  if (!feat?.geometry?.rings?.length) return null;
+
+  // Esri uses [x=lng, y=lat] order — swap to Leaflet's [lat, lng].
+  // rings[0] is the outer ring; rings[1+] are holes (ignored here).
+  return feat.geometry.rings[0].map(([x, y]) => [y, x]);
+}
+
+// ── Building footprint — ArcGIS Living Atlas → OSM fallback ─────────────────
+// Tries the ArcGIS USA Structures service (high-res imagery trace) first.
+// Falls back to OSM, selecting the building whose polygon CONTAINS the
+// geocoded point, then the closest centroid within 30 m.
+
+async function _fetchBuildingFootprint(lat, lng) {
+  // 1. ArcGIS Living Atlas — USA Structures (HIFLD / high-accuracy)
+  try {
+    const base   = 'https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services' +
+                   '/USA_structures/FeatureServer/0/query';
+    const params = new URLSearchParams({
+      geometry:       JSON.stringify({ x: lng, y: lat, spatialReference: { wkid: 4326 } }),
+      geometryType:   'esriGeometryPoint',
+      spatialRel:     'esriSpatialRelIntersects',
+      outFields:      'BUILD_ID',
+      returnGeometry: 'true',
+      outSR:          '4326',
+      f:              'json',
+      token:          ARCGIS_API_KEY,
+    });
+    const res  = await fetch(`${base}?${params}`);
+    const data = await res.json();
+    const feat = (data.features || [])[0];
+    if (feat?.geometry?.rings?.length) {
+      // Esri [lng, lat] → Leaflet [lat, lng]
+      const ring = feat.geometry.rings[0].map(([x, y]) => ({ lat: y, lon: x }));
+      return { geometry: ring, tags: { building: 'yes' }, zoneType: 'nowater', source: 'arcgis' };
+    }
+  } catch (_) {}
+
+  // 2. OSM fallback — find building containing the point, else nearest within 30 m
+  try {
+    const query = `[out:json][timeout:10];
+way[building](around:60,${lat},${lng});
+out geom;`;
+    const res  = await fetch('https://overpass-api.de/api/interpreter', {
+      method: 'POST', body: 'data=' + encodeURIComponent(query),
+    });
+    const data = await res.json();
+    const ways = (data.elements || []).filter(e => e.type === 'way' && e.geometry?.length >= 3);
+    if (!ways.length) return null;
+
+    // Prefer any building whose polygon contains the geocoded point.
+    const containing = ways.find(w =>
+      _pointInPoly(lat, lng, w.geometry.map(n => [n.lat, n.lon]))
+    );
+    if (containing) return { ...containing, zoneType: 'nowater' };
+
+    // Otherwise take the nearest centroid, but only within 30 m (~0.00027 deg).
+    const nearest = ways.reduce((best, w) => {
+      const n    = w.geometry.length;
+      const cLat = w.geometry.reduce((s, p) => s + p.lat, 0) / n;
+      const cLng = w.geometry.reduce((s, p) => s + p.lon, 0) / n;
+      const d    = (cLat - lat) ** 2 + (cLng - lng) ** 2;
+      return d < best.d ? { w, d } : best;
+    }, { w: null, d: 0.00027 ** 2 });   // beyond 30 m → reject
+
+    return nearest.w ? { ...nearest.w, zoneType: 'nowater' } : null;
+  } catch (_) { return null; }
+}
+
+// ── OSM detailed features (gardens, driveways, pools — no buildings) ─────────
+
+async function _fetchOSMFeatures(lat, lng) {
+  const osmTagToZone = t => {
+    if (t.leisure === 'swimming_pool')                                 return 'pool';
+    if (t.landuse === 'garden' || t.leisure === 'garden')             return 'garden';
+    if (t.landuse === 'grass'  || t.landuse === 'meadow' ||
+        t.natural === 'grass'  || t.leisure === 'park')               return 'lawn';
+    if (t.service === 'driveway' || t.highway === 'service')          return 'driveway';
+    if (t.highway === 'footway'  || t.footway || t.highway === 'path') return 'path';
+    return null;
+  };
+  const query = `[out:json][timeout:10];
+(
+  way[landuse~"grass|garden|meadow"](around:90,${lat},${lng});
+  way[leisure~"garden|swimming_pool|park"](around:90,${lat},${lng});
+  way[natural=grass](around:90,${lat},${lng});
+  way[service=driveway](around:70,${lat},${lng});
+  way[highway=footway](around:60,${lat},${lng});
+);
+out geom;`;
+  const res  = await fetch('https://overpass-api.de/api/interpreter', {
+    method: 'POST', body: 'data=' + encodeURIComponent(query),
+  });
+  const data = await res.json();
+  return (data.elements || [])
+    .filter(e => e.type === 'way' && e.geometry?.length >= 3)
+    .map(e => ({ ...e, zoneType: osmTagToZone(e.tags || {}) }))
+    .filter(e => e.zoneType);
+}
+
+// ── Lot boundary rendering ───────────────────────────────────────────────────
+
+let _lotBoundaryLayer = null;
+
+function _drawLotBoundary(lotPoly) {
+  if (_lotBoundaryLayer) map.removeLayer(_lotBoundaryLayer);
+  _lotBoundaryLayer = L.polygon(lotPoly, {
+    color:       '#f5c842',
+    weight:      2.5,
+    opacity:     1,
+    fillOpacity: 0.04,
+    fillColor:   '#f5c842',
+    interactive: false,
+    dashArray:   '7 5',
+  }).addTo(map);
+}
+
+// ── Lot geometry helpers ─────────────────────────────────────────────────────
+
+function _lotBounds(lotPoly) {
+  const lats = lotPoly.map(p => p[0]);
+  const lngs = lotPoly.map(p => p[1]);
+  const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+  const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
+  return { minLat, maxLat, minLng, maxLng,
+           cLat: (minLat + maxLat) / 2, cLng: (minLng + maxLng) / 2 };
+}
+
+// Ray-casting point-in-polygon. poly is [[lat, lng], …].
+function _pointInPoly(lat, lng, poly) {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const xi = poly[i][1], yi = poly[i][0];
+    const xj = poly[j][1], yj = poly[j][0];
+    if ((yi > lat) !== (yj > lat) &&
+        lng < (xj - xi) * (lat - yi) / (yj - yi) + xi) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
+// Returns true if the centroid of an OSM way's geometry falls inside lotPoly.
+function _wayInsideLot(geometry, lotPoly) {
+  const n    = geometry.length;
+  const cLat = geometry.reduce((s, p) => s + p.lat, 0) / n;
+  const cLng = geometry.reduce((s, p) => s + p.lon, 0) / n;
+  return _pointInPoly(cLat, cLng, lotPoly);
+}
+
+// ── Zone drawing — generic proportional layout ───────────────────────────────
+// Draws four zones (house / front lawn / back garden / driveway) scaled to fit
+// inside `lotPoly` when provided, or using fixed-ft defaults otherwise.
+// Returns the Leaflet stamp IDs of every shape created.
+
+function _drawGenericZones(lat, lng, lotPoly) {
+  const dLat = degPerFtLat();
+  const dLng = degPerFtLng(lat);
+  const ids  = [];
+
+  let cLat = lat, cLng = lng, sN = 1, sE = 1;
+
+  if (lotPoly) {
+    const b = _lotBounds(lotPoly);
+    cLat = b.cLat;
+    cLng = b.cLng;
+    // Lot dimensions in feet (baseline assumption: 80ft wide × 90ft deep)
+    const lotH = (b.maxLat - b.minLat) / dLat;
+    const lotW = (b.maxLng - b.minLng) / dLng;
+    sN = Math.min(Math.max((lotH - 10) / 90, 0.35), 3);
+    sE = Math.min(Math.max((lotW - 10) / 80, 0.35), 3);
+  }
+
+  // House footprint only — centred in the lot
+  ids.push(addSurfaceShape([
+    [cLat + 15*sN*dLat, cLng - 20*sE*dLng],
+    [cLat + 15*sN*dLat, cLng + 20*sE*dLng],
+    [cLat - 15*sN*dLat, cLng + 20*sE*dLng],
+    [cLat - 15*sN*dLat, cLng - 20*sE*dLng],
+  ], 'nowater', {}));
+
+  return ids;
+}
+
+// ── Main refinement routine ──────────────────────────────────────────────────
+
+async function _refineWithLot(lat, lng) {
+  const [lotResult, bldgResult, osmResult] = await Promise.allSettled([
+    _fetchLotPolygon(lat, lng),
+    _fetchBuildingFootprint(lat, lng),
+    _fetchOSMFeatures(lat, lng),
+  ]);
+
+  const lotPoly = lotResult.status  === 'fulfilled' ? lotResult.value  : null;
+  const bldg    = bldgResult.status === 'fulfilled' ? bldgResult.value : null;
+  const osmWays = osmResult.status  === 'fulfilled' ? osmResult.value  : [];
+
+  if (lotPoly) _drawLotBoundary(lotPoly);
+
+  let drawn = 0;
+
+  // Building footprint → No-Water Zone (the only shape auto-created on load).
+  if (bldg) {
+    const insideLot = !lotPoly || _wayInsideLot(bldg.geometry, lotPoly);
+    if (insideLot) {
+      addSurfaceShape(bldg.geometry.map(n => [n.lat, n.lon]), 'nowater', bldg.tags);
+      drawn++;
+    }
+  }
+
+  if (drawn === 0) {
+    // No building footprint found — place a generic house outline only.
+    _drawGenericZones(lat, lng, null);
+    hint('Property not found — a placeholder house outline was added. Draw your zones as needed.', 6000);
+  } else if (lotPoly) {
+    hint('Lot boundary mapped — draw your irrigation zones within the lot', 6000);
+  } else {
+    hint('Building outline added — draw your irrigation zones around it', 6000);
+  }
+
+  updateList();
+  updateSaveBtn();
+
+  // When embedded in materials.html, auto-generate the water plan so the
+  // parts list is populated immediately without requiring manual "Next" clicks.
+  // Only fire when there are irrigatable shapes (lawn/garden) — not just nowater.
+  if (_embedded && irrigatableDrawn > 0) {
+    setTimeout(() => generateWaterPlan(), 200);
+  }
+}
+
+// Returns the Leaflet stamp ID of the created shape.
+function addSurfaceShape(latlngs, zoneType, tags) {
+  const z     = ZONES[zoneType];
+  const label = (tags?.name) || z.label;
+  const isHouse = zoneType === 'nowater';
+  const layer = L.polygon(latlngs, {
+    color:       z.color,
+    fillColor:   isHouse ? '#000' : z.fill,
+    fillOpacity: isHouse ? 0.10 : 0.28,
+    weight:      isHouse ? 1.25 : 1,
+    dashArray:   isHouse ? '6 4' : null,
+  });
+  drawnItems.addLayer(layer);
+
+  const id   = L.stamp(layer);
+  const area = calcArea(layer.getLatLngs()[0]);
+  shapes.set(id, { layer, type: zoneType, name: label, area });
+
+  layer.bindTooltip(label, {
+    permanent: true, direction: 'center', className: 'lf-zone-lbl',
+  });
+  layer.on('mouseover', () => {
+    const el = layer.getElement(); if (el) el.style.cursor = 'grab';
+    if (!dragState && drawHandler) try { drawHandler.disable(); } catch(_){}
+  });
+  layer.on('mouseout', () => {
+    const el = layer.getElement(); if (el) el.style.cursor = dragState ? 'grabbing' : '';
+    if (!dragState && drawHandler) try { drawHandler.enable(); } catch(_){}
+  });
+  layer.on('click',     ev => { _shapeWasClicked = true; ev.originalEvent.stopPropagation(); ev.originalEvent.stopImmediatePropagation(); if (currentTool !== 'select') setTool('select'); selectShape(id); });
+  layer.on('mousedown', ev => { ev.originalEvent.stopPropagation(); if (currentTool !== 'select') setTool('select'); startDrag(ev, id); });
+  layer.on('edit', () => {
+    const s = shapes.get(id); if (!s) return;
+    s.area = calcArea(layer.getLatLngs()[0]);
+    const tt = layer.getTooltip();
+    if (tt) tt.setLatLng(layer.getCenter());
+    updateList();
+  });
+
+  updateList();
+  updateSaveBtn();
+  return id;
+}
 
 // ─────────────────────────────────────────
 // LOT MODAL
@@ -725,14 +1272,22 @@ function setTool(tool) {
   if (drawHandler) { try { drawHandler.disable(); } catch(e){} drawHandler = null; }
   // Remove plant-click listener if leaving plant mode
   if (currentTool === 'plant') map.off('click', onPlantClick);
-
-  // Disable vertex editing if leaving edit mode
-  if (currentTool === 'edit' && selectedId !== null) {
-    const e = shapes.get(selectedId);
-    if (e?.layer?.editing) try { e.layer.editing.disable(); } catch(_){}
-  }
+  if (currentTool === 'head')  map.off('click', onHeadPlaceClick);
 
   currentTool = tool;
+
+  // When entering select mode, clear zone type selection
+  if (tool === 'select') {
+    activeZoneType = null;
+    document.querySelectorAll('.ls-type-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('zone-hint').style.display = 'none';
+  }
+
+  // Head placement button active state
+  const btnHead = document.getElementById('btn-place-head');
+  const headHint = document.getElementById('head-tool-hint');
+  if (btnHead)   btnHead.classList.toggle('active', tool === 'head');
+  if (headHint)  headHint.style.display = tool === 'head' ? '' : 'none';
 
   // Toolbar active state
   document.querySelectorAll('[data-tool]').forEach(b =>
@@ -741,7 +1296,7 @@ function setTool(tool) {
 
   // Map cursor
   const mw = document.getElementById('map-wrap');
-  const cursorMode = (tool === 'polygon' || tool === 'rect' || tool === 'plant') ? tool : 'select';
+  const cursorMode = (tool === 'polygon' || tool === 'rect' || tool === 'plant') ? tool : tool === 'head' ? 'plant' : 'select';
   mw.className = 'map-wrap mode-' + cursorMode;
 
   // Re-wire zone interactions
@@ -755,14 +1310,21 @@ function setTool(tool) {
       const el = layer.getElement(); if (el) el.style.cursor = dragState ? 'grabbing' : '';
       if (!dragState && drawHandler) try { drawHandler.enable(); } catch(_){}
     });
-    layer.on('click', e => { e.originalEvent.stopPropagation(); e.originalEvent.stopImmediatePropagation(); selectShape(id); });
-    layer.on('mousedown', e => { e.originalEvent.stopPropagation(); startDrag(e, id); });
+    layer.on('click', e => {
+      _shapeWasClicked = true;
+      e.originalEvent.stopPropagation();
+      e.originalEvent.stopImmediatePropagation();
+      if (currentTool === 'head') { onHeadPlaceClick(e); return; }
+      if (currentTool !== 'select') setTool('select');
+      selectShape(id);
+    });
+    layer.on('mousedown', e => { e.originalEvent.stopPropagation(); if (currentTool !== 'select' && currentTool !== 'head') setTool('select'); if (currentTool !== 'head') startDrag(e, id); });
   });
 
   // Draw zone handlers
-  if (tool === 'polygon' || tool === 'rect') {
+  if ((tool === 'polygon' || tool === 'rect') && activeZoneType) {
     const z = ZONES[activeZoneType];
-    const opts = { shapeOptions:{ color:z.color, fillColor:z.fill, fillOpacity:0.28, weight:2 } };
+    const opts = { shapeOptions:{ color:z.color, fillColor:z.fill, fillOpacity:0.28, weight:1 } };
     drawHandler = tool === 'polygon'
       ? new L.Draw.Polygon(map, { ...opts, allowIntersection:false })
       : new L.Draw.Rectangle(map, opts);
@@ -775,15 +1337,16 @@ function setTool(tool) {
     hint('Click the map to place a plant · L to toggle tool', 3000);
   }
 
-  if (tool === 'edit' && selectedId !== null) {
-    const e = shapes.get(selectedId);
-    if (e?.layer?.editing) try { e.layer.editing.enable(); } catch(_){}
+  // Head placement
+  if (tool === 'head') {
+    map.on('click', onHeadPlaceClick);
   }
+
 }
 
 function onPlantClick(e) {
-  // Don't fire if clicking on an existing layer
   if (e.originalEvent._stopped) return;
+  if (!activePlantType) return;
   placePlant(e.latlng);
 }
 
@@ -795,7 +1358,14 @@ function onShapeCreated(e) {
   const type  = activeZoneType;
   const z     = ZONES[type];
 
-  layer.setStyle({ color:z.color, fillColor:z.fill, fillOpacity:0.28, weight:2 });
+  const _isHouse = type === 'nowater';
+  layer.setStyle({
+    color:       z.color,
+    fillColor:   _isHouse ? '#000' : z.fill,
+    fillOpacity: _isHouse ? 0.10 : 0.28,
+    weight:      _isHouse ? 1.25 : 1,
+    dashArray:   _isHouse ? '6 4' : null,
+  });
   drawnItems.addLayer(layer);
 
   const id   = L.stamp(layer);
@@ -804,7 +1374,7 @@ function onShapeCreated(e) {
 
   shapes.set(id, { layer, type, name, area });
 
-  layer.bindTooltip(`${z.icon} ${name}`, {
+  layer.bindTooltip(name, {
     permanent:true, direction:'center', className:'lf-zone-lbl'
   });
 
@@ -816,15 +1386,137 @@ function onShapeCreated(e) {
     const el = layer.getElement(); if (el) el.style.cursor = dragState ? 'grabbing' : '';
     if (!dragState && drawHandler) try { drawHandler.enable(); } catch(_){}
   });
-  layer.on('click',     ev => { ev.originalEvent.stopPropagation(); ev.originalEvent.stopImmediatePropagation(); selectShape(id); });
-  layer.on('mousedown', ev => { ev.originalEvent.stopPropagation(); startDrag(ev, id); });
+  layer.on('click',     ev => { _shapeWasClicked = true; ev.originalEvent.stopPropagation(); ev.originalEvent.stopImmediatePropagation(); if (currentTool !== 'select') setTool('select'); selectShape(id); });
+  layer.on('mousedown', ev => { ev.originalEvent.stopPropagation(); if (currentTool !== 'select') setTool('select'); startDrag(ev, id); });
+  layer.on('edit', () => {
+    const s = shapes.get(id); if (!s) return;
+    s.area = calcArea(layer.getLatLngs()[0]);
+    const tt = layer.getTooltip();
+    if (tt) tt.setLatLng(layer.getCenter());
+    updateList();
+  });
 
   updateList();
   selectShape(id);
   updateSaveBtn();
+  setTool('select');
+}
 
-  // Re-arm tool so user can draw another zone immediately
-  setTimeout(() => { if (currentTool === 'polygon' || currentTool === 'rect') setTool(currentTool); }, 40);
+// ─────────────────────────────────────────
+// VERTEX HANDLES + EDGE MIDPOINT INSERTION
+// ─────────────────────────────────────────
+
+function _ptSegDist(p, a, b) {
+  const dx = b.x - a.x, dy = b.y - a.y;
+  if (!dx && !dy) return Math.hypot(p.x - a.x, p.y - a.y);
+  const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / (dx * dx + dy * dy)));
+  return Math.hypot(p.x - a.x - t * dx, p.y - a.y - t * dy);
+}
+
+function _clearGhost() {
+  if (_ghostMarker) { try { map.removeLayer(_ghostMarker); } catch(_){} _ghostMarker = null; }
+  _ghostEdgeIdx = null;
+}
+
+function _showGhost(id, edgeIdx, midLl) {
+  if (_ghostEdgeIdx === edgeIdx) return;
+  _clearGhost();
+  _ghostEdgeIdx = edgeIdx;
+  _ghostMarker = L.marker(midLl, { icon: GHOST_ICON, zIndexOffset: 400, interactive: true }).addTo(map);
+  _ghostMarker.on('click', e => {
+    _shapeWasClicked = true;
+    L.DomEvent.stop(e);
+    _insertMidVertex(id, edgeIdx, midLl);
+  });
+}
+
+function _insertMidVertex(id, edgeIdx, midLl) {
+  const s = shapes.get(id);
+  if (!s) return;
+  const ring = s.layer.getLatLngs()[0].slice();
+  ring.splice(edgeIdx + 1, 0, midLl);
+  s.layer.setLatLngs([ring]);
+  const tt = s.layer.getTooltip();
+  if (tt) tt.setLatLng(s.layer.getCenter());
+  s.area = calcArea(ring);
+  updateList();
+  _showHandles(id);
+}
+
+function _onEdgeHover(e) {
+  if (dragState || _vertexDragging || !_edgeHoverId || selectedId !== _edgeHoverId) {
+    _clearGhost(); return;
+  }
+  const s = shapes.get(_edgeHoverId);
+  if (!s) return;
+  const ring   = s.layer.getLatLngs()[0];
+  const n      = ring.length;
+  const cursor = map.latLngToContainerPoint(e.latlng);
+
+  // Don't show ghost when cursor is near an existing vertex
+  const nearVertex = ring.some(ll => Math.hypot(
+    cursor.x - map.latLngToContainerPoint(ll).x,
+    cursor.y - map.latLngToContainerPoint(ll).y
+  ) < 12);
+  if (nearVertex) { _clearGhost(); return; }
+
+  let bestDist = Infinity, bestIdx = -1, bestMid = null;
+  for (let i = 0; i < n; i++) {
+    const a = map.latLngToContainerPoint(ring[i]);
+    const b = map.latLngToContainerPoint(ring[(i + 1) % n]);
+    const d = _ptSegDist(cursor, a, b);
+    if (d < bestDist) {
+      bestDist = d;
+      bestIdx  = i;
+      bestMid  = L.latLng(
+        (ring[i].lat + ring[(i + 1) % n].lat) / 2,
+        (ring[i].lng + ring[(i + 1) % n].lng) / 2
+      );
+    }
+  }
+
+  if (bestDist < 10) _showGhost(_edgeHoverId, bestIdx, bestMid);
+  else _clearGhost();
+}
+
+function _showHandles(id) {
+  _clearHandles();
+  const s = shapes.get(id);
+  if (!s) return;
+  _handleLayerId = id;
+  _edgeHoverId   = id;
+  map.on('mousemove', _onEdgeHover);
+
+  const ring = s.layer.getLatLngs()[0];
+  ring.forEach((ll, i) => {
+    const m = L.marker(ll, { icon: HANDLE_ICON, draggable: true, zIndexOffset: 500 });
+    m.addTo(map);
+    m.on('mousedown', e => L.DomEvent.stopPropagation(e));
+    m.on('dragstart', () => { _vertexDragging = true; _clearGhost(); });
+    m.on('drag', () => {
+      const r = s.layer.getLatLngs()[0];
+      r[i] = m.getLatLng();
+      s.layer.setLatLngs([r]);
+      const tt = s.layer.getTooltip();
+      if (tt) tt.setLatLng(s.layer.getCenter());
+    });
+    m.on('dragend', () => {
+      _vertexDragging = false;
+      s.area = calcArea(s.layer.getLatLngs()[0]);
+      updateList();
+    });
+    _handleMarkers.push(m);
+  });
+}
+
+function _clearHandles() {
+  map.off('mousemove', _onEdgeHover);
+  _edgeHoverId    = null;
+  _vertexDragging = false;
+  _clearGhost();
+  _handleMarkers.forEach(m => { try { map.removeLayer(m); } catch(_){} });
+  _handleMarkers  = [];
+  _handleLayerId  = null;
 }
 
 // ─────────────────────────────────────────
@@ -836,29 +1528,23 @@ function selectShape(id) {
   const s = shapes.get(id);
   if (!s) return;
 
-  s.layer.setStyle({ weight:3, opacity:1 });
+  s.layer.setStyle({ weight:1.5, opacity:1 });
   document.getElementById('zone-props').style.display = '';
   document.getElementById('prop-name').value  = s.name;
   document.getElementById('prop-area').textContent = Math.round(s.area).toLocaleString();
-  document.querySelectorAll('.ls-type-btn').forEach(b =>
-    b.classList.toggle('active', b.dataset.zone === s.type)
-  );
 
   document.querySelectorAll('.shape-row').forEach(r =>
     r.classList.toggle('sel', r.dataset.id == id)
   );
-
-  if (s.layer.editing) try { s.layer.editing.enable(); } catch(_){}
+  _showHandles(id);
 }
 
 function deselect(reset = true) {
   if (selectedId !== null) {
     const s = shapes.get(selectedId);
-    if (s) {
-      s.layer.setStyle({ weight:2, opacity:.9 });
-      if (s.layer.editing) try { s.layer.editing.disable(); } catch(_){}
-    }
+    if (s) s.layer.setStyle({ weight:1, opacity:.9 });
   }
+  _clearHandles();
   if (reset) {
     selectedId = null;
     document.getElementById('zone-props').style.display = 'none';
@@ -873,6 +1559,7 @@ function startDrag(e, id) {
   L.DomEvent.stopPropagation(e);
   const s = shapes.get(id);
   if (!s) return;
+  _clearHandles();
   map.dragging.disable();
   const el = s.layer.getElement();
   if (el) el.style.cursor = 'grabbing';
@@ -891,11 +1578,14 @@ function onDragMove(e) {
   const dLat = e.latlng.lat - start.lat;
   const dLng = e.latlng.lng - start.lng;
   s.layer.setLatLngs(orig.map(o => [o.lat + dLat, o.lng + dLng]));
+  const tt = s.layer.getTooltip();
+  if (tt) tt.setLatLng(s.layer.getCenter());
 }
 
 function onDragEnd() {
   if (!dragState) return;
-  const s = shapes.get(dragState.id);
+  const { id } = dragState;
+  const s = shapes.get(id);
   if (s) {
     s.area = calcArea(s.layer.getLatLngs()[0]);
     updateList();
@@ -903,13 +1593,18 @@ function onDragEnd() {
     if (el) el.style.cursor = 'grab';
   }
   map.getContainer().style.cursor = '';
+  const movedId = dragState.id;
   dragState = null;
   map.dragging.enable();
   map.off('mousemove', onDragMove);
   map.off('mouseup',   onDragEnd);
   document.removeEventListener('mouseup', onDragEnd);
-  // Re-enable polygon drawing now that drag is finished
   if (drawHandler) try { drawHandler.enable(); } catch(_){}
+  // Always select the interacted shape and show handles — covers both the
+  // "already selected + dragged" case and the "click on unselected" case
+  // where the subsequent click event may not fire reliably.
+  if (movedId === selectedId) _showHandles(movedId);
+  else selectShape(movedId);
 }
 
 // ─────────────────────────────────────────
@@ -920,9 +1615,16 @@ function updateType(type) {
   const s = shapes.get(selectedId); if (!s) return;
   s.type = type;
   const z = ZONES[type];
-  s.layer.setStyle({ color:z.color, fillColor:z.fill, fillOpacity:0.28 });
+  const _h = type === 'nowater';
+  s.layer.setStyle({
+    color:       z.color,
+    fillColor:   _h ? '#000' : z.fill,
+    fillOpacity: _h ? 0.10 : 0.28,
+    weight:      _h ? 1.25 : 1,
+    dashArray:   _h ? '6 4' : null,
+  });
   if (!document.getElementById('prop-name').value) s.name = z.label;
-  s.layer.setTooltipContent(`${z.icon} ${s.name}`);
+  s.layer.setTooltipContent(s.name);
   updateList();
 }
 
@@ -930,7 +1632,7 @@ function updateName(val) {
   if (selectedId === null) return;
   const s = shapes.get(selectedId); if (!s) return;
   s.name = val || ZONES[s.type].label;
-  s.layer.setTooltipContent(`${ZONES[s.type].icon} ${s.name}`);
+  s.layer.setTooltipContent(s.name);
   updateList();
 }
 
@@ -1004,10 +1706,10 @@ function updateSaveBtn() {
 
 function saveDesign() {
   const p = new URLSearchParams(location.search);
-  const existing = JSON.parse(sessionStorage.getItem('drip_design') || '{}');
+  const existing = JSON.parse(localStorage.getItem('drip_design') || '{}');
   const data = {
     ...existing,
-    address: JSON.parse(sessionStorage.getItem('drip_design')||'{}').address || '',
+    address: JSON.parse(localStorage.getItem('drip_design')||'{}').address || '',
     lat: parseFloat(p.get('lat')) || _coords?.lat,
     lng: parseFloat(p.get('lng')) || _coords?.lng,
     zones: [],
@@ -1022,7 +1724,7 @@ function saveDesign() {
   plants.forEach(s => {
     data.plants.push({ type: s.type, name: s.name, radiusFt: s.radiusFt, lat: s.lat, lng: s.lng });
   });
-  sessionStorage.setItem('drip_design', JSON.stringify(data));
+  localStorage.setItem('drip_design', JSON.stringify(data));
   if (_embedded) {
     window.parent.postMessage({ type: 'goToPartslist' }, '*');
   } else {
@@ -1074,13 +1776,13 @@ function updateWsStatus() {
 }
 
 function saveWsToSession(latlng) {
-  const design = JSON.parse(sessionStorage.getItem('drip_design') || '{}');
+  const design = JSON.parse(localStorage.getItem('drip_design') || '{}');
   if (!design.water) design.water = {};
   design.water.srcType = wsType;
   const gpmEl = document.getElementById('ws-gpm');
   if (gpmEl && gpmEl.value) design.water.gpm = parseFloat(gpmEl.value);
   if (latlng) { design.water.srcLat = latlng.lat; design.water.srcLng = latlng.lng; }
-  sessionStorage.setItem('drip_design', JSON.stringify(design));
+  localStorage.setItem('drip_design', JSON.stringify(design));
 }
 
 let _wsGhost = null;
@@ -1195,7 +1897,7 @@ function showStep(name) {
     startWsGhost();
   } else {
     stopWsGhost();
-    if (name === 'landscape') setTool('polygon');
+    if (name === 'landscape') setTool('select');
   }
 
   // Update CTA button
@@ -1214,12 +1916,19 @@ function showStep(name) {
 }
 
 function setActiveZoneType(type) {
+  // Toggle off if already armed with this type
+  if (activeZoneType === type && currentTool === 'polygon') {
+    activeZoneType = null;
+    document.querySelectorAll('.ls-type-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('zone-hint').style.display = 'none';
+    setTool('select');
+    return;
+  }
   activeZoneType = type;
   document.querySelectorAll('.ls-type-btn').forEach(b =>
     b.classList.toggle('active', b.dataset.zone === type)
   );
-  if (selectedId !== null) updateType(type);
-  // Only arm zone drawing when not in plant placement mode
+  document.getElementById('zone-hint').style.display = '';
   if (currentTool !== 'plant') setTool('polygon');
 }
 
@@ -1232,6 +1941,21 @@ function switchLsMode(mode) {
   document.getElementById('ls-tab-plants').classList.toggle('active', mode === 'plants');
   document.getElementById('ls-panel-surfaces').style.display = mode === 'surfaces' ? '' : 'none';
   document.getElementById('ls-panel-plants').style.display   = mode === 'plants'   ? '' : 'none';
+  // Stop whichever tool was active in the outgoing tab
+  if (mode === 'plants' && (currentTool === 'polygon' || currentTool === 'rect')) {
+    activeZoneType = null;
+    document.querySelectorAll('.ls-type-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('zone-hint').style.display = 'none';
+    setTool('select');
+  }
+  if (mode === 'surfaces' && currentTool === 'plant') {
+    activePlantType = null;
+    ['tree','shrub','grass'].forEach(t =>
+      document.getElementById('ptype-' + t).classList.remove('active')
+    );
+    document.getElementById('plant-hint').style.display = 'none';
+    setTool('select');
+  }
   if (mode === 'plants') loadPlantsIndex();
 }
 
@@ -1529,60 +2253,829 @@ function arcSectorLatLngs(centerLat, centerLng, radiusFt, startDeg, endDeg) {
   return pts;
 }
 
-/** Place heads in a triangular-offset grid inside a zone polygon */
+/**
+ * Place heads using the 4-step professional irrigation design methodology.
+ * Returns { pos:[lat,lng], arcDeg, dirDeg } — arc type and direction are encoded
+ * at placement time so downstream rendering never has to re-classify by position.
+ *
+ *   1. Corner heads  — always; arc = actual interior angle, dir = inward bisector
+ *   2. Perimeter heads — only when edge > spacingFt; arc = 180, dir = inward normal
+ *   3. Interior grid  — only when perimeter misses the center; arc = 360
+ *   4. Curved areas  — handled upstream: polygon vertices already approximate curves
+ */
 function placeHeadsInZone(latlngs, spacingFt) {
-  const b      = polyBounds(latlngs);
+  const midLat = latlngs.reduce((s, p) => s + p[0], 0) / latlngs.length;
   const dLat   = degPerFtLat();
-  const dLng   = degPerFtLng((b.minLat + b.maxLat) / 2);
-  const rowH   = spacingFt * dLat * Math.sin(Math.PI / 3);   // ~0.866 × spacing
-  const colW   = spacingFt * dLng;
-  const heads  = [];
-  let row = 0;
-  for (let la = b.minLat + rowH / 2; la <= b.maxLat; la += rowH, row++) {
-    const offset = (row % 2) * colW / 2;
-    for (let lo = b.minLng + offset + colW / 2; lo <= b.maxLng; lo += colW) {
-      if (ptInPolygon([la, lo], latlngs)) heads.push([la, lo]);
+  const dLng   = degPerFtLng(midLat);
+  const cen    = polyCentroid(latlngs);
+  const n      = latlngs.length;
+  const skipR  = spacingFt * 0.65;
+
+  function toFt([la, lo])          { return [(lo - cen[1]) / dLng, (la - cen[0]) / dLat]; }
+  function fromFt([x, y])          { return [cen[0] + y * dLat, cen[1] + x * dLng]; }
+  function distFt([x1,y1],[x2,y2]) { return Math.hypot(x1-x2, y1-y2); }
+  // Convention: 0 deg = north, 90 deg = east  =>  atan2(eastFt, northFt)
+  function toDirDeg(ex, ey)        { return Math.atan2(ex, ey) * 180 / Math.PI; }
+
+  const ptsFt    = latlngs.map(toFt);
+  const allHeads = [];  // { pos:[x,y], arcDeg, dirDeg }
+
+  function isInside(ft) { return ptInPolygon(fromFt(ft), latlngs); }
+  function canPlace(ft, minDist) {
+    return isInside(ft) && !allHeads.some(h => distFt(h.pos, ft) < minDist);
+  }
+
+  // Principal axis via PCA — used for interior grid alignment
+  function principalAxisAngle() {
+    const mx = ptsFt.reduce((s,p) => s + p[0], 0) / n;
+    const my = ptsFt.reduce((s,p) => s + p[1], 0) / n;
+    let sxx = 0, syy = 0, sxy = 0;
+    for (const [x, y] of ptsFt) { sxx += (x-mx)**2; syy += (y-my)**2; sxy += (x-mx)*(y-my); }
+    return 0.5 * Math.atan2(2 * sxy, sxx - syy);
+  }
+  const axisAngle = principalAxisAngle();
+  const cosA = Math.cos(axisAngle), sinA = Math.sin(axisAngle);
+  function rotFt([x, y])   { return [ x*cosA + y*sinA, -x*sinA + y*cosA]; }
+  function unrotFt([u, v]) { return [ u*cosA - v*sinA,  u*sinA + v*cosA]; }
+
+  // Step 1: CORNER HEADS
+  // One head per vertex, 1 ft inside along the interior angle bisector.
+  // Arc = actual interior polygon angle. Direction = inward bisector.
+  for (let i = 0; i < n; i++) {
+    const [vx, vy] = ptsFt[i];
+    const [px, py] = ptsFt[(i - 1 + n) % n];
+    const [qx, qy] = ptsFt[(i + 1)     % n];
+    const al = Math.hypot(px - vx, py - vy);
+    const bl = Math.hypot(qx - vx, qy - vy);
+    if (al < 0.1 || bl < 0.1) continue;
+
+    // Unit vectors along each edge from this vertex
+    const ax = (px - vx) / al, ay = (py - vy) / al;
+    const bx = (qx - vx) / bl, by = (qy - vy) / bl;
+
+    // Interior angle at this vertex
+    const dot    = Math.max(-1, Math.min(1, ax * bx + ay * by));
+    const arcDeg = Math.acos(dot) * 180 / Math.PI;
+
+    // Inward bisector: sum of the two edge unit vectors, flipped toward centroid
+    let sx = ax + bx, sy = ay + by;
+    const sl = Math.hypot(sx, sy);
+    if (sl < 0.01) continue;
+    sx /= sl; sy /= sl;
+    if (sx * (-vx) + sy * (-vy) < 0) { sx = -sx; sy = -sy; }
+
+    const pos = [vx + sx, vy + sy];
+    if (canPlace(pos, 2.0)) allHeads.push({ pos, arcDeg, dirDeg: toDirDeg(sx, sy) });
+  }
+
+  // Step 2: PERIMETER HEADS
+  // Only needed when edge > spacingFt. Math.ceil guarantees every consecutive
+  // pair of perimeter heads stays within one throw radius of each other.
+  const edgeInset = spacingFt * 0.4;
+  for (let i = 0; i < n; i++) {
+    const [x1, y1] = ptsFt[i];
+    const [x2, y2] = ptsFt[(i + 1) % n];
+    const ex = x2 - x1, ey = y2 - y1;
+    const eLen = Math.hypot(ex, ey);
+    if (eLen <= spacingFt) continue;
+    const nx = -ey / eLen, ny = ex / eLen;
+    const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+    const sign  = (nx * (-mx) + ny * (-my)) >= 0 ? 1 : -1;
+    const inNx  = sign * nx, inNy = sign * ny;
+    const steps = Math.ceil(eLen / spacingFt);
+    for (let k = 1; k < steps; k++) {
+      const t   = k / steps;
+      const pos = [x1 + ex * t + inNx * edgeInset, y1 + ey * t + inNy * edgeInset];
+      if (canPlace(pos, skipR)) allHeads.push({ pos, arcDeg: 180, dirDeg: toDirDeg(inNx, inNy) });
     }
   }
-  return heads;
+
+  // Step 3: INTERIOR GRID HEADS
+  // Grid aligned with principal axis, anchored to first placed head so lines
+  // project from the perimeter heads. Only fired when there are coverage gaps.
+  const ptsRot = ptsFt.map(rotFt);
+  const minU = Math.min(...ptsRot.map(p => p[0]));
+  const maxU = Math.max(...ptsRot.map(p => p[0]));
+  const minV = Math.min(...ptsRot.map(p => p[1]));
+  const maxV = Math.max(...ptsRot.map(p => p[1]));
+
+  const sampleStep = Math.max(2, spacingFt / 3);
+  let hasGap = false;
+  gapCheck: for (let v = minV + sampleStep / 2; v <= maxV; v += sampleStep) {
+    for (let u = minU + sampleStep / 2; u <= maxU; u += sampleStep) {
+      const ft = unrotFt([u, v]);
+      if (!isInside(ft)) continue;
+      if (allHeads.every(h => distFt(h.pos, ft) > spacingFt)) { hasGap = true; break gapCheck; }
+    }
+  }
+
+  if (hasGap) {
+    const [au, av] = allHeads.length > 0 ? rotFt(allHeads[0].pos) : [(minU + maxU) / 2, (minV + maxV) / 2];
+    const uBase = au - Math.ceil((au - minU) / spacingFt) * spacingFt;
+    const vBase = av - Math.ceil((av - minV) / spacingFt) * spacingFt;
+    for (let u = uBase; u <= maxU + spacingFt / 2; u += spacingFt) {
+      for (let v = vBase; v <= maxV + spacingFt / 2; v += spacingFt) {
+        const pos = unrotFt([u, v]);
+        if (canPlace(pos, skipR)) allHeads.push({ pos, arcDeg: 360, dirDeg: 0 });
+      }
+    }
+  }
+
+  return allHeads.map(({ pos, arcDeg, dirDeg }) => ({ pos: fromFt(pos), arcDeg, dirDeg }));
 }
 
-/** Determine spray arc angle for a head based on proximity to zone boundary */
-function headArc(headPt, latlngs) {
-  const centroid  = polyCentroid(latlngs);
-  // rough distance to centroid in feet
-  const dLat = degPerFtLat(), dLng = degPerFtLng(headPt[0]);
-  const distFt = Math.hypot((headPt[0] - centroid[0]) / dLat,
-                             (headPt[1] - centroid[1]) / dLng);
-  const b      = polyBounds(latlngs);
-  const diagFt = Math.hypot((b.maxLat - b.minLat) / dLat,
-                             (b.maxLng - b.minLng) / dLng);
-  const ratio  = distFt / (diagFt / 2 + 0.0001);
-  if (ratio > 0.75) return 90;    // corner
-  if (ratio > 0.45) return 180;   // edge
-  return 360;                      // interior
+/**
+ * Compute arc angle (90/180/360) and center direction for a head.
+ *
+ * - Corner head  → 90°, arc bisects the interior corner angle
+ * - Edge head    → 180°, arc faces inward perpendicular to nearest edge
+ * - Interior     → 360°, full circle
+ *
+ * Angle convention (matches _headPtFromAngle):
+ *   0° = north, 90° = east  →  dirDeg = atan2(eastFt, northFt)
+ */
+function computeHeadSpray(hLat, hLng, latlngs, spacingFt) {
+  const dLat = degPerFtLat();
+  const dLng = degPerFtLng(hLat);
+  const n    = latlngs.length;
+  const cen  = polyCentroid(latlngs);
+
+  // Foot-space coords relative to centroid (origin)
+  function toLoc([la, lo]) { return [(lo - cen[1]) / dLng, (la - cen[0]) / dLat]; }
+  const hx = (hLng - cen[1]) / dLng;
+  const hy = (hLat - cen[0]) / dLat;
+  const pts = latlngs.map(toLoc);
+
+  let minEdgeDist = Infinity, edgeNx = 0, edgeNy = 1;
+  let minVertDist = Infinity, minVertIdx = 0;
+
+  for (let i = 0; i < n; i++) {
+    const [vx, vy] = pts[i];
+    const [wx, wy] = pts[(i + 1) % n];
+
+    // Distance to vertex i
+    const vd = Math.hypot(hx - vx, hy - vy);
+    if (vd < minVertDist) { minVertDist = vd; minVertIdx = i; }
+
+    // Distance to edge i→(i+1) via point-to-segment projection
+    const ex = wx - vx, ey = wy - vy;
+    const eLen = Math.hypot(ex, ey);
+    if (eLen < 0.1) continue;
+    const t = Math.max(0, Math.min(1, ((hx - vx) * ex + (hy - vy) * ey) / (eLen * eLen)));
+    const d = Math.hypot(hx - (vx + ex * t), hy - (vy + ey * t));
+    if (d < minEdgeDist) {
+      minEdgeDist = d;
+      // Perpendicular rotated 90° CCW from edge direction, then flipped inward
+      let nx = -ey / eLen, ny = ex / eLen;
+      const mx = (vx + wx) / 2, my = (vy + wy) / 2;
+      if (nx * (-mx) + ny * (-my) < 0) { nx = -nx; ny = -ny; }
+      edgeNx = nx; edgeNy = ny;
+    }
+  }
+
+  const threshold = spacingFt * 0.5;
+
+  // Corner: head is within 0.5× spacing of a vertex
+  if (minVertDist < threshold) {
+    const vi  = minVertIdx;
+    const [vx, vy] = pts[vi];
+    const [px, py] = pts[(vi - 1 + n) % n];
+    const [qx, qy] = pts[(vi + 1) % n];
+    const al = Math.hypot(px - vx, py - vy);
+    const bl = Math.hypot(qx - vx, qy - vy);
+    if (al < 0.1 || bl < 0.1) return { arcDeg: 90, dirDeg: Math.atan2(edgeNx, edgeNy) * 180 / Math.PI };
+    const ax = (px - vx) / al, ay = (py - vy) / al;  // unit toward prev vertex
+    const bx = (qx - vx) / bl, by = (qy - vy) / bl;  // unit toward next vertex
+
+    // Actual interior angle of this polygon corner
+    const dot = Math.max(-1, Math.min(1, ax * bx + ay * by));
+    const interiorAngle = Math.acos(dot) * 180 / Math.PI;
+
+    // Bisector pointing into the corner (inward)
+    let sx = ax + bx, sy = ay + by;
+    const sl = Math.hypot(sx, sy);
+    if (sl < 0.01) return { arcDeg: interiorAngle, dirDeg: Math.atan2(edgeNx, edgeNy) * 180 / Math.PI };
+    sx /= sl; sy /= sl;
+    // Flip if pointing away from interior (centroid = origin)
+    if (sx * (-vx) + sy * (-vy) < 0) { sx = -sx; sy = -sy; }
+    return { arcDeg: interiorAngle, dirDeg: Math.atan2(sx, sy) * 180 / Math.PI };
+  }
+
+  // Edge: head is within 0.5× spacing of a polygon edge
+  if (minEdgeDist < threshold) {
+    return { arcDeg: 180, dirDeg: Math.atan2(edgeNx, edgeNy) * 180 / Math.PI };
+  }
+
+  // Interior: full circle
+  return { arcDeg: 360, dirDeg: 0 };
+}
+
+/**
+ * Clip a throw circle to the zone polygon boundary.
+ * Shoots 72 rays from the head; each ray is clamped to the polygon edge if
+ * the circle extends outside.  Returns an array of [lat,lng] points.
+ */
+function _rayToZoneBoundary(cLa, cLo, pLa, pLo, latlngs) {
+  const n = latlngs.length;
+  let bestT = Infinity, bestPt = null;
+  const dLa = pLa - cLa, dLo = pLo - cLo;
+  for (let i = 0; i < n; i++) {
+    const [la1, lo1] = latlngs[i];
+    const [la2, lo2] = latlngs[(i + 1) % n];
+    const eLa = la2 - la1, eLo = lo2 - lo1;
+    const cross = dLa * eLo - dLo * eLa;
+    if (Math.abs(cross) < 1e-12) continue;
+    const t = ((la1 - cLa) * eLo - (lo1 - cLo) * eLa) / cross;
+    const u = ((la1 - cLa) * dLo - (lo1 - cLo) * dLa) / cross;
+    if (t >= 0 && t <= 1.001 && u >= 0 && u <= 1 && t < bestT) {
+      bestT = t;
+      bestPt = [cLa + t * dLa, cLo + t * dLo];
+    }
+  }
+  return bestPt;
+}
+
+function computeClippedCircle(centerLat, centerLng, radiusFt, latlngs) {
+  const dLat = degPerFtLat(), dLng = degPerFtLng(centerLat);
+  const N = 72;
+  const pts = [];
+  for (let i = 0; i < N; i++) {
+    const angle = (i / N) * 2 * Math.PI;
+    const la = centerLat + Math.cos(angle) * radiusFt * dLat;
+    const lo = centerLng + Math.sin(angle) * radiusFt * dLng;
+    if (ptInPolygon([la, lo], latlngs)) {
+      pts.push([la, lo]);
+    } else {
+      const clipped = _rayToZoneBoundary(centerLat, centerLng, la, lo, latlngs);
+      pts.push(clipped || [centerLat, centerLng]);
+    }
+  }
+  return pts;
+}
+
+/**
+ * Binary-search for the maximum throw radius of a perimeter arc sector
+ * that keeps every sample point inside the zone polygon.
+ * For interior (360°) heads, returns nominalRadiusFt unchanged (clipping handled by computeClippedCircle).
+ * Guarantees head-to-head coverage is still met by never going below minNeighborFt.
+ */
+function computeEffectiveRadius(headLat, headLng, nominalRadiusFt, dirDeg, arcDeg, latlngs, minNeighborFt) {
+  if (arcDeg >= 360 || latlngs.length < 3) return nominalRadiusFt;
+  const dLat = degPerFtLat(), dLng = degPerFtLng(headLat);
+  const STEPS = 24;
+
+  function arcFits(r) {
+    for (let i = 0; i <= STEPS; i++) {
+      const deg = dirDeg - arcDeg / 2 + (arcDeg * i / STEPS);
+      const rad = deg * Math.PI / 180;
+      const la  = headLat + Math.cos(rad) * r * dLat;
+      const lo  = headLng + Math.sin(rad) * r * dLng;
+      if (!ptInPolygon([la, lo], latlngs)) return false;
+    }
+    return true;
+  }
+
+  if (arcFits(nominalRadiusFt)) return nominalRadiusFt;
+
+  // Binary search between minNeighborFt (never go below) and nominalRadiusFt
+  const floor = minNeighborFt || 1;
+  let lo = floor, hi = nominalRadiusFt;
+  for (let iter = 0; iter < 10; iter++) {
+    const mid = (lo + hi) / 2;
+    if (arcFits(mid)) lo = mid; else hi = mid;
+  }
+  return lo;
 }
 
 let irrigationLayer = null;
 
+// ─────────────────────────────────────────
+// INTERACTIVE HEAD HELPERS
+// ─────────────────────────────────────────
+
+function _headPtFromAngle(h, angleDeg, distFt) {
+  const dLat = degPerFtLat(), dLng = degPerFtLng(h.lat);
+  const rad = angleDeg * Math.PI / 180;
+  return L.latLng(h.lat + Math.cos(rad) * distFt * dLat,
+                  h.lng + Math.sin(rad) * distFt * dLng);
+}
+
+function _angleFromHead(h, lat, lng) {
+  const dLat = degPerFtLat(), dLng = degPerFtLng(h.lat);
+  return Math.atan2((lng - h.lng) / dLng, (lat - h.lat) / dLat) * 180 / Math.PI;
+}
+
+function _redrawHeadArc(id) {
+  const h = heads.get(id);
+  if (!h || !irrigationLayer) return;
+  if (h.arcLayer) irrigationLayer.removeLayer(h.arcLayer);
+  if (h.arcDeg >= 360) {
+    if (h.zoneLatlngs && h.zoneLatlngs.length >= 3) {
+      const poly = computeClippedCircle(h.lat, h.lng, h.radiusFt, h.zoneLatlngs);
+      h.arcLayer = L.polygon(poly, {
+        color: h.color, fillColor: h.color, fillOpacity: 0.05, weight: 1.5, opacity: 1, interactive: true,
+      });
+    } else {
+      h.arcLayer = L.circle([h.lat, h.lng], {
+        radius: h.radiusFt * M_PER_FT,
+        color: h.color, fillColor: h.color, fillOpacity: 0.05, weight: 1.5, opacity: 1, interactive: true,
+      });
+    }
+  } else {
+    // Use effectiveRadiusFt (clamped to stay within zone) for the arc display
+    const drawR = h.effectiveRadiusFt || h.radiusFt;
+    const s = arcSectorLatLngs(h.lat, h.lng, drawR, h.dirDeg - h.arcDeg / 2, h.dirDeg + h.arcDeg / 2);
+    h.arcLayer = L.polygon(s, {
+      color: h.color, fillColor: h.color, fillOpacity: 0.05, weight: 1.5, opacity: 1, interactive: true,
+    });
+  }
+  irrigationLayer.addLayer(h.arcLayer);
+  h.arcLayer.on('click', e => { _shapeWasClicked = true; L.DomEvent.stop(e); selectHead(id); });
+}
+
+function _clearArcHandles() {
+  _arcHandles.forEach(m => { try { map.removeLayer(m); } catch(_){} });
+  _arcHandles = [];
+}
+
+function _showDistTooltip(ft, containerPt) {
+  let el = document.getElementById('dist-tooltip');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'dist-tooltip';
+    el.style.cssText = 'position:absolute;z-index:9999;background:#1c1c1a;color:#fff;' +
+      'font-size:11px;font-weight:700;padding:3px 8px;border-radius:5px;' +
+      'pointer-events:none;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.3);';
+    map.getContainer().appendChild(el);
+  }
+  el.textContent = Math.round(ft) + ' ft';
+  el.style.left = (containerPt.x + 14) + 'px';
+  el.style.top  = (containerPt.y - 26) + 'px';
+  el.style.display = 'block';
+}
+function _hideDistTooltip() {
+  const el = document.getElementById('dist-tooltip');
+  if (el) el.style.display = 'none';
+}
+
+function _showArcHandles(id) {
+  _clearArcHandles();
+  const h = heads.get(id);
+  if (!h) return;
+  const is360 = h.arcDeg >= 360;
+  const mkHandle = (ll, cls) => L.marker(ll, {
+    icon: L.divIcon({ className: 'arc-handle ' + cls, iconSize:[12,12], iconAnchor:[6,6] }),
+    draggable: true, zIndexOffset: 600, interactive: true,
+  }).addTo(map);
+
+  // Helper: the radius to use for handle positioning and dragging is the effective (clamped) radius.
+  const effR = () => h.effectiveRadiusFt ?? h.radiusFt;
+
+  // ── Direction + radius handle (solid) ─────────────────────────────────────
+  const rotLl = _headPtFromAngle(h, h.dirDeg, effR());
+  const rot = mkHandle(rotLl, 'arc-rotate-handle');
+  rot.on('mousedown', e => { _arcHandleDrag = true; L.DomEvent.stopPropagation(e); });
+  rot.on('drag', () => {
+    const ll = rot.getLatLng();
+    const dLat = degPerFtLat(), dLng = degPerFtLng(h.lat);
+    const northFt = (ll.lat - h.lat) / dLat;
+    const eastFt  = (ll.lng - h.lng) / dLng;
+    h.dirDeg = Math.atan2(eastFt, northFt) * 180 / Math.PI;
+    h.effectiveRadiusFt = Math.max(3, Math.hypot(northFt, eastFt));
+    _redrawHeadArc(id);
+    if (_arcHandles[1]) _arcHandles[1].setLatLng(_headPtFromAngle(h, h.dirDeg + h.arcDeg / 2, effR()));
+    if (_arcHandles[2]) _arcHandles[2].setLatLng(_headPtFromAngle(h, h.dirDeg - h.arcDeg / 2, effR()));
+    _updateHeadPropsPanel(id);
+    _showDistTooltip(effR(), map.latLngToContainerPoint(ll));
+  });
+  rot.on('dragend', () => { _arcHandleDrag = false; _hideDistTooltip(); });
+
+  // ── Right-edge width handle (dashed) ──────────────────────────────────────
+  let fixedEdgeR = h.dirDeg - h.arcDeg / 2;
+  const wRLl = _headPtFromAngle(h, h.dirDeg + h.arcDeg / 2, effR());
+  const wR = mkHandle(wRLl, 'arc-width-handle');
+  wR.on('mousedown', e => { _arcHandleDrag = true; L.DomEvent.stopPropagation(e); });
+  wR.on('dragstart', () => { fixedEdgeR = h.dirDeg - h.arcDeg / 2; });
+  wR.on('drag', () => {
+    const ll = wR.getLatLng();
+    let newArc = _angleFromHead(h, ll.lat, ll.lng) - fixedEdgeR;
+    while (newArc < 0) newArc += 360;
+    while (newArc >= 360) newArc -= 360;
+    h.arcDeg = Math.max(5, Math.min(350, newArc));
+    h.dirDeg = fixedEdgeR + h.arcDeg / 2;
+    _redrawHeadArc(id);
+    if (_arcHandles[0]) _arcHandles[0].setLatLng(_headPtFromAngle(h, h.dirDeg, effR()));
+    _updateHeadPropsPanel(id);
+  });
+  wR.on('dragend', () => { _arcHandleDrag = false; });
+
+  _arcHandles = [rot, wR];
+
+  // ── Left-edge width handle (dashed) ───────────────────────────────────────
+  if (!is360) {
+    let fixedEdgeL = h.dirDeg + h.arcDeg / 2;
+    const wLLl = _headPtFromAngle(h, h.dirDeg - h.arcDeg / 2, effR());
+    const wL = mkHandle(wLLl, 'arc-width-handle');
+    wL.on('mousedown', e => { _arcHandleDrag = true; L.DomEvent.stopPropagation(e); });
+    wL.on('dragstart', () => { fixedEdgeL = h.dirDeg + h.arcDeg / 2; });
+    wL.on('drag', () => {
+      const ll = wL.getLatLng();
+      let newArc = fixedEdgeL - _angleFromHead(h, ll.lat, ll.lng);
+      while (newArc < 0) newArc += 360;
+      while (newArc >= 360) newArc -= 360;
+      h.arcDeg = Math.max(5, Math.min(350, newArc));
+      h.dirDeg = fixedEdgeL - h.arcDeg / 2;
+      _redrawHeadArc(id);
+      if (_arcHandles[0]) _arcHandles[0].setLatLng(_headPtFromAngle(h, h.dirDeg, effR()));
+      _updateHeadPropsPanel(id);
+    });
+    wL.on('dragend', () => { _arcHandleDrag = false; });
+    _arcHandles.push(wL);
+  }
+}
+
+function _updateHeadPropsPanel(id) {
+  const h = heads.get(id);
+  if (!h) return;
+  document.getElementById('hp-type').textContent    = h.type;
+  document.getElementById('hp-zone').textContent    = h.zoneName;
+  document.getElementById('hp-gpm').textContent     = h.gpm.toFixed(1);
+  document.getElementById('hp-radius').textContent  = Math.round(h.effectiveRadiusFt ?? h.radiusFt) + ' ft';
+  document.getElementById('hp-arc').textContent     = h.arcDeg >= 360 ? '360°' : Math.round(h.arcDeg) + '°';
+}
+
+function selectHead(id) {
+  deselectHead(false);
+  deselectIfShape();
+  selectedHeadId = id;
+  const h = heads.get(id);
+  if (!h) return;
+  h.marker.setStyle({ weight: 2.5, radius: 6 });
+  document.getElementById('head-props').style.display = '';
+  _updateHeadPropsPanel(id);
+  document.querySelectorAll('.head-row').forEach(r =>
+    r.classList.toggle('sel', r.dataset.headId === id));
+  _showArcHandles(id);
+}
+
+function deselectHead(reset = true) {
+  if (selectedHeadId !== null) {
+    const h = heads.get(selectedHeadId);
+    if (h) h.marker.setStyle({ weight: 1.5, radius: 5 });
+  }
+  _clearArcHandles();
+  if (reset) {
+    selectedHeadId = null;
+    document.getElementById('head-props').style.display = 'none';
+    document.querySelectorAll('.head-row').forEach(r => r.classList.remove('sel'));
+  }
+}
+
+function deselectIfShape() {
+  if (selectedId !== null) deselect();
+}
+
+function deleteSelectedHead() {
+  if (!selectedHeadId) return;
+  const h = heads.get(selectedHeadId);
+  if (h) {
+    if (h.arcLayer && irrigationLayer) irrigationLayer.removeLayer(h.arcLayer);
+    if (h.marker && irrigationLayer) irrigationLayer.removeLayer(h.marker);
+  }
+  heads.delete(selectedHeadId);
+  selectedHeadId = null;
+  document.getElementById('head-props').style.display = 'none';
+  _clearArcHandles();
+  _buildHeadPanelList();
+  // update badge
+  const badge = document.getElementById('tp-head-count');
+  if (badge) badge.textContent = heads.size;
+}
+
+function _onHeadDragMove(e) {
+  if (!_headDragState) return;
+  const { id, startLatlng, origLat, origLng } = _headDragState;
+  const h = heads.get(id);
+  if (!h) return;
+  const dLat = e.latlng.lat - startLatlng.lat;
+  const dLng = e.latlng.lng - startLatlng.lng;
+  h.lat = origLat + dLat;
+  h.lng = origLng + dLng;
+  h.marker.setLatLng([h.lat, h.lng]);
+  _redrawHeadArc(id);
+}
+
+function _onHeadDragEnd() {
+  if (!_headDragState) return;
+  const { id } = _headDragState;
+  _headDragState = null;
+  map.dragging.enable();
+  map.off('mousemove', _onHeadDragMove);
+  map.off('mouseup', _onHeadDragEnd);
+  document.removeEventListener('mouseup', _onHeadDragEnd);
+  map.getContainer().style.cursor = '';
+  if (id === selectedHeadId) _wireArcHover(id);
+}
+
+function _startHeadDrag(e, id) {
+  if (id !== selectedHeadId) return;
+  L.DomEvent.stopPropagation(e);
+  const h = heads.get(id);
+  if (!h) return;
+  _clearArcHandles();
+  map.dragging.disable();
+  map.getContainer().style.cursor = 'grabbing';
+  _headDragState = { id, startLatlng: e.latlng, origLat: h.lat, origLng: h.lng };
+  map.on('mousemove', _onHeadDragMove);
+  map.on('mouseup', _onHeadDragEnd);
+  document.addEventListener('mouseup', _onHeadDragEnd);
+}
+
+function _buildHeadPanelList() {
+  const list = document.getElementById('water-plan-list');
+  if (!list) return;
+  if (heads.size === 0) { list.innerHTML = ''; return; }
+  const rows = [];
+  let i = 1;
+  heads.forEach((h, id) => {
+    rows.push(`<div class="head-row${selectedHeadId === id ? ' sel' : ''}" data-head-id="${id}" onclick="selectHead('${id}')">
+      <span class="head-dot" style="background:${h.color}"></span>
+      <span style="flex:1;font-weight:600;color:var(--charcoal)">${h.type} #${i++}</span>
+      <span style="font-size:11px;color:var(--gray)">${h.gpm.toFixed(1)} GPM</span>
+    </div>`);
+  });
+  list.innerHTML = rows.join('');
+}
+
 function clearIrrigationLayer() {
+  heads.clear();
+  deselectHead();
   if (irrigationLayer) { irrigationLayer.clearLayers(); irrigationLayer = null; }
   document.getElementById('btn-clear-layer').style.display = 'none';
+  document.getElementById('head-tool-wrap').style.display = 'none';
+  document.getElementById('head-tool-hint').style.display = 'none';
+  if (currentTool === 'head') setTool('select');
   const badge = document.getElementById('tp-head-count');
   if (badge) { badge.textContent = ''; badge.style.display = 'none'; }
   const summ = document.getElementById('water-plan-summary');
   if (summ) summ.style.display = 'none';
 }
 
-const HEAD_CONFIG = {
-  lawn:   { radiusFt: 15, spacingFt: 20, type: 'Rotor',   color: '#2980e8' },
-  garden: { radiusFt:  5, spacingFt:  8, type: 'Drip',    color: '#27ae60' },
-  pool:   { radiusFt:  0, spacingFt:  0, type: 'None',    color: '#29b6f6' },
-};
+function toggleHeadTool() {
+  if (currentTool === 'head') setTool('select');
+  else setTool('head');
+}
 
-function generateWaterPlan() {
+function onHeadPlaceClick(e) {
+  if (_shapeWasClicked) { _shapeWasClicked = false; return; }
+  if (e.originalEvent._stopped) return;
+  if (!irrigationLayer) return;
+  const { lat, lng } = e.latlng;
+
+  // Find the zone this click lands in (if any)
+  let cfg = null, zoneId = null, zoneName = 'Manual', zoneType = 'lawn', zoneLatlngs = [];
+  shapes.forEach((s, id) => {
+    if (cfg) return;
+    const ll = s.layer.getLatLngs()[0].map(p => [p.lat, p.lng]);
+    if (ptInPolygon([lat, lng], ll)) {
+      cfg = getHeadConfig(s.type, ll);
+      zoneId = id; zoneName = s.name || s.type; zoneType = s.type; zoneLatlngs = ll;
+    }
+  });
+  if (!cfg) cfg = SPRAY_SIZES[0];
+  if (cfg.radiusFt === 0) return;  // no heads on pool/nowater zones
+
+  const arcDeg = 360, dirDeg = 0;
+  const effectiveRadiusFt = zoneLatlngs.length >= 3
+    ? computeEffectiveRadius(lat, lng, cfg.radiusFt, dirDeg, arcDeg, zoneLatlngs, 1)
+    : cfg.radiusFt;
+
+  const hid = 'h' + (++headIdSeq);
+  const headData = {
+    id: hid, lat, lng,
+    zoneName, zoneId, zoneType,
+    type: cfg.type, color: cfg.color,
+    radiusFt: cfg.radiusFt, effectiveRadiusFt,
+    arcDeg, dirDeg, gpm: cfg.gpm,
+    zoneLatlngs, marker: null, arcLayer: null, manual: true,
+  };
+  heads.set(hid, headData);
+  _redrawHeadArc(hid);
+
+  const marker = L.circleMarker([lat, lng], {
+    radius: 5, color: '#fff', fillColor: cfg.color,
+    fillOpacity: 1, weight: 1.5, interactive: true,
+  }).addTo(irrigationLayer);
+  headData.marker = marker;
+  marker.on('click', ev => { _shapeWasClicked = true; L.DomEvent.stopPropagation(ev); selectHead(hid); });
+  marker.on('mousedown', ev => { _shapeWasClicked = true; _startHeadDrag(ev, hid); });
+
+  const badge = document.getElementById('tp-head-count');
+  if (badge) { badge.textContent = heads.size; badge.style.display = ''; }
+  _buildHeadPanelList();
+  selectHead(hid);
+}
+
+// ── Head type specifications (10-15 % real-world derating applied) ──────────
+// Nozzle family (fixed spray): use when zone narrowest dimension < 25 ft
+// Rotor family (gear-drive):   use when zone narrowest dimension ≥ 25 ft
+// Rule: never mix families within a zone.
+const SPRAY_SIZES = [
+  { radiusFt: 15, spacingFt: 15, type: 'Spray', color: '#2980e8', gpm: 2.5, label: 'Spray 15ft' },
+  { radiusFt: 12, spacingFt: 12, type: 'Spray', color: '#2980e8', gpm: 2.0, label: 'Spray 12ft' },
+  { radiusFt:  8, spacingFt:  8, type: 'Spray', color: '#2980e8', gpm: 1.0, label: 'Spray 8ft'  },
+];
+const ROTOR_SIZES = [
+  { radiusFt: 35, spacingFt: 35, type: 'Rotor', color: '#1565c0', gpm: 2.5, label: 'Rotor 35ft' },
+  { radiusFt: 25, spacingFt: 25, type: 'Rotor', color: '#1565c0', gpm: 1.5, label: 'Rotor 25ft' },
+  { radiusFt: 18, spacingFt: 18, type: 'Rotor', color: '#1565c0', gpm: 1.0, label: 'Rotor 18ft' },
+];
+const DRIP_CFG  = { radiusFt:  7, spacingFt: 10, type: 'Drip',  color: '#27ae60', gpm: 0.5 };
+const NONE_CFG  = { radiusFt:  0, spacingFt:  0, type: 'None',  color: '#90a4ae', gpm: 0   };
+const HEAD_CONFIG = { lawn: ROTOR_SIZES[1], garden: DRIP_CFG, pool: NONE_CFG };
+
+/**
+ * Pick the largest head in the right family such that spacing ≤ minDim × 0.85.
+ * This lets large open zones use bigger rotors (cleaner pattern, fewer heads)
+ * while keeping the throw within the zone.
+ */
+function getHeadConfig(zoneType, latlngs) {
+  if (zoneType === 'garden')   return DRIP_CFG;
+  if (zoneType === 'pool'   ||
+      zoneType === 'nowater' ||
+      zoneType === 'driveway'||
+      zoneType === 'path')    return NONE_CFG;
+  const b      = polyBounds(latlngs);
+  const dLat   = degPerFtLat();
+  const dLng   = degPerFtLng((b.minLat + b.maxLat) / 2);
+  const minDim = Math.min(
+    (b.maxLng - b.minLng) / dLng,
+    (b.maxLat - b.minLat) / dLat
+  );
+  const family = minDim < 25 ? SPRAY_SIZES : ROTOR_SIZES;
+  // Largest head whose spacing fits comfortably within the zone (rotors with rotors, sprays with sprays)
+  for (const cfg of family) {
+    if (cfg.spacingFt <= minDim * 0.85) return cfg;
+  }
+  return family[family.length - 1]; // smallest in family as fallback
+}
+
+// ── Entry point — routes to AI or local algorithm ──────────
+async function generateWaterPlan() {
   if (shapes.size === 0) { hint('Draw at least one zone first.'); return; }
+  const urlParams = new URLSearchParams(location.search);
+  if (urlParams.get('mode') === 'ai') {
+    await generateWaterPlanAI();
+  } else {
+    generateWaterPlanLocal(null);
+  }
+}
 
+// ── AI head placement via Claude API ───────────────────────
+async function generateWaterPlanAI() {
+  const key = typeof ANTHROPIC_API_KEY !== 'undefined' ? ANTHROPIC_API_KEY : '';
+  if (!key || key === 'YOUR_API_KEY_HERE') {
+    hint('No API key in ai-config.js — using standard layout.', 4000);
+    return generateWaterPlanLocal(null);
+  }
+
+  const cta = document.getElementById('flow-cta');
+  if (cta) cta.disabled = true;
+  hint('Claude is calculating head placement…', 0);
+
+  // Coordinate system: feet from property center
+  const urlP = new URLSearchParams(location.search);
+  const originLat = parseFloat(urlP.get('lat')) || map.getCenter().lat;
+  const originLng = parseFloat(urlP.get('lng')) || map.getCenter().lng;
+  const dLatDeg   = degPerFtLat();
+  const dLngDeg   = degPerFtLng(originLat);
+
+  function toLF(lat, lng) {
+    return { x: +(((lng - originLng) / dLngDeg).toFixed(1)),
+             y: +(((lat - originLat) / dLatDeg).toFixed(1)) };
+  }
+  function fromLF(x, y) {
+    return [originLat + y * dLatDeg, originLng + x * dLngDeg];
+  }
+
+  // Build zone descriptions for the prompt
+  const zoneData = [];
+  shapes.forEach((s, id) => {
+    const latlngs = s.layer.getLatLngs()[0].map(p => [p.lat, p.lng]);
+    const cfg = getHeadConfig(s.type, latlngs);
+    if (cfg.radiusFt === 0) return;
+    const pts      = latlngs.map(([la, lo]) => toLF(la, lo));
+    const isDrip   = s.type === 'garden';
+    const zonePlants = [];
+    plants.forEach(p => {
+      if (ptInPolygon([p.lat, p.lng], latlngs)) {
+        const pt = toLF(p.lat, p.lng);
+        zonePlants.push({ name: p.name || p.type, x: pt.x, y: pt.y });
+      }
+    });
+    zoneData.push({ id, s, latlngs, cfg, isDrip, pts, zonePlants });
+  });
+
+  if (zoneData.length === 0) {
+    hint('No irrigatable zones found.', 4000);
+    if (cta) cta.disabled = false;
+    return;
+  }
+
+  const gpmEl      = document.getElementById('ws-gpm');
+  const supplyGpm  = gpmEl ? (parseFloat(gpmEl.value) || 12) : 12;
+  const maxZoneGpm = +(supplyGpm * 0.85).toFixed(1);
+
+  let wsX = 0, wsY = 0;
+  if (wsMarker) { const p = wsMarker.getLatLng(); const pt = toLF(p.lat, p.lng); wsX = pt.x; wsY = pt.y; }
+
+  const zoneDescriptions = zoneData.map((z, i) => {
+    const typeLabel = z.isDrip
+      ? `garden bed — drip emitters, radius ${z.cfg.radiusFt}ft`
+      : `turf/lawn — rotary heads, throw radius ${z.cfg.radiusFt}ft`;
+    const ptsStr  = z.pts.map(p => `(${p.x},${p.y})`).join(' ');
+    const gpmEach = z.isDrip ? 0.5 : 1.5;
+    const maxH    = Math.floor(maxZoneGpm / gpmEach);
+    const plants  = z.zonePlants.length > 0
+      ? `\n  Plants: ${z.zonePlants.map(p => `${p.name} at (${p.x},${p.y})`).join('; ')}`
+      : '';
+    return `ZONE ${i + 1}: "${z.s.name || z.s.type}" — ${typeLabel}
+  Polygon (X,Y feet): ${ptsStr}
+  GPM per head: ${gpmEach} | Zone budget: ${maxZoneGpm} GPM | Max heads before split: ${maxH}${plants}`;
+  }).join('\n\n');
+
+  const prompt = `You are an expert residential irrigation designer. Place sprinkler heads to achieve complete coverage with zero dry spots.
+
+RULES:
+1. Head-to-head coverage: adjacent head spacing MUST NOT exceed the throw radius. 15ft throw = max 15ft spacing.
+2. Edge heads: the throw radius must reach every polygon edge and corner. No edge more than radius-ft from the nearest head.
+3. All head (x,y) positions must be INSIDE their zone polygon.
+4. Drip zones with plants: place an emitter within 1ft of each plant, then fill remaining area at ≤ throw radius spacing.
+5. Return ONLY valid JSON — no markdown, no text outside the JSON object.
+
+COORDINATE SYSTEM: X = east in feet, Y = north in feet. Origin = property center.
+Water source: X=${wsX}, Y=${wsY} | Supply: ${supplyGpm} GPM | Max per zone: ${maxZoneGpm} GPM
+
+${zoneDescriptions}
+
+JSON response format:
+{
+  "zones": [
+    { "zone_index": 0, "heads": [{"x": 12.0, "y": 8.5}], "coverage_note": "brief note" }
+  ]
+}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 4096,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({}));
+      throw new Error(errBody.error?.message || `HTTP ${res.status}`);
+    }
+
+    const data      = await res.json();
+    const text      = data.content?.[0]?.text || '';
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('No JSON in response');
+    const plan = JSON.parse(jsonMatch[0]);
+
+    // Build aiHeadsMap: shapeId → [[lat, lng], ...]
+    const aiHeadsMap = new Map();
+    (plan.zones || []).forEach(pz => {
+      const zd = zoneData[pz.zone_index];
+      if (!zd) return;
+      const pts   = (pz.heads || []).map(h => fromLF(h.x, h.y));
+      const valid = pts.filter(([la, lo]) => ptInPolygon([la, lo], zd.latlngs));
+      if (valid.length > 0) aiHeadsMap.set(zd.id, valid);
+    });
+
+    const placed = Array.from(aiHeadsMap.values()).reduce((s, a) => s + a.length, 0);
+    hint(`AI placed ${placed} heads across ${aiHeadsMap.size} zone${aiHeadsMap.size !== 1 ? 's' : ''}`, 5000);
+    generateWaterPlanLocal(aiHeadsMap);
+
+  } catch (err) {
+    hint(`AI placement failed: ${err.message} — using standard layout`, 5000);
+    generateWaterPlanLocal(null);
+  } finally {
+    if (cta) cta.disabled = false;
+  }
+}
+
+// ── Algorithmic layout (also used as AI fallback) ──────────
+function generateWaterPlanLocal(aiHeadsMap) {
   clearIrrigationLayer();
   irrigationLayer = L.layerGroup().addTo(map);
 
@@ -1593,75 +3086,106 @@ function generateWaterPlan() {
     wsLat = p.lat; wsLng = p.lng;
   }
 
+  // Pre-compute head positions (use AI positions if provided, else algorithm)
+  const precomputedHeads = new Map();
+  const zoneConfigs      = new Map();   // id → cfg, reused in render loop
+  shapes.forEach((s, id) => {
+    const latlngs = s.layer.getLatLngs()[0].map(p => [p.lat, p.lng]);
+    const cfg = getHeadConfig(s.type, latlngs);
+    if (cfg.radiusFt === 0) return;
+    zoneConfigs.set(id, cfg);
+    const aiRaw = aiHeadsMap && aiHeadsMap.get(id);
+    const headObjs = aiRaw
+      ? aiRaw.map(([hLat, hLng]) => {
+          const { arcDeg, dirDeg } = computeHeadSpray(hLat, hLng, latlngs, cfg.spacingFt);
+          return { pos: [hLat, hLng], arcDeg, dirDeg };
+        })
+      : placeHeadsInZone(latlngs, cfg.spacingFt);
+    precomputedHeads.set(id, headObjs);
+  });
+
   let totalHeads = 0;
   let totalPipeFt = 0;
-  const zoneCentroids = [];   // for main-supply pipe routing
+  const zoneCentroids = [];
+  headIdSeq = 0;
 
-  shapes.forEach(s => {
-    const cfg = HEAD_CONFIG[s.type];
-    if (!cfg) return;   // driveway / path / nowater — skip
+  shapes.forEach((s, id) => {
+    const cfg = zoneConfigs.get(id);
+    if (!cfg) return;   // pool / nowater — skip
 
     const latlngs = s.layer.getLatLngs()[0].map(p => [p.lat, p.lng]);
+    const isDrip = s.type === 'garden';
+    const gpm = cfg.gpm;
 
     // ── place heads ──────────────────────────────────
-    const heads = placeHeadsInZone(latlngs, cfg.spacingFt);
-    totalHeads += heads.length;
+    const headPts = precomputedHeads.get(id) || [];
+    totalHeads += headPts.length;
 
-    // ── spray arcs ───────────────────────────────────
-    heads.forEach(([hLat, hLng]) => {
-      const arcDeg = headArc([hLat, hLng], latlngs);
+    // ── spray arcs + interactive markers ─────────────
+    headPts.forEach(({ pos: [hLat, hLng], arcDeg, dirDeg }) => {
+      // Clamp perimeter arc radius so spray stays inside the zone polygon.
+      // Interior heads (360°) are clipped geometrically in computeClippedCircle instead.
+      const effectiveRadiusFt = computeEffectiveRadius(
+        hLat, hLng, cfg.radiusFt, dirDeg, arcDeg, latlngs, 1);
 
-      // Direction: bearing from head toward centroid
-      const cen = polyCentroid(latlngs);
-      const bearingRad = Math.atan2(hLng - cen[1], hLat - cen[0]);
-      const bearingDeg = bearingRad * 180 / Math.PI;
-      const half       = arcDeg / 2;
-      const startDeg   = bearingDeg - half + 90;   // rotate so 0° = East on map
-      const endDeg     = bearingDeg + half + 90;
+      const hid = 'h' + (++headIdSeq);
+      const headData = {
+        id: hid,
+        lat: hLat, lng: hLng,
+        zoneName: s.name || s.type,
+        zoneId: id,                // outer shape ID — used for h2h check
+        zoneType: s.type,
+        type: cfg.type,
+        color: cfg.color,
+        radiusFt: cfg.radiusFt,
+        effectiveRadiusFt,
+        arcDeg,
+        dirDeg,
+        gpm,
+        zoneLatlngs: latlngs,
+        marker: null,
+        arcLayer: null,
+      };
+      heads.set(hid, headData);
 
-      if (arcDeg < 360) {
-        const sector = arcSectorLatLngs(hLat, hLng, cfg.radiusFt, startDeg, endDeg);
-        L.polygon(sector, {
-          color: cfg.color, fillColor: cfg.color,
-          fillOpacity: 0.12, weight: 0.5, opacity: 0.5,
-        }).addTo(irrigationLayer);
-      } else {
-        // full circle for interior heads
-        const dLat = degPerFtLat(), dLng = degPerFtLng(hLat);
-        const rLat = cfg.radiusFt * dLat, rLng = cfg.radiusFt * dLng;
-        L.ellipse ? L.ellipse([hLat, hLng], [rLat * 111320, rLng * 111320], 0, {
-          color: cfg.color, fillColor: cfg.color, fillOpacity: 0.1, weight: 0.5,
-        }).addTo(irrigationLayer) : L.circle([hLat, hLng], {
-          radius: cfg.radiusFt * M_PER_FT,
-          color: cfg.color, fillColor: cfg.color, fillOpacity: 0.1, weight: 0.5,
-        }).addTo(irrigationLayer);
-      }
+      // arc layer via helper
+      _redrawHeadArc(hid);
 
-      // head dot
-      L.circleMarker([hLat, hLng], {
-        radius: 4, color: '#fff', fillColor: cfg.color,
-        fillOpacity: 1, weight: 1.5,
+      // interactive head dot
+      const marker = L.circleMarker([hLat, hLng], {
+        radius: 5, color: '#fff', fillColor: cfg.color,
+        fillOpacity: 1, weight: 1.5, interactive: true,
       }).addTo(irrigationLayer);
+      headData.marker = marker;
+      marker.on('click', e => {
+        _shapeWasClicked = true;
+        L.DomEvent.stopPropagation(e);
+        selectHead(hid);
+      });
+      marker.on('mousedown', e => {
+        _shapeWasClicked = true;
+        _startHeadDrag(e, hid);
+      });
     });
 
     // ── lateral pipes (thin dashed lines connecting heads) ───
-    const approxPipeFt = heads.length * cfg.spacingFt * 0.9;
+    const approxPipeFt = headPts.length * cfg.spacingFt * 0.9;
     totalPipeFt += approxPipeFt;
-    if (heads.length > 1) {
+    if (headPts.length > 1) {
       // simple nearest-neighbour chain
       const visited = new Set();
-      const chain   = [heads[0]];
+      const chain   = [headPts[0].pos];
       visited.add(0);
-      while (chain.length < heads.length) {
+      while (chain.length < headPts.length) {
         const cur = chain[chain.length - 1];
         let best = -1, bestD = Infinity;
-        heads.forEach((h, i) => {
+        headPts.forEach(({ pos }, i) => {
           if (visited.has(i)) return;
-          const d = Math.hypot(h[0] - cur[0], h[1] - cur[1]);
+          const d = Math.hypot(pos[0] - cur[0], pos[1] - cur[1]);
           if (d < bestD) { bestD = d; best = i; }
         });
         if (best === -1) break;
-        chain.push(heads[best]);
+        chain.push(headPts[best].pos);
         visited.add(best);
       }
       L.polyline(chain, {
@@ -1674,18 +3198,54 @@ function generateWaterPlan() {
     zoneCentroids.push(cen);
   });
 
-  // ── main supply pipes (water source → zone centroids) ────
-  if (wsLat !== null && zoneCentroids.length > 0) {
-    // simple star topology: one pipe per zone from water source
-    zoneCentroids.forEach(cen => {
-      const dLat = degPerFtLat(), dLng = degPerFtLng(wsLat);
-      const pipeFt = Math.hypot((wsLat - cen[0]) / dLat, (wsLng - cen[1]) / dLng);
-      totalPipeFt += pipeFt;
-      L.polyline([[wsLat, wsLng], cen], {
-        color: '#253319', weight: 3, opacity: 0.85,
-      }).addTo(irrigationLayer);
+  _buildHeadPanelList();
+
+  // ── Head-to-head coverage pass ───────────────────────────────────────────
+  // After all heads are placed and their arcs clamped to stay inside the zone,
+  // verify each head's effectiveRadiusFt still reaches its nearest neighbour.
+  // If clamping cut the radius too far, widen it back to cover the gap
+  // (coverage takes priority over zero overspray).
+  {
+    const dLatH = degPerFtLat();
+    heads.forEach((h, hid) => {
+      if (h.arcDeg >= 360) return; // interior heads use clipped-circle, not radius
+      let nearestFt = Infinity;
+      heads.forEach((other, oid) => {
+        if (oid === hid || other.zoneId !== h.zoneId) return;
+        const dLngH = degPerFtLng(h.lat);
+        const d = Math.hypot((h.lat - other.lat) / dLatH, (h.lng - other.lng) / dLngH);
+        if (d < nearestFt) nearestFt = d;
+      });
+      if (nearestFt === Infinity || nearestFt === 0) return;
+      if (h.effectiveRadiusFt < nearestFt) {
+        h.effectiveRadiusFt = nearestFt; // expand just enough to reach the neighbour
+        _redrawHeadArc(hid);
+      }
     });
-    // pulse marker at water source
+  }
+
+  // ── main supply pipes — Prim's MST from water source through zone centroids ──
+  if (wsLat !== null && zoneCentroids.length > 0) {
+    const dLat = degPerFtLat(), dLng = degPerFtLng(wsLat);
+    // nodes[0] = water source, rest = zone centroids
+    const nodes = [[wsLat, wsLng], ...zoneCentroids];
+    const visited = new Set([0]);
+    while (visited.size < nodes.length) {
+      let bestDist = Infinity, bestFrom = 0, bestTo = 1;
+      visited.forEach(vi => {
+        nodes.forEach((n, ni) => {
+          if (visited.has(ni)) return;
+          const d = Math.hypot((nodes[vi][0] - n[0]) / dLat, (nodes[vi][1] - n[1]) / dLng);
+          if (d < bestDist) { bestDist = d; bestFrom = vi; bestTo = ni; }
+        });
+      });
+      totalPipeFt += bestDist;
+      L.polyline([nodes[bestFrom], nodes[bestTo]], {
+        color: '#253319', weight: 2.5, opacity: 0.75,
+      }).addTo(irrigationLayer);
+      visited.add(bestTo);
+    }
+    // water source marker
     L.circleMarker([wsLat, wsLng], {
       radius: 7, color: '#fff', fillColor: '#253319',
       fillOpacity: 1, weight: 2,
@@ -1721,16 +3281,17 @@ function generateWaterPlan() {
   }
 
   document.getElementById('btn-clear-layer').style.display = '';
+  document.getElementById('head-tool-wrap').style.display = '';
   showStep('water');
   hint(`Irrigation layer generated — ${totalHeads} heads across ${zoneCentroids.length} zone${zoneCentroids.length !== 1 ? 's' : ''}.`, 4000);
 
   // ── build irrigationZones for materials.html Zone Parts tab ──
   const irrigationZones = [];
-  shapes.forEach(s => {
-    const cfg2 = HEAD_CONFIG[s.type];
+  shapes.forEach((s, id) => {
+    const cfg2 = zoneConfigs.get(id);
     if (!cfg2) return;
     const ll2    = s.layer.getLatLngs()[0].map(p => [p.lat, p.lng]);
-    const heads2 = placeHeadsInZone(ll2, cfg2.spacingFt);
+    const heads2 = precomputedHeads.get(id) || [];
     const cen2   = polyCentroid(ll2);
     const isDrip = s.type === 'garden';
 
@@ -1750,10 +3311,10 @@ function generateWaterPlan() {
       area:  calcAreaSqFt(ll2),
       distFt: distFt2,
       pressureAtZone: 45,
-      totalGpm: isDrip ? Math.ceil(heads2.length * 0.5) : Math.ceil(heads2.length * 1.5),
+      totalGpm: Math.ceil(heads2.length * cfg2.gpm),
       mainPipe: { sz: '¾"' },
       latPipe:  { sz: '½"' },
-      heads: heads2.map(([lat, lng]) => ({
+      heads: heads2.map(({ pos: [lat, lng] }) => ({
         lat, lng,
         type: isDrip ? 'spray' : 'rotor',
         radiusFt: cfg2.radiusFt,
@@ -1761,13 +3322,15 @@ function generateWaterPlan() {
     });
   });
 
-  try {
-    const existing = JSON.parse(sessionStorage.getItem('drip_design') || '{}');
-    sessionStorage.setItem('drip_design', JSON.stringify({ ...existing, irrigationZones }));
-  } catch (e) {}
+  if (irrigationZones.length > 0) {
+    try {
+      const existing = JSON.parse(localStorage.getItem('drip_design') || '{}');
+      localStorage.setItem('drip_design', JSON.stringify({ ...existing, irrigationZones }));
+    } catch (e) {}
 
-  if (_embedded) {
-    try { window.parent.postMessage({ type: 'waterPlanGenerated' }, '*'); } catch (e) {}
+    if (_embedded) {
+      try { window.parent.postMessage({ type: 'waterPlanGenerated' }, '*'); } catch (e) {}
+    }
   }
 }
 
@@ -1792,7 +3355,7 @@ const PLANTS = {
 const plants     = new Map(); // id → { marker, type, name, radiusFt, lat, lng }
 let plantIdSeq   = 0;
 let selPlantId   = null;
-let activePlantType = 'tree';
+let activePlantType = null;
 
 function ftToM(ft) { return ft * 0.3048; }
 function mToFt(m)  { return m  / 0.3048; }
@@ -1941,12 +3504,23 @@ function syncPlantPanel(id) {
 }
 
 function setPlantType(type) {
+  // Toggle off if already armed with this type
+  if (activePlantType === type && currentTool === 'plant') {
+    activePlantType = null;
+    ['tree','shrub','grass'].forEach(t =>
+      document.getElementById('ptype-' + t).classList.remove('active')
+    );
+    document.getElementById('plant-hint').style.display = 'none';
+    setTool('select');
+    return;
+  }
   activePlantType = type;
   ['tree','shrub','grass'].forEach(t =>
     document.getElementById('ptype-' + t).classList.toggle('active', t === type)
   );
-  // Arm the plant tool so clicking the map immediately places this type
-  if (currentTool !== 'plant') setTool('plant');
+  document.getElementById('plant-hint').style.display = '';
+  setTool('plant');
+  // Update selected plant's type if one is selected
   if (selPlantId === null) return;
   const s = plants.get(selPlantId); if (!s) return;
   s.type = type;
@@ -2016,7 +3590,9 @@ document.addEventListener('keydown', e => {
       setTool('select');
       break;
     case 'Delete': case 'Backspace':
-      if (selPlantId !== null) deletePlant(); else deleteSelected();
+      if (selPlantId !== null) deletePlant();
+      else if (selectedHeadId !== null) deleteSelectedHead();
+      else deleteSelected();
       break;
   }
 });

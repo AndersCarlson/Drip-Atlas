@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Head-to-Head Spacing: Why Your Coverage Matters — Drip Atlas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="icon" type="image/png" href="assets/favicon.png"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--forest:#253319;--lime:#c8e670;--cream:#f1ebe2;--white:#fff;--charcoal:#1c1c1a;--gray:#7a7a72;--border:rgba(37,51,25,.12)}
+    body{font-family:'Inter',sans-serif;background:var(--cream);color:var(--charcoal);-webkit-font-smoothing:antialiased}
+
+    nav{position:sticky;top:0;z-index:100;background:var(--white);border-bottom:1px solid var(--border);height:64px;display:flex;align-items:center;padding:0 40px;gap:32px}
+    .nav-logo img{height:32px}
+    .nav-links{display:flex;gap:28px;list-style:none;margin-left:32px;align-items:center}
+    .nav-links a{font-size:14px;font-weight:500;color:var(--charcoal);text-decoration:none;transition:color .2s}
+    .nav-links a:hover{color:var(--forest)}
+    .nav-right{margin-left:auto}
+    .btn-quote{border:1.5px solid rgba(37,51,25,.12);background:transparent;color:#7a7a72;font-size:13px;font-weight:500;padding:6px 14px;border-radius:100px;cursor:pointer;text-decoration:none;transition:border-color .2s,color .2s}
+    .btn-quote:hover,.btn-quote.active{border-color:#253319;color:#253319}
+    .btn-cta{background:#253319;color:#c8e670;font-size:13.5px;font-weight:700;padding:8px 20px;border-radius:100px;cursor:pointer;text-decoration:none;transition:opacity .2s;border:none;white-space:nowrap}
+    .btn-cta:hover{opacity:.87}
+
+    .post-wrap{max-width:1080px;margin:0 auto;padding:48px 32px 80px;display:grid;grid-template-columns:1fr 260px;gap:56px;align-items:start}
+    @media(max-width:800px){.post-wrap{grid-template-columns:1fr}.sidebar{display:none}}
+
+    article{min-width:0}
+    .back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--gray);text-decoration:none;margin-bottom:28px;transition:color .2s}
+    .back-link:hover{color:var(--forest)}
+    .tag{display:inline-block;padding:4px 12px;border-radius:100px;font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;background:var(--forest);color:var(--lime);margin-bottom:16px}
+    .post-title{font-family:'Playfair Display',serif;font-size:40px;font-weight:700;line-height:1.15;color:var(--charcoal);margin-bottom:16px}
+    .post-subtitle{font-size:17px;color:var(--gray);line-height:1.6;margin-bottom:20px}
+    .post-meta{font-size:13px;color:var(--gray);padding-bottom:24px;border-bottom:1px solid var(--border);margin-bottom:36px}
+    .post-meta strong{color:var(--charcoal)}
+
+    .prose h2{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--charcoal);margin:40px 0 14px}
+    .prose h3{font-size:16px;font-weight:700;color:var(--charcoal);margin:24px 0 8px}
+    .prose p{font-size:15px;line-height:1.75;color:var(--charcoal);margin-bottom:16px}
+    .prose ul,.prose ol{padding-left:20px;margin-bottom:16px}
+    .prose li{font-size:15px;line-height:1.7;color:var(--charcoal);margin-bottom:6px}
+    .prose strong{font-weight:700}
+    .prose a{color:var(--forest);text-decoration:underline}
+
+    /* Spacing diagram */
+    .diagram{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:28px;margin:28px 0;text-align:center}
+    .diagram-label{font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--gray);margin-bottom:16px}
+    .diagram svg{display:block;margin:0 auto}
+
+    .formula-box{background:var(--white);border:1.5px solid var(--forest);border-radius:14px;padding:24px;margin:28px 0;text-align:center}
+    .formula-label{font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--gray);margin-bottom:8px}
+    .formula{font-family:'Playfair Display',serif;font-size:22px;color:var(--forest);font-weight:700;margin-bottom:8px}
+    .formula-note{font-size:13px;color:var(--gray)}
+
+    .data-table{width:100%;border-collapse:collapse;margin:20px 0 32px;border-radius:12px;overflow:hidden;border:1px solid var(--border)}
+    .data-table th{background:var(--forest);color:var(--lime);font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:10px 14px;text-align:left}
+    .data-table td{padding:12px 14px;font-size:14px;border-bottom:1px solid var(--border);line-height:1.5}
+    .data-table tr:last-child td{border:none}
+    .data-table tr:nth-child(even) td{background:rgba(37,51,25,.03)}
+
+    .tip-list{background:rgba(37,51,25,.04);border-left:3px solid var(--forest);border-radius:0 10px 10px 0;padding:20px 24px;margin:24px 0 32px;list-style:none}
+    .tip-list li{font-size:14px;line-height:1.65;color:var(--charcoal);padding:5px 0;display:flex;gap:10px}
+    .tip-list li::before{content:'💡';flex-shrink:0}
+
+    .warning-box{background:#fef9c3;border:1.5px solid #d97706;border-radius:14px;padding:20px 24px;margin:24px 0;display:flex;gap:14px;align-items:flex-start}
+    .warning-box-icon{font-size:20px;flex-shrink:0;margin-top:1px}
+    .warning-box p{font-size:14px;line-height:1.65;color:#78350f;margin:0}
+    .warning-box strong{color:#92400e}
+
+    .post-cta{background:var(--forest);border-radius:16px;padding:32px;text-align:center;margin-top:48px}
+    .post-cta h3{font-family:'Playfair Display',serif;font-size:24px;color:var(--lime);margin-bottom:10px}
+    .post-cta p{font-size:14px;color:rgba(255,255,255,.75);margin-bottom:20px}
+    .post-cta a{display:inline-block;padding:13px 28px;background:var(--lime);color:var(--forest);border-radius:100px;font-size:14px;font-weight:700;text-decoration:none}
+
+    .sidebar{position:sticky;top:84px}
+    .toc{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px}
+    .toc-title{font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--gray);margin-bottom:12px}
+    .toc a{display:block;font-size:13px;color:var(--gray);text-decoration:none;padding:5px 0;border-bottom:1px solid var(--border);transition:color .2s;line-height:1.4}
+    .toc a:last-child{border:none}
+    .toc a:hover{color:var(--forest)}
+    .sidebar-cta{background:var(--forest);border-radius:14px;padding:24px;text-align:center}
+    .sidebar-cta p{font-size:13px;color:rgba(255,255,255,.75);line-height:1.55;margin-bottom:14px}
+    .sidebar-cta a{display:block;padding:10px;background:var(--lime);color:var(--forest);border-radius:8px;font-size:13px;font-weight:700;text-decoration:none}
+    .sidebar-cta-title{font-family:'Playfair Display',serif;font-size:16px;color:var(--lime);font-weight:700;margin-bottom:8px}
+
+    footer{background:var(--forest);color:rgba(255,255,255,.7);text-align:center;padding:24px;font-size:13px}
+    footer a{color:rgba(255,255,255,.5);text-decoration:none;margin:0 12px}
+    footer a:hover{color:#fff}
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo"><a href="index.html"><img src="assets/logo-forest-green.png" alt="Drip Atlas"/></a></div>
+        <ul class="nav-links">
+    <li><a href="index.html#wyg">Irrigation Design</a></li>
+    <li><a href="products.html">Products</a></li>
+    <li><a href="learn.html" class="active">Learn</a></li>
+    <li><a href="quote.html" class="btn-quote">Get a Quote</a></li>
+  </ul>
+        <div class="nav-right">
+    <a href="materials.html" class="btn-cta">Start Designing</a>
+  </div>
+</nav>
+
+<div class="post-wrap">
+  <article>
+    <a class="back-link" href="learn.html">← Back to Learn</a>
+    <span class="tag">Design</span>
+    <h1 id="top" class="post-title">Head-to-Head Spacing: Why Your Coverage Matters</h1>
+    <p class="post-subtitle">Most irrigation failures trace back to head spacing done by eye instead of by formula. Here's the rule the pros use — and why cutting corners always shows up as brown stripes.</p>
+    <div class="post-meta">
+      <strong>Drip Atlas Team</strong> &nbsp;·&nbsp; June 1, 2025 &nbsp;·&nbsp; 5 min read
+    </div>
+
+    <div class="prose">
+      <h2 id="what-is-h2h">What "Head-to-Head" Spacing Actually Means</h2>
+      <p>Head-to-head spacing is the industry standard for guaranteeing complete, even coverage. The rule is simple: <strong>each sprinkler head's throw radius should reach the adjacent head</strong>. In other words, the spacing between heads equals the throw radius of the heads — not the diameter, not some fraction of it.</p>
+      <p>If a rotor is rated for a 30-foot radius, the heads should be spaced 30 feet apart. Each head reaches the next one. Where the throws overlap in the middle is where you get the most uniform water distribution. The center of the overlap is where two half-patterns combine into one full pattern — that's the design intent.</p>
+    </div>
+
+    <div class="diagram">
+      <div class="diagram-label">Head-to-Head Coverage Pattern (Top View)</div>
+      <svg width="480" height="180" viewBox="0 0 480 180" xmlns="http://www.w3.org/2000/svg">
+        <!-- Overlap shading -->
+        <ellipse cx="160" cy="90" rx="60" ry="60" fill="rgba(200,230,112,.35)"/>
+        <ellipse cx="320" cy="90" rx="60" ry="60" fill="rgba(200,230,112,.35)"/>
+        <!-- Full circles with stroke -->
+        <circle cx="100" cy="90" r="90" fill="none" stroke="rgba(37,51,25,.25)" stroke-width="1.5" stroke-dasharray="5,4"/>
+        <circle cx="240" cy="90" r="90" fill="none" stroke="rgba(37,51,25,.25)" stroke-width="1.5" stroke-dasharray="5,4"/>
+        <circle cx="380" cy="90" r="90" fill="none" stroke="rgba(37,51,25,.25)" stroke-width="1.5" stroke-dasharray="5,4"/>
+        <!-- Head markers -->
+        <circle cx="100" cy="90" r="7" fill="#253319"/>
+        <circle cx="240" cy="90" r="7" fill="#253319"/>
+        <circle cx="380" cy="90" r="7" fill="#253319"/>
+        <!-- Spacing arrow -->
+        <line x1="100" y1="150" x2="240" y2="150" stroke="#253319" stroke-width="1.5" marker-end="url(#arr)" marker-start="url(#arr2)"/>
+        <text x="170" y="168" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#253319" font-weight="600">= Throw Radius</text>
+        <!-- Radius arrow -->
+        <line x1="240" y1="90" x2="310" y2="55" stroke="#c8222a" stroke-width="1.5" stroke-dasharray="3,2"/>
+        <text x="295" y="50" font-family="Inter,sans-serif" font-size="10" fill="#c8222a" font-weight="600">Radius</text>
+        <defs>
+          <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#253319"/></marker>
+          <marker id="arr2" markerWidth="8" markerHeight="8" refX="0" refY="3" orient="auto"><path d="M6,0 L6,6 L0,3 z" fill="#253319"/></marker>
+        </defs>
+      </svg>
+    </div>
+
+    <div class="prose">
+      <h2 id="why-it-fails">Why Wider Spacing Always Fails</h2>
+      <p>Sprinkler precipitation isn't uniform across a head's throw. Water application is heaviest near the head and thinnest at the outer edge of the pattern. This is by design — it's what makes head-to-head spacing work. When two heads throw at each other, the thin outer edges combine into a full application rate in the middle, creating even coverage across the entire zone.</p>
+      <p>When you space heads at 1.25× or 1.5× the radius (as some budget design guides suggest to save on head count), the outer edges no longer meet. You get dry strips right between heads — classic "brown stripe" syndrome. Those strips look like a watering schedule problem, a clogged head, or a pressure issue. They're actually a spacing problem, and the only fix is adding heads.</p>
+    </div>
+
+    <div class="warning-box">
+      <div class="warning-box-icon">⚠️</div>
+      <p><strong>Never space to diameter.</strong> A common mistake is spacing heads at their rated diameter (2× the radius) to maximize coverage with fewer heads. A 15-foot-radius head spaced 30 feet apart will leave a completely dry 8–10 foot strip between heads. Head-to-head means spacing at the <strong>radius</strong>, not the diameter.</p>
+    </div>
+
+    <div class="prose">
+      <h2 id="rotor-vs-spray">Rotors vs. Spray Heads: Different Rules, Same Principle</h2>
+
+      <h3>Spray heads (pop-up sprays)</h3>
+      <p>Spray heads have fixed nozzles that throw a constant pattern. They're rated for throws of 4–15 feet depending on nozzle type. Head-to-head spacing for sprays is strict because their precipitation pattern is the least forgiving — the outer edge drop-off is sharp. Space them exactly at radius, especially in tight residential lawns where a 1-foot dry strip is immediately visible.</p>
+      <p>Common spacing: 8 ft heads spaced 8 ft apart, 10 ft heads spaced 10 ft apart, 12 ft heads spaced 12 ft apart. Rectangular patterns (using matched-precipitation nozzles) follow the same rule but can use a slightly wider spacing in one axis — check the manufacturer's chart for the specific nozzle.</p>
+
+      <h3>Gear-drive rotors</h3>
+      <p>Rotors have a more gradual fall-off at the outer edge, giving a slightly more forgiving spacing envelope. Manufacturers typically allow spacing up to 60% of the diameter (i.e., 1.2× the radius) in low-wind conditions. In practice, stick to the radius unless you're in a consistently calm climate and using matched-precipitation rotors from a known manufacturer.</p>
+      <p>Rotors are designed for larger areas — typical spacing runs 18–35 feet between heads. Because they cover more ground per head, getting the spacing right matters even more: one misplaced rotor creates a much larger dry zone than a misplaced spray head.</p>
+
+      <h2 id="spacing-table">Standard Spacing by Head Type</h2>
+    </div>
+
+    <table class="data-table">
+      <thead>
+        <tr><th>Head Type</th><th>Throw Radius</th><th>Max Head Spacing</th><th>Grid Pattern</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>4" pop-up spray (8 ft nozzle)</td><td>8 ft</td><td>8 ft</td><td>8 × 8 ft square</td></tr>
+        <tr><td>4" pop-up spray (10 ft nozzle)</td><td>10 ft</td><td>10 ft</td><td>10 × 10 ft square</td></tr>
+        <tr><td>4" pop-up spray (12 ft nozzle)</td><td>12 ft</td><td>12 ft</td><td>12 × 12 ft square</td></tr>
+        <tr><td>6" pop-up spray (15 ft nozzle)</td><td>15 ft</td><td>15 ft</td><td>15 × 15 ft square</td></tr>
+        <tr><td>Hunter PGP rotor (medium)</td><td>20–28 ft</td><td>25 ft</td><td>25 × 25 ft square</td></tr>
+        <tr><td>Rain Bird 5000 rotor</td><td>18–35 ft</td><td>30 ft</td><td>30 × 30 ft square</td></tr>
+        <tr><td>MP Rotator (matched precip)</td><td>5–30 ft</td><td>= radius</td><td>Varies by nozzle</td></tr>
+      </tbody>
+    </table>
+
+    <div class="prose">
+      <h2 id="layout-patterns">Square vs. Triangular Grid Layout</h2>
+      <p>Most residential systems use a square grid — heads at the corners of equal squares. It's easy to plan, easy to install, and works well for rectangular lawn areas. But a triangular (staggered) layout provides better coverage with roughly 15% fewer heads for the same area.</p>
+      <p>In a triangular layout, every other row is offset by half the spacing. Each head is equidistant from six neighbors rather than four. The result is more uniform distribution and smaller uncovered gaps, particularly at the center of large open areas.</p>
+      <p>For most homeowners, the square grid is the right call — it's easier to lay out and the coverage difference is minimal in residential zones. Triangular layouts pay off on large commercial turf areas (athletic fields, parks) where head count has a significant cost impact.</p>
+
+      <h2 id="wind">Wind and Its Effect on Spacing</h2>
+      <p>Everything above assumes calm conditions. Wind is the great equalizer of irrigation coverage — it distorts spray patterns, pushes water to the downwind side of a head, and creates dry zones on the upwind side that don't show up in any design software.</p>
+      <p>In consistently windy areas (coastal regions, open plains), reduce maximum head spacing by 20–25% below the rated radius. Use rotors over spray heads wherever possible — their larger water droplets resist wind drift far better than the fine mist produced by spray nozzles. Low-angle nozzles (available from most manufacturers) also reduce wind exposure by keeping the water stream closer to the ground.</p>
+    </div>
+
+    <ul class="tip-list">
+      <li>Place heads at the perimeter of the area first, then fill the interior. Coverage problems always start at the edges, where heads have no neighbor on the outside.</li>
+      <li>In narrow strips (under 8 ft wide), use strip nozzles — they throw a rectangular pattern designed for exactly this geometry. Standard round nozzles always over-spray the edges in strips.</li>
+      <li>When a head must be set closer to an obstacle than the rated radius, reduce pressure slightly at that head using a pressure-compensating stem. This shortens the throw to match the available space without wasting water.</li>
+      <li>Document your head placement on a map after installation. If you add a flower bed or walkway later, you'll know exactly which heads need to be moved before you dig.</li>
+    </ul>
+
+    <div class="post-cta">
+      <h3>Get perfect spacing without the math.</h3>
+      <p>Draw your zones and Drip Atlas places heads automatically using head-to-head spacing rules for every head type in our catalog.</p>
+      <a href="design.html">Start Designing Free →</a>
+    </div>
+  </article>
+
+  <aside class="sidebar">
+    <div class="toc">
+      <div class="toc-title">In This Article</div>
+      <a href="#what-is-h2h">What head-to-head means</a>
+      <a href="#why-it-fails">Why wider spacing fails</a>
+      <a href="#rotor-vs-spray">Rotors vs. spray heads</a>
+      <a href="#spacing-table">Spacing by head type</a>
+      <a href="#layout-patterns">Square vs. triangular grid</a>
+      <a href="#wind">Wind effects</a>
+    </div>
+    <div class="sidebar-cta">
+      <div class="sidebar-cta-title">Auto-layout heads</div>
+      <p>Drip Atlas places heads with correct head-to-head spacing for every zone you draw — no measuring required.</p>
+      <a href="design.html">Open Design Tool →</a>
+    </div>
+  </aside>
+</div>
+
+<footer>
+  <p>© 2026 Drip Atlas &nbsp;·&nbsp;
+    <a href="index.html">Home</a>
+    <a href="products.html">Products</a>
+    <a href="learn.html">Learn</a>
+    <a href="materials.html">Design Tool</a>
+  </p>
+</footer>
+</body>
+</html>
