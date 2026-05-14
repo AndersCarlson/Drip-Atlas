@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Drip Atlas — AI Design</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="icon" type="image/png" href="assets/favicon.png"/>
+  <script src="ai-config.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --forest:#253319;--forest2:#1a2516;--forest3:#0f160d;
+      --lime:#c8e670;--lime2:#b8d660;
+      --cream:#f1ebe2;--white:#fff;
+      --text:#1c1c1a;--muted:#7a7a72;
+      --border:#d8d0c4;--border-dark:rgba(255,255,255,.1);
+      --topbar:60px;
+    }
+    html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;
+      background:var(--cream);color:var(--text);-webkit-font-smoothing:antialiased}
+
+    /* ── SHELL ── */
+    .shell{display:flex;height:100vh;overflow:hidden}
+
+    /* ── LEFT SIDEBAR ── */
+    .sidebar{
+      width:240px;flex-shrink:0;background:var(--forest3);
+      display:flex;flex-direction:column;overflow:hidden;
+    }
+    .sb-top{
+      padding:18px 20px 16px;border-bottom:1px solid var(--border-dark);
+      display:flex;align-items:center;gap:10px;flex-shrink:0;
+    }
+    .sb-logo img{height:26px;filter:brightness(0) invert(1);opacity:.85}
+    .sb-ai-pill{
+      margin-left:auto;
+      background:var(--lime);color:var(--forest);
+      font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+      padding:3px 8px;border-radius:20px;flex-shrink:0;
+    }
+    .sb-addr{
+      padding:10px 20px 12px;border-bottom:1px solid var(--border-dark);flex-shrink:0;
+    }
+    .sb-addr-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+      color:rgba(255,255,255,.35);margin-bottom:2px}
+    .sb-addr-val{font-size:12px;color:rgba(255,255,255,.7);line-height:1.4}
+
+    /* AI insights */
+    .sb-insights{flex:1;overflow-y:auto;padding:14px 20px}
+    .si-title{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+      color:rgba(255,255,255,.35);margin-bottom:10px}
+    .si-row{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:9px 0;border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .si-row:last-child{border:none}
+    .si-key{font-size:12px;color:rgba(255,255,255,.55)}
+    .si-val{font-size:13px;font-weight:700;color:var(--lime)}
+    .si-val.muted{color:rgba(255,255,255,.4);font-weight:400;font-style:italic}
+
+    /* AI score */
+    .ai-score-card{
+      background:rgba(255,255,255,.05);border:1px solid var(--border-dark);
+      border-radius:10px;padding:14px 16px;margin:14px 0;
+    }
+    .asc-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+      color:rgba(255,255,255,.35);margin-bottom:8px}
+    .asc-score-row{display:flex;align-items:baseline;gap:4px;margin-bottom:8px}
+    .asc-num{font-family:'Playfair Display',serif;font-size:36px;font-weight:700;color:var(--lime)}
+    .asc-den{font-size:14px;color:rgba(255,255,255,.4)}
+    .asc-bar{height:4px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden}
+    .asc-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--lime2),var(--lime));transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+    .asc-desc{font-size:11px;color:rgba(255,255,255,.4);margin-top:6px;line-height:1.4}
+
+    .sb-footer{padding:12px 16px 20px;border-top:1px solid var(--border-dark);flex-shrink:0}
+    .sb-action-btn{
+      display:flex;align-items:center;gap:8px;width:100%;padding:9px 12px;
+      border-radius:8px;border:1px solid var(--border-dark);background:transparent;
+      font-size:12px;font-weight:600;color:rgba(255,255,255,.5);
+      cursor:pointer;font-family:'Inter',sans-serif;
+      transition:border-color .12s,color .12s;margin-bottom:6px;text-decoration:none;
+    }
+    .sb-action-btn:hover{border-color:rgba(255,255,255,.3);color:rgba(255,255,255,.85)}
+    .sb-action-btn.primary{
+      background:var(--lime);border-color:var(--lime);color:var(--forest);
+      font-weight:700;
+    }
+    .sb-action-btn.primary:hover{background:var(--lime2);border-color:var(--lime2)}
+
+    /* ── MAIN ── */
+    .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+    /* ── TOPBAR ── */
+    .topbar{
+      height:var(--topbar);flex-shrink:0;
+      background:var(--forest);
+      border-bottom:1px solid rgba(255,255,255,.08);
+      display:flex;align-items:center;gap:16px;padding:0 24px;
+    }
+    .tb-ai-badge{
+      background:var(--lime);color:var(--forest);
+      font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+      padding:4px 10px;border-radius:100px;flex-shrink:0;
+    }
+    .tb-title{
+      font-family:'Playfair Display',serif;font-size:17px;color:rgba(255,255,255,.9);
+      margin-right:4px;
+    }
+    .tb-addr-chip{
+      background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.12);
+      border-radius:100px;font-size:12px;font-weight:500;color:rgba(255,255,255,.7);
+      padding:4px 14px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    }
+    .tb-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+    .tb-price{
+      font-family:'Playfair Display',serif;font-size:20px;color:var(--lime);font-weight:700;
+    }
+    .tb-price-label{font-size:11px;color:rgba(255,255,255,.4);margin-right:4px}
+    .btn-atc{
+      padding:9px 20px;background:var(--lime);color:var(--forest);border:none;
+      border-radius:9px;font-size:13px;font-weight:800;cursor:pointer;
+      font-family:'Inter',sans-serif;white-space:nowrap;
+      transition:background .15s,transform .12s;letter-spacing:.01em;
+    }
+    .btn-atc:hover{background:var(--lime2);transform:translateY(-1px)}
+    .btn-atc:disabled{opacity:.4;cursor:default;transform:none}
+    .tb-diy-link{
+      font-size:12px;color:rgba(255,255,255,.45);text-decoration:none;
+      transition:color .15s;white-space:nowrap;
+    }
+    .tb-diy-link:hover{color:rgba(255,255,255,.8)}
+
+    /* ── CONTENT SPLIT ── */
+    .content{flex:1;display:flex;overflow:hidden}
+
+    /* Map pane */
+    .map-pane{flex:1;position:relative;background:var(--forest2);min-width:0}
+    .map-pane iframe{width:100%;height:100%;border:none;display:block}
+
+    /* Generating overlay */
+    #gen-overlay{
+      position:absolute;inset:0;background:rgba(15,22,13,.82);
+      backdrop-filter:blur(4px);display:flex;flex-direction:column;
+      align-items:center;justify-content:center;gap:16px;z-index:10;
+      transition:opacity .5s;
+    }
+    #gen-overlay.hidden{opacity:0;pointer-events:none}
+    .gen-ring{
+      width:56px;height:56px;border-radius:50%;
+      border:3px solid transparent;
+      border-top-color:var(--lime);border-right-color:var(--lime);
+      animation:spin 1s linear infinite;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .gen-text{font-size:15px;font-weight:600;color:rgba(255,255,255,.85)}
+    .gen-sub{font-size:12px;color:rgba(255,255,255,.4);text-align:center;max-width:220px;line-height:1.5}
+
+    /* Parts pane */
+    .parts-pane{
+      width:340px;flex-shrink:0;background:var(--white);
+      border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;
+    }
+    .pp-header{
+      padding:16px 20px 14px;border-bottom:1px solid var(--border);flex-shrink:0;
+    }
+    .pp-title{font-family:'Playfair Display',serif;font-size:17px;color:var(--forest);margin-bottom:2px}
+    .pp-sub{font-size:12px;color:var(--muted)}
+    .pp-body{flex:1;overflow-y:auto;padding:16px}
+
+    /* Zone summary cards */
+    /* ── ZONE SUMMARY CARDS ── */
+    .zs-card{
+      background:var(--cream);border:1px solid var(--border);border-radius:12px;
+      padding:14px 16px;margin-bottom:10px;
+    }
+    .zs-header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+    .zs-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+    .zs-name{font-size:14px;font-weight:700;color:var(--text)}
+    .zs-type-badge{
+      margin-left:auto;font-size:10px;font-weight:700;
+      letter-spacing:.05em;text-transform:uppercase;
+      padding:2px 7px;border-radius:4px;
+      background:var(--white);border:1px solid var(--border);color:var(--muted);
+    }
+    .zs-stats{display:flex;gap:10px}
+    .zs-stat{flex:1;background:var(--white);border:1px solid var(--border);
+      border-radius:8px;padding:8px 10px;text-align:center}
+    .zs-stat-val{font-size:16px;font-weight:700;color:var(--forest)}
+    .zs-stat-label{font-size:10px;color:var(--muted);margin-top:1px}
+
+    /* Empty state */
+    .empty-state{
+      text-align:center;padding:40px 20px;
+    }
+    .es-icon{font-size:40px;margin-bottom:12px;opacity:.4}
+    .es-text{font-size:13px;color:var(--muted);line-height:1.6}
+
+    /* Total row */
+    .parts-total{
+      flex-shrink:0;padding:14px 20px;border-top:1px solid var(--border);
+      background:var(--cream);
+    }
+    .pt-row{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px}
+    .pt-label{font-size:13px;color:var(--muted)}
+    .pt-amount{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--forest)}
+    .pt-note{font-size:11px;color:var(--muted);margin-bottom:12px}
+    .btn-full-atc{
+      display:block;width:100%;padding:13px;background:var(--forest);color:var(--lime);
+      border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;
+      font-family:'Inter',sans-serif;transition:background .15s;text-align:center;
+    }
+    .btn-full-atc:hover{background:var(--forest2)}
+    .btn-full-atc:disabled{opacity:.4;cursor:default}
+    .btn-diy-switch{
+      display:block;width:100%;margin-top:8px;padding:10px;background:transparent;
+      border:1.5px solid var(--border);border-radius:10px;
+      font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;
+      font-family:'Inter',sans-serif;text-decoration:none;text-align:center;transition:all .15s;
+    }
+    .btn-diy-switch:hover{border-color:var(--forest);color:var(--forest)}
+
+    /* Cart drawer (same as materials.html) */
+    #cart-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);z-index:1001;opacity:0;pointer-events:none;transition:opacity .25s}
+    #cart-overlay.open{opacity:1;pointer-events:all}
+    #cart-drawer{position:fixed;top:0;right:0;bottom:0;width:360px;background:var(--white);box-shadow:-8px 0 40px rgba(0,0,0,.14);z-index:1002;transform:translateX(100%);transition:transform .3s cubic-bezier(.32,.72,0,1);display:flex;flex-direction:column}
+    #cart-drawer.open{transform:translateX(0)}
+    .cd-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
+    .cd-title{font-family:'Playfair Display',serif;font-size:20px;color:var(--forest)}
+    .cd-close{width:32px;height:32px;border-radius:50%;border:none;background:var(--cream);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:background .12s}
+    .cd-close:hover{background:var(--border)}
+    .cd-body{flex:1;overflow-y:auto;padding:16px 24px}
+    .cd-empty{text-align:center;padding:40px 0;color:var(--muted);font-size:14px}
+    .cart-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+    .cart-item:last-child{border:none}
+    .ci-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+    .ci-body{flex:1;min-width:0}
+    .ci-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .ci-meta{font-size:12px;color:var(--muted)}
+    .ci-price{font-size:13px;font-weight:700;color:var(--forest);white-space:nowrap}
+    .cd-footer{padding:16px 24px 24px;border-top:1px solid var(--border);flex-shrink:0}
+    .cd-subtotal{display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px}
+    .cd-subtotal-val{font-weight:700;color:var(--forest)}
+    .cd-note{font-size:11px;color:var(--muted);margin-bottom:14px}
+    .btn-checkout{display:block;width:100%;padding:14px;background:var(--forest);color:var(--lime);border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;font-family:'Inter',sans-serif;transition:background .15s;text-decoration:none;text-align:center}
+    .btn-checkout:hover{background:var(--forest2)}
+  </style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ── SIDEBAR ── -->
+  <div class="sidebar">
+    <div class="sb-top">
+      <div class="sb-logo"><img src="assets/logo-forest-green.png" alt="Drip Atlas"/></div>
+      <span class="sb-ai-pill">AI</span>
+    </div>
+
+    <div class="sb-addr">
+      <div class="sb-addr-label">Property</div>
+      <div class="sb-addr-val" id="sb-addr-val">Loading…</div>
+    </div>
+
+    <div class="sb-insights">
+      <div class="si-title">Design Analysis</div>
+
+      <div class="ai-score-card">
+        <div class="asc-label">Coverage Score</div>
+        <div class="asc-score-row">
+          <span class="asc-num" id="score-num">—</span>
+          <span class="asc-den">/100</span>
+        </div>
+        <div class="asc-bar"><div class="asc-fill" id="score-bar" style="width:0%"></div></div>
+        <div class="asc-desc" id="score-desc">Analyzing your property…</div>
+      </div>
+
+      <div class="si-row">
+        <span class="si-key">Zones detected</span>
+        <span class="si-val" id="si-zones">—</span>
+      </div>
+      <div class="si-row">
+        <span class="si-key">Total heads</span>
+        <span class="si-val" id="si-heads">—</span>
+      </div>
+      <div class="si-row">
+        <span class="si-key">Est. coverage</span>
+        <span class="si-val" id="si-area">—</span>
+      </div>
+      <div class="si-row">
+        <span class="si-key">Drip zones</span>
+        <span class="si-val" id="si-drip">—</span>
+      </div>
+      <div class="si-row">
+        <span class="si-key">Spray zones</span>
+        <span class="si-val" id="si-spray">—</span>
+      </div>
+
+    </div>
+
+    <div class="sb-footer">
+      <button class="sb-action-btn primary" onclick="openCart()">🛒 Add All to Cart</button>
+      <a class="sb-action-btn" href="materials.html">⚙ Open in DIY Tool</a>
+      <a class="sb-action-btn" href="index.html">← Back to Home</a>
+    </div>
+  </div>
+
+  <!-- ── MAIN ── -->
+  <div class="main">
+    <!-- Topbar -->
+    <div class="topbar">
+      <span class="tb-ai-badge">AI Design</span>
+      <span class="tb-title">Your Irrigation Plan</span>
+      <span class="tb-addr-chip" id="tb-addr-chip">Loading…</span>
+      <div class="tb-right">
+        <span class="tb-price-label">Est. total</span>
+        <span class="tb-price" id="tb-price">—</span>
+        <button class="btn-atc" id="tb-atc-btn" disabled onclick="openCart()">Add to Cart</button>
+        <a class="tb-diy-link" href="materials.html">Edit in DIY Tool →</a>
+      </div>
+    </div>
+
+    <!-- Content split -->
+    <div class="content">
+      <!-- Map pane -->
+      <div class="map-pane">
+        <div id="gen-overlay">
+          <div class="gen-ring"></div>
+          <div class="gen-text">AI is designing your plan…</div>
+          <div class="gen-sub">Claude is calculating head placement, coverage, and friction loss</div>
+        </div>
+        <iframe id="designer-frame" src="" allow="geolocation"></iframe>
+      </div>
+
+      <!-- Parts pane -->
+      <div class="parts-pane">
+        <div class="pp-header">
+          <div class="pp-title">Zone Breakdown</div>
+          <div class="pp-sub" id="pp-sub">Waiting for design…</div>
+        </div>
+        <div class="pp-body" id="pp-body">
+          <div class="empty-state">
+            <div class="es-icon">🗺</div>
+            <div class="es-text">Your AI-generated zone layout will appear here once the design is complete.</div>
+          </div>
+        </div>
+        <div class="parts-total">
+          <div class="pt-row">
+            <span class="pt-label">Estimated total</span>
+            <span class="pt-amount" id="pt-amount">—</span>
+          </div>
+          <div class="pt-note" id="pt-note">Includes all heads, pipe, valves, and fittings</div>
+          <button class="btn-full-atc" id="pp-atc-btn" disabled onclick="openCart()">Add All to Cart</button>
+          <a class="btn-diy-switch" href="materials.html">Edit &amp; customize in DIY Tool →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Cart drawer -->
+<div id="cart-overlay" onclick="closeCart()"></div>
+<div id="cart-drawer">
+  <div class="cd-header">
+    <span class="cd-title">Your Cart</span>
+    <button class="cd-close" onclick="closeCart()">✕</button>
+  </div>
+  <div class="cd-body" id="cd-body"><div class="cd-empty">Your cart is empty.</div></div>
+  <div class="cd-footer">
+    <div class="cd-subtotal">
+      <span>Subtotal</span>
+      <span class="cd-subtotal-val" id="cd-subtotal">$0.00</span>
+    </div>
+    <div class="cd-note">Shipping calculated at checkout</div>
+    <a href="checkout.html" class="btn-checkout">Proceed to Checkout →</a>
+  </div>
+</div>
+
+<script src="map-config.js"></script>
+<script>
+// ── Load design from localStorage ──
+let design = {};
+let zones  = [];
+
+try {
+  design = JSON.parse(localStorage.getItem('drip_design') || '{}');
+  zones  = design.irrigationZones || [];
+} catch(e) {}
+
+const addr = design.address || 'Your property';
+document.getElementById('sb-addr-val').textContent   = addr;
+document.getElementById('tb-addr-chip').textContent  = addr;
+
+// ── Load the embedded designer (same URL format materials.html uses) ──
+const lat = design.lat;
+const lng = design.lng;
+
+const frame = document.getElementById('designer-frame');
+if (lat && lng) {
+  frame.src = `designer.html?lat=${lat}&lng=${lng}&address=${encodeURIComponent(addr)}&mode=ai`;
+} else {
+  frame.src = 'designer.html?mode=ai';
+}
+
+// ── Timeout fallback — force-resolve if designer takes > 45 s ──
+const _genTimeout = setTimeout(() => {
+  try {
+    const d = JSON.parse(localStorage.getItem('drip_design') || '{}');
+    zones = d.irrigationZones || [];
+  } catch(e) {}
+  hideGenOverlay();
+  if (zones.length > 0) renderZones();
+}, 45000);
+
+// ── Listen for waterPlanGenerated from designer.html ──
+window.addEventListener('message', e => {
+  if (e.data && e.data.type === 'waterPlanGenerated') {
+    clearTimeout(_genTimeout);
+    try {
+      const d = JSON.parse(localStorage.getItem('drip_design') || '{}');
+      zones = d.irrigationZones || [];
+    } catch(err) {}
+    hideGenOverlay();
+    renderZones();
+  }
+});
+
+// ── If zones already exist in localStorage, render immediately ──
+if (zones.length > 0) {
+  clearTimeout(_genTimeout);
+  hideGenOverlay();
+  renderZones();
+}
+
+function hideGenOverlay() {
+  const el = document.getElementById('gen-overlay');
+  el.classList.add('hidden');
+  setTimeout(() => el.style.display = 'none', 600);
+}
+
+// ── Part cost estimation (simplified, per-zone) ──
+const mp = price => +(price / 0.60).toFixed(2);
+
+const PART_COSTS = {
+  rotor:        mp(18.50),
+  spray_head:   mp(6.75),
+  drip_emitter: mp(0.65),
+  valve:        mp(22.00),
+  pipe_per_ft:  mp(0.55),
+  fitting_ea:   mp(1.80),
+};
+
+function estimateZoneCost(iz) {
+  const heads     = (iz.heads || []).length;
+  const isdrip    = !!iz.isDrip;
+  const headCost  = isdrip
+    ? heads * PART_COSTS.drip_emitter
+    : (iz.headType === 'spray' ? heads * PART_COSTS.spray_head : heads * PART_COSTS.rotor);
+  const pipeFt    = Math.round(heads * 14);
+  const pipeCost  = pipeFt * PART_COSTS.pipe_per_ft;
+  const fittings  = Math.ceil(heads * 2.5);
+  const fitCost   = fittings * PART_COSTS.fitting_ea;
+  return headCost + pipeCost + fitCost + PART_COSTS.valve;
+}
+
+function estimateTotalCost(zoneList) {
+  return zoneList.reduce((sum, iz) => sum + estimateZoneCost(iz), 0);
+}
+
+const ZONE_COLORS = ['#2ecc71','#3498db','#e74c3c','#f39c12','#9b59b6','#1abc9c','#e67e22','#e91e63'];
+function zoneColor(i) { return ZONE_COLORS[i % ZONE_COLORS.length]; }
+
+function zoneLabelType(iz) {
+  if (iz.zoneType === 'lawn') return 'Lawn';
+  if (iz.zoneType === 'garden') return 'Garden';
+  if (iz.zoneType === 'slope') return 'Slope';
+  if (iz.isDrip) return 'Drip';
+  return iz.zoneType || 'Zone';
+}
+
+function renderZones() {
+  const body      = document.getElementById('pp-body');
+  const totalCost = estimateTotalCost(zones);
+  const fmt       = n => '$' + n.toFixed(2);
+  const fmtBig    = n => '$' + Math.round(n).toLocaleString();
+
+  const totalHeads = zones.reduce((s, z) => s + (z.heads || []).length, 0);
+  const dripZones  = zones.filter(z => z.isDrip).length;
+  const sprayZones = zones.length - dripZones;
+  const areaEst    = Math.round(totalHeads * 180);
+
+  document.getElementById('si-zones').textContent = zones.length || '—';
+  document.getElementById('si-heads').textContent = totalHeads || '—';
+  document.getElementById('si-area').textContent  = areaEst > 0 ? areaEst.toLocaleString() + ' sq ft' : '—';
+  document.getElementById('si-drip').textContent  = dripZones || '0';
+  document.getElementById('si-spray').textContent = sprayZones || '0';
+
+  const score = zones.length === 0 ? 0 : Math.min(100, Math.round(60 + zones.length * 4 + Math.min(totalHeads, 30)));
+  const scoreDesc = score >= 85 ? 'Excellent coverage — all areas reached'
+    : score >= 70 ? 'Good coverage — minor edge adjustments may help'
+    : 'Plan generated — review zone boundaries';
+  document.getElementById('score-num').textContent  = score;
+  document.getElementById('score-bar').style.width  = score + '%';
+  document.getElementById('score-desc').textContent = scoreDesc;
+
+  if (totalCost > 0) {
+    document.getElementById('tb-price').textContent  = fmtBig(totalCost);
+    document.getElementById('pt-amount').textContent = fmtBig(totalCost);
+    document.getElementById('tb-atc-btn').disabled   = false;
+    document.getElementById('pp-atc-btn').disabled   = false;
+    document.getElementById('pp-sub').textContent    =
+      `${zones.length} zone${zones.length !== 1 ? 's' : ''} · ${totalHeads} heads`;
+  }
+
+  if (zones.length === 0) {
+    body.innerHTML = `<div class="empty-state">
+      <div class="es-icon">⏳</div>
+      <div class="es-text">Draw your zones, then hit Generate Water Plan. Claude will place heads and calculate coverage.</div>
+    </div>`;
+    return;
+  }
+
+  body.innerHTML = zones.map((iz, i) => {
+    const heads  = (iz.heads || []).length;
+    const cost   = estimateZoneCost(iz);
+    const color  = iz.color || zoneColor(i);
+    const label  = zoneLabelType(iz);
+    const pipeFt = Math.round(heads * 14);
+    return `
+    <div class="zs-card">
+      <div class="zs-header">
+        <div class="zs-dot" style="background:${color}"></div>
+        <span class="zs-name">${iz.name || ('Zone ' + (i + 1))}</span>
+        <span class="zs-type-badge">${label}</span>
+      </div>
+      <div class="zs-stats">
+        <div class="zs-stat">
+          <div class="zs-stat-val">${heads}</div>
+          <div class="zs-stat-label">${iz.isDrip ? 'emitters' : 'heads'}</div>
+        </div>
+        <div class="zs-stat">
+          <div class="zs-stat-val">${pipeFt}</div>
+          <div class="zs-stat-label">ft pipe</div>
+        </div>
+        <div class="zs-stat">
+          <div class="zs-stat-val">${fmt(cost)}</div>
+          <div class="zs-stat-label">est. cost</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Cart ──
+let cartItems = [];
+try { cartItems = JSON.parse(sessionStorage.getItem('drip_cart') || '[]'); } catch(e) {}
+
+function openCart() {
+  if (zones.length === 0) return;
+  // Build cart from zones if empty
+  if (cartItems.length === 0) buildCart();
+  renderCart();
+  document.getElementById('cart-overlay').classList.add('open');
+  document.getElementById('cart-drawer').classList.add('open');
+}
+function closeCart() {
+  document.getElementById('cart-overlay').classList.remove('open');
+  document.getElementById('cart-drawer').classList.remove('open');
+}
+
+function buildCart() {
+  cartItems = [];
+  zones.forEach((iz, i) => {
+    const heads = (iz.heads || []).length;
+    if (heads === 0) return;
+    const isdrip = !!iz.isDrip;
+    const label  = zoneLabelType(iz);
+    if (isdrip) {
+      cartItems.push({ icon:'💧', name:`Drip Emitters — ${iz.name || 'Zone '+(i+1)}`, qty: heads, price: mp(0.65), color:'#1abc9c' });
+    } else if (iz.headType === 'spray') {
+      cartItems.push({ icon:'💦', name:`Spray Heads — ${iz.name || 'Zone '+(i+1)}`, qty: heads, price: mp(6.75), color:'#3498db' });
+    } else {
+      cartItems.push({ icon:'🌀', name:`Rotor Heads — ${iz.name || 'Zone '+(i+1)}`, qty: heads, price: mp(18.50), color:'#2ecc71' });
+    }
+  });
+  // Valves
+  if (zones.length > 0) {
+    cartItems.push({ icon:'🔧', name:`Zone Valves (${zones.length}-valve manifold)`, qty: zones.length, price: mp(22.00), color:'#f39c12' });
+  }
+  sessionStorage.setItem('drip_cart', JSON.stringify(cartItems));
+}
+
+function renderCart() {
+  const body     = document.getElementById('cd-body');
+  const subtotal = cartItems.reduce((s, it) => s + it.price * it.qty, 0);
+  document.getElementById('cd-subtotal').textContent = '$' + subtotal.toFixed(2);
+
+  if (cartItems.length === 0) {
+    body.innerHTML = '<div class="cd-empty">Your cart is empty.</div>';
+    return;
+  }
+  body.innerHTML = cartItems.map(it => `
+    <div class="cart-item">
+      <div class="ci-icon" style="background:${it.color}22">${it.icon}</div>
+      <div class="ci-body">
+        <div class="ci-name">${it.name}</div>
+        <div class="ci-meta">Qty: ${it.qty}</div>
+      </div>
+      <div class="ci-price">$${(it.price * it.qty).toFixed(2)}</div>
+    </div>`).join('');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Learn — Drip Atlas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="icon" type="image/png" href="assets/favicon.png"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--forest:#253319;--lime:#c8e670;--cream:#f1ebe2;--white:#fff;--charcoal:#1c1c1a;--gray:#7a7a72;--border:rgba(37,51,25,.12)}
+    body{font-family:'Inter',sans-serif;background:var(--cream);color:var(--charcoal);-webkit-font-smoothing:antialiased}
+
+    nav{position:sticky;top:0;z-index:100;background:var(--white);border-bottom:1px solid var(--border);height:64px;display:flex;align-items:center;padding:0 40px;gap:32px}
+    .nav-logo img{height:32px}
+    .nav-links{display:flex;gap:28px;list-style:none;margin-left:32px;align-items:center}
+    .nav-links a{font-size:14px;font-weight:500;color:var(--charcoal);text-decoration:none;transition:color .2s}
+    .nav-links a:hover,.nav-links a.active{color:var(--forest)}
+    .nav-right{margin-left:auto}
+    .btn-quote{border:1.5px solid rgba(37,51,25,.12);background:transparent;color:#7a7a72;font-size:13px;font-weight:500;padding:6px 14px;border-radius:100px;cursor:pointer;text-decoration:none;transition:border-color .2s,color .2s}
+    .btn-quote:hover,.btn-quote.active{border-color:#253319;color:#253319}
+    .btn-cta{background:#253319;color:#c8e670;font-size:13.5px;font-weight:700;padding:8px 20px;border-radius:100px;cursor:pointer;text-decoration:none;transition:opacity .2s;border:none;white-space:nowrap}
+    .btn-cta:hover{opacity:.87}
+
+    .page{max-width:1100px;margin:0 auto;padding:56px 32px 80px}
+
+    /* HEADER */
+    .journal-header{text-align:center;margin-bottom:56px}
+    .journal-header h1{font-family:'Playfair Display',serif;font-size:48px;font-weight:700;font-style:italic;color:var(--charcoal);margin-bottom:12px}
+    .journal-header p{font-size:16px;color:var(--gray);max-width:520px;margin:0 auto;line-height:1.6}
+
+    /* FEATURED */
+    .featured{background:var(--white);border:1px solid var(--border);border-radius:20px;padding:40px;display:grid;grid-template-columns:1fr 200px;gap:40px;align-items:center;margin-bottom:40px;text-decoration:none;color:inherit;transition:box-shadow .2s,transform .15s}
+    .featured:hover{box-shadow:0 8px 40px rgba(37,51,25,.1);transform:translateY(-2px)}
+    .tag{display:inline-block;padding:4px 12px;border-radius:100px;font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;background:rgba(37,51,25,.1);color:var(--forest);margin-bottom:14px}
+    .tag.green{background:var(--forest);color:var(--lime)}
+    .featured-title{font-family:'Playfair Display',serif;font-size:30px;font-weight:700;color:var(--charcoal);line-height:1.25;margin-bottom:12px}
+    .featured-excerpt{font-size:15px;color:var(--gray);line-height:1.65;margin-bottom:20px}
+    .featured-meta{font-size:12px;color:var(--gray);margin-bottom:20px}
+    .btn-read{display:inline-flex;align-items:center;gap:6px;padding:12px 22px;background:var(--forest);color:var(--lime);border-radius:100px;font-size:14px;font-weight:700;text-decoration:none;transition:opacity .2s}
+    .btn-read:hover{opacity:.88}
+    .gauge-svg{flex-shrink:0}
+
+    /* GRID */
+    .posts-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+    .post-card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:28px;position:relative;text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:10px;transition:box-shadow .2s}
+    .post-card:not(.coming-soon):hover{box-shadow:0 4px 24px rgba(37,51,25,.09)}
+    .post-card.coming-soon{opacity:.6;cursor:default}
+    .coming-badge{position:absolute;top:16px;right:16px;background:var(--cream);border:1px solid var(--border);border-radius:100px;font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;padding:3px 10px;color:var(--gray)}
+    .post-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--charcoal);line-height:1.3}
+    .post-excerpt{font-size:13.5px;color:var(--gray);line-height:1.6;flex:1}
+    .post-meta{font-size:12px;color:var(--gray)}
+
+    footer{background:var(--forest);color:rgba(255,255,255,.7);text-align:center;padding:24px;font-size:13px}
+    footer a{color:rgba(255,255,255,.5);text-decoration:none;margin:0 12px}
+    footer a:hover{color:#fff}
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo"><a href="index.html"><img src="assets/logo-forest-green.png" alt="Drip Atlas"/></a></div>
+        <ul class="nav-links">
+    <li><a href="index.html#wyg">Irrigation Design</a></li>
+    <li><a href="products.html">Products</a></li>
+    <li><a href="learn.html" class="active">Learn</a></li>
+    <li><a href="quote.html" class="btn-quote">Get a Quote</a></li>
+  </ul>
+        <div class="nav-right">
+    <a href="materials.html" class="btn-cta">Start Designing</a>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="journal-header">
+    <h1>The Drip Atlas Journal</h1>
+    <p>Guides, tutorials, and irrigation expertise from the field — everything you need to design and install like a pro.</p>
+  </div>
+
+  <!-- FEATURED POST -->
+  <a class="featured" href="post-water-pressure.html">
+    <div>
+      <span class="tag green">Water Pressure</span>
+      <div class="featured-title">How to Measure Your Home's Water Pressure</div>
+      <p class="featured-excerpt">Before you design any irrigation system, you need to know your water pressure. Here's how to measure it accurately with a pressure gauge — and what to do if your numbers are too high or too low.</p>
+      <div class="featured-meta">May 11, 2025 &nbsp;·&nbsp; 6 min read</div>
+      <span class="btn-read">Read the Guide →</span>
+    </div>
+    <!-- Pressure gauge illustration -->
+    <svg class="gauge-svg" width="180" height="180" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="90" cy="95" r="72" fill="#f1ebe2" stroke="#253319" stroke-width="3"/>
+      <circle cx="90" cy="95" r="62" fill="white" stroke="rgba(37,51,25,.12)" stroke-width="1"/>
+      <!-- tick marks -->
+      <g stroke="#253319" stroke-width="1.5" opacity=".5">
+        <line x1="90" y1="38" x2="90" y2="46"/>
+        <line x1="127" y1="48" x2="122" y2="55"/>
+        <line x1="147" y1="83" x2="139" y2="86"/>
+        <line x1="53" y1="48" x2="58" y2="55"/>
+        <line x1="33" y1="83" x2="41" y2="86"/>
+        <line x1="33" y1="110" x2="41" y2="107"/>
+        <line x1="147" y1="110" x2="139" y2="107"/>
+      </g>
+      <!-- labels -->
+      <text x="90" y="56" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#253319" font-weight="600">100</text>
+      <text x="133" y="72" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" fill="#7a7a72">80</text>
+      <text x="148" y="110" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" fill="#7a7a72">60</text>
+      <text x="32" y="110" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" fill="#7a7a72">40</text>
+      <text x="48" y="72" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" fill="#7a7a72">20</text>
+      <text x="90" y="56" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#253319" font-weight="600">100</text>
+      <text x="90" y="122" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#7a7a72" letter-spacing="1">PSI</text>
+      <!-- needle pointing ~60 PSI -->
+      <line x1="90" y1="95" x2="138" y2="107" stroke="#c8222a" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="90" cy="95" r="6" fill="#253319"/>
+      <circle cx="90" cy="95" r="3" fill="white"/>
+      <!-- hose connection -->
+      <rect x="76" y="160" width="28" height="12" rx="4" fill="#253319"/>
+      <line x1="90" y1="167" x2="90" y2="155" stroke="#253319" stroke-width="4"/>
+    </svg>
+  </a>
+
+  <!-- POST GRID -->
+  <div class="posts-grid">
+    <a class="post-card" href="post-gpm.html">
+      <span class="tag">Design</span>
+      <div class="post-title">How to Calculate Your Irrigation Zone GPM</div>
+      <p class="post-excerpt">Getting your GPM right is the single most important step to prevent dry spots and overwatering. We'll show you the math.</p>
+      <div class="post-meta">May 18, 2025 &nbsp;·&nbsp; 7 min read</div>
+    </a>
+    <a class="post-card" href="post-pipe-types.html">
+      <span class="tag">Installation</span>
+      <div class="post-title">Choosing Between PVC, Poly, and PEX Pipe</div>
+      <p class="post-excerpt">Each pipe type has real tradeoffs. Learn when to use which — and how climate and soil affect your decision.</p>
+      <div class="post-meta">May 25, 2025 &nbsp;·&nbsp; 6 min read</div>
+    </a>
+    <a class="post-card" href="post-head-spacing.html">
+      <span class="tag">Design</span>
+      <div class="post-title">Head-to-Head Spacing: Why Your Coverage Matters</div>
+      <p class="post-excerpt">Most irrigation failures trace back to improper head spacing. Here's the formula the pros use to guarantee full coverage.</p>
+      <div class="post-meta">June 1, 2025 &nbsp;·&nbsp; 5 min read</div>
+    </a>
+    <a class="post-card" href="post-low-pressure.html">
+      <span class="tag">Troubleshooting</span>
+      <div class="post-title">Why Is My Irrigation System Losing Pressure?</div>
+      <p class="post-excerpt">Low pressure can mean a leak, undersized pipe, or a failing PRV. Here's how to diagnose each cause systematically.</p>
+      <div class="post-meta">June 8, 2025 &nbsp;·&nbsp; 7 min read</div>
+    </a>
+  </div>
+</div>
+
+<footer>
+  <p>© 2026 Drip Atlas &nbsp;·&nbsp;
+    <a href="index.html">Home</a>
+    <a href="products.html">Products</a>
+    <a href="learn.html">Learn</a>
+    <a href="materials.html">Design Tool</a>
+  </p>
+</footer>
+</body>
+</html>

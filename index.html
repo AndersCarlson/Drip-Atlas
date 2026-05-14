@@ -34,39 +34,19 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* ─── NAV ─── */
-    nav {
-      position: sticky; top: 0; z-index: 100;
-      background: var(--white);
-      border-bottom: 1px solid var(--border);
-      height: 64px;
-      display: flex; align-items: center;
-      padding: 0 40px;
-      gap: 32px;
-    }
-    .nav-logo img { height: 32px; }
-    .nav-links {
-      display: flex; gap: 28px; list-style: none;
-      margin-left: 32px;
-    }
-    .nav-links a {
-      font-size: 14px; font-weight: 500;
-      color: var(--charcoal); text-decoration: none;
-      transition: color .2s;
-    }
-    .nav-links a:hover { color: var(--forest); }
-    .nav-right { margin-left: auto; }
-    .btn-signin {
-      border: 1.5px solid var(--border);
-      background: transparent;
-      color: var(--charcoal);
-      font-size: 14px; font-weight: 500;
-      padding: 8px 20px;
-      border-radius: var(--pill);
-      cursor: pointer; text-decoration: none;
-      transition: border-color .2s, background .2s;
-    }
-    .btn-signin:hover { border-color: var(--forest); background: rgba(37,51,25,.04); }
+    /* ── NAV ── */
+    nav{position:sticky;top:0;z-index:100;background:var(--white);border-bottom:1px solid var(--border);height:64px;display:flex;align-items:center;padding:0 40px;gap:32px}
+    .nav-logo img{height:32px}
+    .nav-links{display:flex;gap:28px;list-style:none;margin-left:32px;align-items:center}
+    .nav-links a{font-size:14px;font-weight:500;color:var(--charcoal);text-decoration:none;transition:color .2s}
+    .nav-links a:hover,.nav-links a.active{color:var(--forest)}
+    .nav-right{margin-left:auto}
+    .btn-quote{border:1.5px solid var(--border);background:transparent;color:var(--gray);font-size:13px;font-weight:500;padding:6px 14px;border-radius:100px;cursor:pointer;text-decoration:none;transition:border-color .2s,color .2s}
+    .btn-quote:hover,.btn-quote.active{border-color:var(--forest);color:var(--forest)}
+    .btn-cta{background:var(--forest);color:var(--lime);font-size:13.5px;font-weight:700;padding:8px 20px;border-radius:100px;cursor:pointer;text-decoration:none;transition:opacity .2s;border:none;white-space:nowrap}
+    .btn-cta:hover{opacity:.87}
+
+
 
     /* ─── HERO ─── */
     .hero {
@@ -343,6 +323,8 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 16px;
+      max-width: 1040px;
+      margin: 0 auto;
     }
     .price-card {
       background: var(--white);
@@ -533,7 +515,8 @@
       .hv-photo { flex: 0 0 260px; }
       .steps { grid-template-columns: repeat(2,1fr); }
       .steps::before { display: none; }
-      .why-grid, .deliverables, .pricing-grid, .proof-photos { grid-template-columns: 1fr 1fr; }
+      .why-grid, .deliverables, .proof-photos { grid-template-columns: 1fr 1fr; }
+      .pricing-grid { grid-template-columns: 1fr 1fr; }
       nav { padding: 0 24px; }
       .nav-links { display: none; }
       section { padding: 60px 24px; }
@@ -550,17 +533,15 @@
 
 <!-- NAV -->
 <nav>
-  <div class="nav-logo">
-    <img src="assets/logo-forest-green.png" alt="Drip Atlas" />
-  </div>
-  <ul class="nav-links">
-    <li><a href="#how-it-works">Designer</a></li>
-    <li><a href="#wyg">Solutions</a></li>
-    <li><a href="#pricing">Pricing</a></li>
-    <li><a href="#faq">Learn</a></li>
+  <div class="nav-logo"><a href="index.html"><img src="assets/logo-forest-green.png" alt="Drip Atlas"/></a></div>
+        <ul class="nav-links">
+    <li><a href="#wyg">Irrigation Design</a></li>
+    <li><a href="products.html">Products</a></li>
+    <li><a href="learn.html">Learn</a></li>
+    <li><a href="quote.html" class="btn-quote">Get a Quote</a></li>
   </ul>
-  <div class="nav-right">
-    <a href="design.html" class="btn-signin">Start Designing</a>
+        <div class="nav-right">
+    <a href="materials.html" class="btn-cta">Start Designing</a>
   </div>
 </nav>
 
@@ -702,18 +683,7 @@
         <h3>$0 labor cost</h3>
         <p>A professional install runs $4,000–$10,000. You get the same engineering quality for a fraction of that—and the satisfaction of doing it yourself.</p>
       </div>
-      <div class="why-card">
-        <h3>Pro support available</h3>
-        <p>Have a question mid-install? Our irrigation experts are available to walk you through any step of the process.</p>
-      </div>
-      <div class="why-card">
-        <h3>Packaged and labeled by zone</h3>
-        <p>Every part in your kit is organized so you always know what goes where. No sorting, no confusion at the hardware store.</p>
-      </div>
-      <div class="why-card">
-        <h3>Buy the Parts or the Plan</h3>
-        <p>Need just the design? Get the plan only. Want everything delivered? Add the full parts kit. You choose what makes sense for your project.</p>
-      </div>
+
     </div>
   </div>
 </section>
@@ -722,40 +692,40 @@
 <section class="wyg" id="wyg">
   <div class="wyg-inner">
     <div class="s-label">What's Included</div>
-    <h2 class="s-title">Everything you need,<br/>nothing you don't</h2>
-    <p class="s-sub">Your plan is engineered for your specific yard, water supply, and conditions—not a generic template.</p>
+    <h2 class="s-title">Your complete irrigation plan<br/>for only $7.99</h2>
+    <p class="s-sub">Engineered for your address, your plants, and your US hardiness zone—not a generic template someone else designed.</p>
     <div class="deliverables">
       <div class="deliverable-card">
-        <div class="card-icon ci-green">🗺️</div>
-        <h3>Your Custom Irrigation Plan</h3>
+        <div class="card-icon ci-green">🌿</div>
+        <h3>Hardiness Zone &amp; Plant-Smart Design</h3>
         <ul class="check-list">
-          <li>Zone map tailored to your yard</li>
-          <li>Exact sprinkler head placement</li>
-          <li>Pipe routing layout with distances</li>
-          <li>Watering schedule by zone</li>
-          <li>Manifold location &amp; configuration</li>
+          <li>Irrigation matched to your USDA plant hardiness zone</li>
+          <li>Watering schedules tuned to your local climate</li>
+          <li>Plant database built in—know what each zone needs</li>
+          <li>Seasonal adjustments recommended by zone</li>
+          <li>Drought-tolerant and high-water zones separated</li>
         </ul>
       </div>
       <div class="deliverable-card">
-        <div class="card-icon ci-teal">📦</div>
-        <h3>Your Labeled Installation Kit</h3>
+        <div class="card-icon ci-teal">🛒</div>
+        <h3>Complete Parts List &amp; Shopping Guide</h3>
         <ul class="check-list">
-          <li>Sprinkler heads matched to your layout</li>
-          <li>Valves &amp; zone controllers</li>
-          <li>Fittings sorted and labeled by zone</li>
-          <li>Drip components (where needed)</li>
-          <li>Compatible with Hunter, Rain Bird &amp; Orbit</li>
+          <li>Every part listed with exact quantities</li>
+          <li>Swap brands freely—Hunter, Rain Bird, Orbit all work</li>
+          <li>One-click shopping at Home Depot or Lowe's</li>
+          <li>Fittings, valves, heads, and pipe all included</li>
+          <li>Estimated total materials cost upfront</li>
         </ul>
       </div>
       <div class="deliverable-card">
-        <div class="card-icon ci-lime">🛒</div>
-        <h3>Your Pipe Shopping List</h3>
+        <div class="card-icon ci-lime">📋</div>
+        <h3>Blueprint, Guides &amp; Assembly Docs</h3>
         <ul class="check-list">
-          <li>Exact quantities—no guessing</li>
-          <li>Simple list for Home Depot or Lowe's</li>
-          <li>Buffer built in for cutting mistakes</li>
-          <li>Pipe type &amp; size specified per zone</li>
-          <li>Estimated total materials cost</li>
+          <li>Printable property blueprint with pipe routing</li>
+          <li>Step-by-step installation guide</li>
+          <li>Manifold &amp; timing assembly diagram</li>
+          <li>Zone-by-zone watering schedule</li>
+          <li>Everything you need to install it yourself</li>
         </ul>
       </div>
     </div>
@@ -767,90 +737,60 @@
   <div class="pricing-inner">
     <div class="s-label">Pricing</div>
     <h2 class="s-title">Simple, transparent pricing</h2>
-    <p class="s-sub">Pick the plan that fits how you want to work.</p>
+    <p class="s-sub">Design and plan for free. Order parts when you're ready.</p>
     <div class="pricing-grid">
 
-      <!-- Free -->
+      <!-- Free — Design Tool -->
       <div class="price-card">
         <div class="price-tier">Design Tool</div>
         <div class="price-amt" style="color:var(--forest)">Free</div>
-        <div class="price-blurb">Start designing your system at no cost—see your yard come to life.</div>
+        <div class="price-blurb">Draw your yard, place sprinkler heads, and map your zones — completely free. No account required.</div>
         <ul class="price-features">
-          <li>DIY design tool</li>
-          <li>Sprinkler design plan</li>
-          <li>Zone map &amp; head placement</li>
+          <li>Interactive map designer</li>
+          <li>Zone mapping &amp; head placement</li>
+          <li>Pipe routing tool</li>
+          <li>Hardiness zone detection</li>
+          <li>Save &amp; export your design</li>
         </ul>
-        <a href="design.html" class="btn-plan btn-plan-outline">Start Designing →</a>
+        <a href="designer.html" class="btn-plan btn-plan-outline">Start Designing →</a>
       </div>
 
-      <!-- $99 -->
-      <div class="price-card">
-        <div class="price-tier">Irrigation Plan</div>
-        <div class="price-amt" style="color:var(--forest)">$99</div>
-        <div class="price-blurb">A professional-grade plan with everything you need to source and install yourself.</div>
-        <ul class="price-features">
-          <li>Custom irrigation design plan</li>
-          <li>Zone map &amp; head placement</li>
-          <li>Full materials list</li>
-          <li>Parts swap options</li>
-          <li>Pipe shopping guide</li>
-          <li>Watering schedule</li>
-        </ul>
-        <a href="design.html" class="btn-plan btn-plan-outline">Get My Plan →</a>
-      </div>
-
-      <!-- $949 -->
+      <!-- $7.99 — Irrigation Plan -->
       <div class="price-card featured">
         <div class="featured-tag">Most Popular</div>
-        <div class="price-tier">Complete Kit</div>
-        <div class="price-amt">$949</div>
-        <div class="price-blurb">Everything in Irrigation Plan, plus a full labeled kit shipped to your door with hands-on support.</div>
+        <div class="price-tier">Irrigation Plan</div>
+        <div class="price-amt">$7.99 <span style="font-family:var(--sans);font-size:13px;font-weight:500;color:rgba(255,255,255,.5);vertical-align:middle">one-time</span></div>
+        <div class="price-blurb">Your full installation plan—parts list, blueprint, schedule, and guides—tailored to your yard and hardiness zone.</div>
         <ul class="price-features">
-          <li>Everything in Irrigation Plan</li>
-          <li>Full kit shipped to your door</li>
-          <li>Parts labeled by zone</li>
-          <li>1:1 support</li>
-          <li>Step-by-step install guide</li>
-          <li>Parts swap options</li>
-          <li>Installation walkthrough call</li>
-          <li>Post-install follow-up</li>
+          <li>Complete parts list with quantities</li>
+          <li>Swap any brand—Hunter, Rain Bird, Orbit</li>
+          <li>Printable property blueprint</li>
+          <li>Zone-by-zone watering schedule</li>
+          <li>Manifold &amp; timing assembly diagram</li>
+          <li>Step-by-step installation guide</li>
         </ul>
-        <a href="design.html" class="btn-plan btn-plan-solid">Get My Kit →</a>
+        <a href="designer.html" class="btn-plan btn-plan-solid">Start Designing →</a>
+      </div>
+
+      <!-- Quote — Custom Design -->
+      <div class="price-card">
+        <div class="price-tier">Custom Design</div>
+        <div class="price-amt" style="color:var(--forest);font-size:32px;padding-top:7px">Quote</div>
+        <div class="price-blurb">For ponds, wells, canals, and commercial irrigation. We design it for you—no DIY required.</div>
+        <ul class="price-features">
+          <li>Pond, well &amp; canal irrigation</li>
+          <li>Commercial &amp; agricultural projects</li>
+          <li>We handle the full design</li>
+          <li>Dedicated project specialist</li>
+          <li>Custom specs &amp; engineering</li>
+        </ul>
+        <a href="quote.html" class="btn-plan btn-plan-outline">Get a Quote →</a>
       </div>
 
     </div>
   </div>
 </section>
 
-<!-- SOCIAL PROOF -->
-<section class="proof">
-  <div class="proof-inner">
-    <div class="s-label" style="text-align:center">Social Proof</div>
-    <p class="proof-quote">Designed for homeowners who want pro results without paying $4,000–$10,000 for installation.</p>
-    <div style="display:flex;gap:32px;justify-content:center;flex-wrap:wrap;">
-      <div style="text-align:center">
-        <div style="font-family:'Playfair Display',serif;font-size:40px;font-weight:700;color:var(--forest)">500+</div>
-        <div style="font-size:13px;color:var(--gray);margin-top:4px">Yards Designed</div>
-      </div>
-      <div style="width:1px;background:var(--border)"></div>
-      <div style="text-align:center">
-        <div style="font-family:'Playfair Display',serif;font-size:40px;font-weight:700;color:var(--forest)">4.9★</div>
-        <div style="font-size:13px;color:var(--gray);margin-top:4px">Average Rating</div>
-      </div>
-      <div style="width:1px;background:var(--border)"></div>
-      <div style="text-align:center">
-        <div style="font-family:'Playfair Display',serif;font-size:40px;font-weight:700;color:var(--forest)">$3.2k</div>
-        <div style="font-size:13px;color:var(--gray);margin-top:4px">Avg. Customer Savings</div>
-      </div>
-    </div>
-    <div class="proof-photos">
-      <div class="proof-photo"><span>Zone 1 install</span></div>
-      <div class="proof-photo" style="background:linear-gradient(160deg,#a8c098 0%,#7a9a68 40%,#5a7a48 100%)"><span>Backyard zones</span></div>
-      <div class="proof-photo" style="background:linear-gradient(160deg,#c0ccb0 0%,#94aa80 40%,#6e8860 100%)"><span>Garden drip</span></div>
-      <div class="proof-photo" style="background:linear-gradient(160deg,#b0c4a0 0%,#86a274 40%,#607854 100%)"><span>Full install</span></div>
-    </div>
-  </div>
-</section>
 
 <!-- GUARANTEE -->
 <div class="guarantee">
@@ -920,6 +860,8 @@
 <footer>
   <img src="assets/logo-forest-green.png" alt="Drip Atlas" />
   <ul class="footer-links">
+    <li><a href="products.html">Products</a></li>
+    <li><a href="learn.html">Learn</a></li>
     <li><a href="#">Privacy</a></li>
     <li><a href="#">Terms</a></li>
     <li><a href="#">Contact</a></li>

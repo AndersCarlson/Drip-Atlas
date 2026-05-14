@@ -462,6 +462,68 @@
       display: flex; align-items: center;
     }
 
+    /* ── PLAN SELECTION ── */
+    #screen-plan { max-width: 560px; }
+    .plan-cards { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+    .plan-card {
+      border: 2px solid var(--border); border-radius: 16px; padding: 20px 22px;
+      cursor: pointer; background: var(--white); display: flex; gap: 16px;
+      align-items: flex-start; transition: border-color .2s, background .2s, transform .15s;
+      position: relative;
+    }
+    .plan-card:hover:not(.plan-ai) { border-color: rgba(37,51,25,.35); transform: translateY(-1px); }
+    .plan-card.selected:not(.plan-ai) { border-color: var(--forest); background: rgba(37,51,25,.04); }
+    .plan-ai { background: var(--forest); border-color: var(--forest); }
+    .plan-ai:hover { transform: translateY(-1px); opacity: .95; }
+    .plan-ai.selected { border-color: #c8e670; }
+    .plan-ai-badge {
+      position: absolute; top: -11px; left: 20px;
+      background: #c8e670; color: var(--forest);
+      font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+      padding: 3px 10px; border-radius: 100px;
+    }
+    .plan-icon { font-size: 26px; flex-shrink: 0; margin-top: 3px; }
+    .plan-body { flex: 1; min-width: 0; }
+    .plan-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; }
+    .plan-name { font-size: 16px; font-weight: 700; color: var(--charcoal); }
+    .plan-ai .plan-name { color: #c8e670; }
+    .plan-price { margin-left: auto; font-size: 15px; font-weight: 800; color: var(--forest); flex-shrink: 0; }
+    .plan-ai .plan-price { color: #c8e670; }
+    .plan-free-tag { font-size: 14px; font-weight: 800; color: var(--gray); margin-left: auto; flex-shrink: 0; }
+    .plan-quote-tag { display: inline-block; padding: 2px 9px; border-radius: 100px; background: rgba(37,51,25,.08); color: var(--forest); font-size: 12px; font-weight: 700; margin-left: auto; flex-shrink: 0; }
+    .plan-desc { font-size: 13px; color: var(--gray); line-height: 1.55; margin-bottom: 8px; }
+    .plan-ai .plan-desc { color: rgba(255,255,255,.65); }
+    .plan-features { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
+    .plan-features li { font-size: 13px; color: var(--gray); display: flex; gap: 7px; align-items: flex-start; line-height: 1.4; }
+    .plan-features li::before { content: '✓'; font-weight: 700; color: var(--forest); flex-shrink: 0; margin-top: 1px; }
+    .plan-ai .plan-features li { color: rgba(255,255,255,.78); }
+    .plan-ai .plan-features li::before { color: #c8e670; }
+    .plan-check {
+      width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border);
+      flex-shrink: 0; margin-top: 3px;
+      display: flex; align-items: center; justify-content: center; transition: all .2s;
+    }
+    .plan-check::after { content: '✓'; font-size: 11px; color: var(--white); display: none; }
+    .plan-card.selected .plan-check { background: var(--forest); border-color: var(--forest); }
+    .plan-card.selected .plan-check::after { display: block; }
+    .plan-ai .plan-check { border-color: rgba(255,255,255,.3); }
+    .plan-ai.selected .plan-check { background: #c8e670; border-color: #c8e670; }
+    .plan-ai.selected .plan-check::after { color: var(--forest); }
+
+    /* ── QUOTE SCREEN ── */
+    #screen-quote { max-width: 540px; }
+    .quote-form { display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px; }
+    .qf-label { font-size: 12px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--gray); margin-bottom: 6px; }
+    .qf-input, .qf-textarea {
+      width: 100%; padding: 14px 18px; font-size: 15px;
+      font-family: 'Inter', sans-serif; color: var(--charcoal);
+      background: var(--white); border: 1.5px solid var(--border);
+      border-radius: 10px; outline: none; transition: border-color .2s;
+    }
+    .qf-input:focus, .qf-textarea:focus { border-color: var(--forest); }
+    .qf-textarea { resize: vertical; min-height: 90px; }
+    .qf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
     /* ── RESPONSIVE ── */
     @media (max-width: 480px) {
       .main { padding: 24px 16px; align-items: flex-start; }
@@ -608,14 +670,123 @@
       </div>
 
       <div class="confirm-actions">
-        <button class="btn-primary" onclick="goSource()">Yes, that's my property →</button>
+        <button class="btn-primary" onclick="goPlan()">Yes, that's my property →</button>
         <button class="btn-secondary" onclick="changeAddress()">Change Address</button>
+      </div>
+    </div>
+
+    <!-- ── SCREEN: PLAN SELECT ── -->
+    <div class="screen" id="screen-plan">
+      <div class="step-label">Step 3 of 7 — Choose Your Plan</div>
+      <h1 class="question">How would you like to design?</h1>
+      <p class="hint">Pick the option that fits your project and timeline.</p>
+
+      <div class="plan-cards">
+
+        <div class="plan-card" id="plan-diy" onclick="selectPlan('diy')">
+          <span class="plan-icon">🛠</span>
+          <div class="plan-body">
+            <div class="plan-header">
+              <span class="plan-name">DIY Design Tool</span>
+              <span class="plan-free-tag">Free</span>
+            </div>
+            <p class="plan-desc">Manually place your sprinklers and drip zones on a satellite view of your property.</p>
+            <ul class="plan-features">
+              <li>Interactive satellite drawing tool</li>
+              <li>Instant parts list &amp; pricing</li>
+              <li>Add everything to cart in one click</li>
+            </ul>
+          </div>
+          <div class="plan-check"></div>
+        </div>
+
+        <div class="plan-card plan-ai" id="plan-ai" onclick="selectPlan('ai')">
+          <span class="plan-ai-badge">Most Popular</span>
+          <span class="plan-icon">✨</span>
+          <div class="plan-body">
+            <div class="plan-header">
+              <span class="plan-name">AI-Powered Design</span>
+              <span class="plan-price">$49</span>
+            </div>
+            <p class="plan-desc">No guesswork. We analyze your property and generate a complete irrigation layout automatically.</p>
+            <ul class="plan-features">
+              <li>AI-generated zone layout &amp; head placement</li>
+              <li>All designs reviewed by a licensed irrigation pro</li>
+              <li>Optimized pipe sizing &amp; zone balancing</li>
+              <li>Full parts list with installation notes</li>
+            </ul>
+          </div>
+          <div class="plan-check"></div>
+        </div>
+
+        <div class="plan-card" id="plan-industrial" onclick="selectPlan('industrial')">
+          <span class="plan-icon">🏗</span>
+          <div class="plan-body">
+            <div class="plan-header">
+              <span class="plan-name">Industrial / Commercial</span>
+              <span class="plan-quote-tag">Get a Quote</span>
+            </div>
+            <p class="plan-desc">Large-scale or commercial properties requiring custom hydraulic design and CAD drawings.</p>
+            <ul class="plan-features">
+              <li>Full CAD drawings &amp; specifications</li>
+              <li>Hydraulic modeling for large systems</li>
+              <li>On-site consultation available</li>
+            </ul>
+          </div>
+          <div class="plan-check"></div>
+        </div>
+
+      </div>
+      <button class="btn-primary" id="btn-plan-next" disabled onclick="goFromPlan()">Continue →</button>
+    </div>
+
+    <!-- ── SCREEN: QUOTE REQUEST ── -->
+    <div class="screen" id="screen-quote">
+      <div class="step-label">Industrial / Commercial — Get a Quote</div>
+      <h1 class="question">Tell us about your project</h1>
+      <p class="hint">An irrigation specialist will follow up within one business day.</p>
+
+      <div class="quote-form">
+        <div class="qf-row">
+          <div>
+            <div class="qf-label">First Name</div>
+            <input class="qf-input" type="text" id="qf-first" placeholder="Jane"/>
+          </div>
+          <div>
+            <div class="qf-label">Last Name</div>
+            <input class="qf-input" type="text" id="qf-last" placeholder="Smith"/>
+          </div>
+        </div>
+        <div>
+          <div class="qf-label">Email</div>
+          <input class="qf-input" type="email" id="qf-email" placeholder="jane@company.com"/>
+        </div>
+        <div>
+          <div class="qf-label">Phone (optional)</div>
+          <input class="qf-input" type="tel" id="qf-phone" placeholder="(555) 000-0000"/>
+        </div>
+        <div>
+          <div class="qf-label">Project Description</div>
+          <textarea class="qf-textarea" id="qf-desc" placeholder="Describe your property size, number of zones, and any special requirements…"></textarea>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="submitQuote()">Request Quote →</button>
+      <button class="btn-text-link" onclick="showScreen('screen-plan')">← Back</button>
+    </div>
+
+    <!-- ── SCREEN: QUOTE SUBMITTED ── -->
+    <div class="screen" id="screen-quote-done">
+      <div style="text-align:center;padding:20px 0">
+        <div style="font-size:56px;margin-bottom:20px">✅</div>
+        <h1 class="question" style="font-size:32px;margin-bottom:10px">You're on the list!</h1>
+        <p class="hint" style="max-width:380px;margin:0 auto 32px">An irrigation specialist will review your project and reach out within one business day.</p>
+        <a href="index.html" class="btn-primary" style="max-width:280px;margin:0 auto;display:block">Back to Drip Atlas</a>
       </div>
     </div>
 
     <!-- ── SCREEN 4: WATER SOURCE ── -->
     <div class="screen" id="screen-source">
-      <div class="step-label">Step 3 of 7 — Water Source</div>
+      <div class="step-label">Step 4 of 7 — Water Source</div>
       <h1 class="question">Where's your water coming from?</h1>
       <p class="hint">This determines how your system connects and what parts you'll need.</p>
 
@@ -647,7 +818,7 @@
 
     <!-- ── SCREEN 5: FLOW RATE ── -->
     <div class="screen" id="screen-flow">
-      <div class="step-label">Step 4 of 7 — Flow Rate</div>
+      <div class="step-label">Step 5 of 7 — Flow Rate</div>
       <h1 class="question">Do you know your flow rate?</h1>
       <p class="hint">This helps us size your zones so they won't overload your water supply.</p>
 
@@ -783,17 +954,24 @@
 <script>
   let currentCoords = null;
   let currentZip    = null;
-  let _phzData      = null;   // loaded once from local JSON
+  let _phzData      = null;
   let confirmMap    = null;
   let sourceType    = null;
+  let planType      = null;
   let flowMode      = 'gpm';
   let flowVal       = null;
   let flowUnit      = 'gpm';
 
-  const screens = ['screen-address','screen-loading','screen-confirm','screen-source','screen-flow'];
+  const screens = [
+    'screen-address','screen-loading','screen-confirm',
+    'screen-plan','screen-quote','screen-quote-done',
+    'screen-source','screen-flow',
+  ];
   const progressByScreen = {
     'screen-address': 14, 'screen-loading': 14,
-    'screen-confirm': 28, 'screen-source': 50, 'screen-flow': 72,
+    'screen-confirm': 28, 'screen-plan': 42,
+    'screen-quote': 42, 'screen-quote-done': 100,
+    'screen-source': 62, 'screen-flow': 80,
   };
 
   function showScreen(id) {
@@ -1043,7 +1221,37 @@ out geom;`;
     return Math.abs(area / 2);
   }
 
-  // ── STEP 3: Source type ──
+  // ── STEP 3: Plan selection ──
+  function goPlan() {
+    showScreen('screen-plan');
+  }
+
+  function selectPlan(type) {
+    planType = type;
+    ['diy','ai','industrial'].forEach(t => {
+      document.getElementById('plan-' + t).classList.toggle('selected', t === type);
+    });
+    document.getElementById('btn-plan-next').disabled = false;
+  }
+
+  function goFromPlan() {
+    if (!planType) return;
+    if (planType === 'diy')        showScreen('screen-source');
+    else if (planType === 'ai')    goDesigner();
+    else if (planType === 'industrial') showScreen('screen-quote');
+  }
+
+  function submitQuote() {
+    const first = document.getElementById('qf-first').value.trim();
+    const email = document.getElementById('qf-email').value.trim();
+    if (!first || !email) {
+      alert('Please enter your name and email to continue.');
+      return;
+    }
+    showScreen('screen-quote-done');
+  }
+
+  // ── STEP 4: Source type ──
   function goSource() {
     showScreen('screen-source');
   }
@@ -1095,10 +1303,11 @@ out geom;`;
     const data = {
       address: addr,
       lat: currentCoords.lat, lng: currentCoords.lng,
+      plan: planType || 'diy',
       water: { sourceType, flowVal, flowUnit, srcLat: null, srcLng: null },
     };
-    sessionStorage.setItem('drip_design', JSON.stringify(data));
-    window.location.href = `materials.html`;
+    localStorage.setItem('drip_design', JSON.stringify(data));
+    window.location.href = planType === 'ai' ? 'materials-ai.html' : 'materials.html';
   }
 
   // Pre-fill from landing page URL param

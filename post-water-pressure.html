@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>How to Measure Your Home's Water Pressure — Drip Atlas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="icon" type="image/png" href="assets/favicon.png"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--forest:#253319;--lime:#c8e670;--cream:#f1ebe2;--white:#fff;--charcoal:#1c1c1a;--gray:#7a7a72;--border:rgba(37,51,25,.12)}
+    body{font-family:'Inter',sans-serif;background:var(--cream);color:var(--charcoal);-webkit-font-smoothing:antialiased}
+
+    nav{position:sticky;top:0;z-index:100;background:var(--white);border-bottom:1px solid var(--border);height:64px;display:flex;align-items:center;padding:0 40px;gap:32px}
+    .nav-logo img{height:32px}
+    .nav-links{display:flex;gap:28px;list-style:none;margin-left:32px;align-items:center}
+    .nav-links a{font-size:14px;font-weight:500;color:var(--charcoal);text-decoration:none;transition:color .2s}
+    .nav-links a:hover{color:var(--forest)}
+    .nav-right{margin-left:auto}
+    .btn-quote{border:1.5px solid rgba(37,51,25,.12);background:transparent;color:#7a7a72;font-size:13px;font-weight:500;padding:6px 14px;border-radius:100px;cursor:pointer;text-decoration:none;transition:border-color .2s,color .2s}
+    .btn-quote:hover,.btn-quote.active{border-color:#253319;color:#253319}
+    .btn-cta{background:#253319;color:#c8e670;font-size:13.5px;font-weight:700;padding:8px 20px;border-radius:100px;cursor:pointer;text-decoration:none;transition:opacity .2s;border:none;white-space:nowrap}
+    .btn-cta:hover{opacity:.87}
+
+    /* LAYOUT */
+    .post-wrap{max-width:1080px;margin:0 auto;padding:48px 32px 80px;display:grid;grid-template-columns:1fr 260px;gap:56px;align-items:start}
+    @media(max-width:800px){.post-wrap{grid-template-columns:1fr}.sidebar{display:none}}
+
+    /* ARTICLE */
+    article{min-width:0}
+    .back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--gray);text-decoration:none;margin-bottom:28px;transition:color .2s}
+    .back-link:hover{color:var(--forest)}
+    .tag{display:inline-block;padding:4px 12px;border-radius:100px;font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;background:var(--forest);color:var(--lime);margin-bottom:16px}
+    .post-title{font-family:'Playfair Display',serif;font-size:40px;font-weight:700;line-height:1.15;color:var(--charcoal);margin-bottom:16px}
+    .post-subtitle{font-size:17px;color:var(--gray);line-height:1.6;margin-bottom:20px}
+    .post-meta{font-size:13px;color:var(--gray);padding-bottom:24px;border-bottom:1px solid var(--border);margin-bottom:36px}
+    .post-meta strong{color:var(--charcoal)}
+
+    /* PROSE */
+    .prose h2{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--charcoal);margin:40px 0 14px}
+    .prose h3{font-size:16px;font-weight:700;color:var(--charcoal);margin:24px 0 8px}
+    .prose p{font-size:15px;line-height:1.75;color:var(--charcoal);margin-bottom:16px}
+    .prose ul,.prose ol{padding-left:20px;margin-bottom:16px}
+    .prose li{font-size:15px;line-height:1.7;color:var(--charcoal);margin-bottom:6px}
+    .prose strong{font-weight:700}
+    .prose a{color:var(--forest);text-decoration:underline}
+
+    /* STEPS */
+    .steps{counter-reset:step;margin:24px 0 32px;display:flex;flex-direction:column;gap:16px}
+    .step{display:flex;gap:16px;align-items:flex-start}
+    .step-num{counter-increment:step;width:36px;height:36px;border-radius:50%;background:var(--forest);color:var(--lime);font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+    .step-num::before{content:counter(step)}
+    .step-body h3{font-size:15px;font-weight:700;color:var(--charcoal);margin-bottom:4px}
+    .step-body p{font-size:14px;line-height:1.65;color:var(--gray);margin:0}
+
+    /* PRESSURE TABLE */
+    .pressure-table{width:100%;border-collapse:collapse;margin:20px 0 32px;border-radius:12px;overflow:hidden;border:1px solid var(--border)}
+    .pressure-table th{background:var(--forest);color:var(--lime);font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:10px 14px;text-align:left}
+    .pressure-table td{padding:12px 14px;font-size:14px;border-bottom:1px solid var(--border);line-height:1.5}
+    .pressure-table tr:last-child td{border:none}
+    .pressure-table tr:nth-child(even) td{background:rgba(37,51,25,.03)}
+    .psi-pill{display:inline-block;padding:3px 10px;border-radius:100px;font-size:12px;font-weight:700}
+    .psi-low{background:#fee2e2;color:#991b1b}
+    .psi-good{background:#dcfce7;color:#166534}
+    .psi-high{background:#fef9c3;color:#854d0e}
+    .psi-danger{background:#fce7f3;color:#9d174d}
+
+    /* PRODUCT CALLOUT */
+    .product-callout{background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:24px;display:flex;gap:20px;align-items:center;margin:32px 0}
+    .callout-icon{flex-shrink:0}
+    .callout-body{flex:1;min-width:0}
+    .callout-label{font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--gray);margin-bottom:4px}
+    .callout-name{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--charcoal);margin-bottom:4px}
+    .callout-desc{font-size:13px;color:var(--gray);margin-bottom:10px}
+    .callout-price{font-family:'Playfair Display',serif;font-size:22px;color:var(--forest);font-weight:700;margin-bottom:10px}
+    .callout-btn{display:inline-block;padding:9px 18px;background:var(--forest);color:var(--lime);border-radius:100px;font-size:13px;font-weight:700;text-decoration:none;transition:opacity .2s}
+    .callout-btn:hover{opacity:.88}
+
+    /* PRO TIPS */
+    .tip-list{background:rgba(37,51,25,.04);border-left:3px solid var(--forest);border-radius:0 10px 10px 0;padding:20px 24px;margin:24px 0 32px;list-style:none}
+    .tip-list li{font-size:14px;line-height:1.65;color:var(--charcoal);padding:5px 0;display:flex;gap:10px}
+    .tip-list li::before{content:'💡';flex-shrink:0}
+
+    /* CTA */
+    .post-cta{background:var(--forest);border-radius:16px;padding:32px;text-align:center;margin-top:48px}
+    .post-cta h3{font-family:'Playfair Display',serif;font-size:24px;color:var(--lime);margin-bottom:10px}
+    .post-cta p{font-size:14px;color:rgba(255,255,255,.75);margin-bottom:20px}
+    .post-cta a{display:inline-block;padding:13px 28px;background:var(--lime);color:var(--forest);border-radius:100px;font-size:14px;font-weight:700;text-decoration:none}
+
+    /* SIDEBAR */
+    .sidebar{position:sticky;top:84px}
+    .toc{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px}
+    .toc-title{font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--gray);margin-bottom:12px}
+    .toc a{display:block;font-size:13px;color:var(--gray);text-decoration:none;padding:5px 0;border-bottom:1px solid var(--border);transition:color .2s;line-height:1.4}
+    .toc a:last-child{border:none}
+    .toc a:hover{color:var(--forest)}
+    .sidebar-product{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:20px;text-align:center}
+    .sp-icon{margin:0 auto 12px}
+    .sp-label{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--gray);margin-bottom:4px}
+    .sp-name{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--charcoal);margin-bottom:6px;line-height:1.3}
+    .sp-price{font-family:'Playfair Display',serif;font-size:24px;color:var(--forest);font-weight:700;margin-bottom:12px}
+    .sp-btn{display:block;padding:10px;background:var(--forest);color:var(--lime);border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;text-align:center;transition:opacity .2s}
+    .sp-btn:hover{opacity:.88}
+
+    footer{background:var(--forest);color:rgba(255,255,255,.7);text-align:center;padding:24px;font-size:13px}
+    footer a{color:rgba(255,255,255,.5);text-decoration:none;margin:0 12px}
+    footer a:hover{color:#fff}
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo"><a href="index.html"><img src="assets/logo-forest-green.png" alt="Drip Atlas"/></a></div>
+        <ul class="nav-links">
+    <li><a href="index.html#wyg">Irrigation Design</a></li>
+    <li><a href="products.html">Products</a></li>
+    <li><a href="learn.html" class="active">Learn</a></li>
+    <li><a href="quote.html" class="btn-quote">Get a Quote</a></li>
+  </ul>
+        <div class="nav-right">
+    <a href="materials.html" class="btn-cta">Start Designing</a>
+  </div>
+</nav>
+
+<div class="post-wrap">
+  <article>
+    <a class="back-link" href="learn.html">← Back to Learn</a>
+    <span class="tag">Water Pressure</span>
+    <h1 id="top" class="post-title">How to Measure Your Home's Water Pressure</h1>
+    <p class="post-subtitle">Before designing any irrigation system, you need an accurate pressure reading. Here's how to do it right — and what to do when the numbers are off.</p>
+    <div class="post-meta">
+      <strong>Drip Atlas Team</strong> &nbsp;·&nbsp; May 11, 2025 &nbsp;·&nbsp; 6 min read
+    </div>
+
+    <div class="prose">
+
+      <h2 id="why">Why Water Pressure Matters for Irrigation</h2>
+      <p>Water pressure is the foundation of every irrigation design decision. Too low and your rotors won't fully rotate, leaving brown arcs in your lawn. Too high and you'll atomize the water into a fine mist that evaporates before it reaches the ground — and you'll burn through heads and valves in half the expected lifespan.</p>
+      <p>Every component in an irrigation system has a rated operating pressure range. Here's what each type generally needs:</p>
+      <ul>
+        <li><strong>Gear-drive rotors</strong> — 25–70 PSI (optimal around 45 PSI)</li>
+        <li><strong>Pop-up spray heads</strong> — 15–30 PSI (spray nozzles are sensitive to over-pressure)</li>
+        <li><strong>Drip emitters</strong> — 10–30 PSI (pressure-compensating models extend this range)</li>
+        <li><strong>Zone control valves</strong> — 20–125 PSI depending on model</li>
+      </ul>
+      <p>Knowing your static pressure before you design means you can right-size your pipes, choose the correct heads, and know whether you need a pressure regulator — before you dig a single trench.</p>
+
+      <h2 id="what-you-need">What You'll Need</h2>
+      <p>All you need is a <strong>water pressure gauge with a ¾" garden hose thread (MHT)</strong>. These screw directly onto any outdoor hose bib (spigot) and give you an instant reading. No electricity, no app, no calibration required.</p>
+    </div>
+
+    <!-- PRODUCT CALLOUT -->
+    <div class="product-callout" id="gauge-callout">
+      <div class="callout-icon">
+        <svg width="72" height="72" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="36" cy="38" r="28" fill="#f1ebe2" stroke="#253319" stroke-width="2.5"/>
+          <circle cx="36" cy="38" r="22" fill="white" stroke="rgba(37,51,25,.15)" stroke-width="1"/>
+          <path d="M14,50 A24,24 0 0,1 58,50" fill="none" stroke="rgba(37,51,25,.15)" stroke-width="2"/>
+          <text x="36" y="24" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" fill="#253319" font-weight="700">100</text>
+          <text x="56" y="40" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#7a7a72">60</text>
+          <text x="16" y="40" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#7a7a72">40</text>
+          <text x="36" y="50" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.5" fill="#7a7a72" letter-spacing="1">PSI</text>
+          <line x1="36" y1="38" x2="52" y2="30" stroke="#c8222a" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="36" cy="38" r="3.5" fill="#253319"/>
+          <rect x="30" y="63" width="12" height="6" rx="2.5" fill="#253319"/>
+          <line x1="36" y1="66" x2="36" y2="60" stroke="#253319" stroke-width="3"/>
+        </svg>
+      </div>
+      <div class="callout-body">
+        <div class="callout-label">Recommended Tool</div>
+        <div class="callout-name">Professional Water Pressure Gauge</div>
+        <div class="callout-desc">0–100 PSI glycerin-filled dial · ¾" garden hose thread · fits any outdoor spigot</div>
+        <div class="callout-price">$24.99</div>
+        <a class="callout-btn" href="product-pressure-gauge.html">View Product →</a>
+      </div>
+    </div>
+
+    <div class="prose">
+      <h2 id="static">Step-by-Step: Measuring Static Pressure</h2>
+      <p>Static pressure is what your system sees when no water is flowing. It's the number you use to select heads, size regulators, and understand the full capability of your supply.</p>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h3>Find the right hose bib</h3>
+          <p>Use an outdoor spigot as close to your water meter as possible — ideally on the same side of the house where the main enters. This gives you the least amount of pressure drop from the meter to your reading point.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h3>Stop all water use</h3>
+          <p>Turn off every faucet, appliance, and irrigation zone in the house. Even a running toilet can affect your reading by a few PSI. Wait 2–3 minutes after turning everything off before you measure.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h3>Thread on the gauge</h3>
+          <p>Screw the pressure gauge clockwise onto the hose bib. Hand-tight only — no wrench needed, and over-tightening can damage the threads. Make sure the gauge face is pointing toward you so you can read it easily.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h3>Open the valve fully</h3>
+          <p>Turn the hose bib handle fully open in one smooth motion. The needle will jump and then settle — the glycerin fill in a quality gauge keeps the needle steady rather than bouncing around.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h3>Read and record</h3>
+          <p>Read the PSI where the needle rests. This is your static pressure. Write it down immediately — you'll need it for both dynamic pressure testing and your irrigation design.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="prose">
+      <h2 id="dynamic">Measuring Dynamic (Working) Pressure</h2>
+      <p>Dynamic pressure is what your heads actually see when a zone is running. It's always lower than static because flowing water creates friction losses in the pipe. This is the number that determines whether your sprinklers will perform as rated.</p>
+      <p>With the gauge still on the hose bib, activate one irrigation zone at a time. Watch the gauge needle drop — the pressure it settles at while the zone runs is your dynamic pressure for that zone's pipe run. Record both numbers.</p>
+      <p>A typical residential system loses 5–15 PSI between static and dynamic. More than 20 PSI of drop usually means undersized lateral pipe, a partially closed valve, or a clog somewhere in the line.</p>
+
+      <h2 id="reading">What Your Numbers Mean</h2>
+    </div>
+
+    <table class="pressure-table">
+      <thead>
+        <tr><th>Reading</th><th>Verdict</th><th>What to Do</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="psi-pill psi-low">Under 30 PSI</span></td>
+          <td>Too low</td>
+          <td>Check if your PRV is set too low. Consider a booster pump for irrigation. Drip-only zones may still work.</td>
+        </tr>
+        <tr>
+          <td><span class="psi-pill psi-good">30–50 PSI</span></td>
+          <td>Ideal</td>
+          <td>Perfect for most residential irrigation. Rotors and spray heads will perform at their rated coverage.</td>
+        </tr>
+        <tr>
+          <td><span class="psi-pill psi-good">50–80 PSI</span></td>
+          <td>Good</td>
+          <td>Works well for rotors. Add pressure regulators (typically 25–30 PSI) at each drip zone to protect emitters.</td>
+        </tr>
+        <tr>
+          <td><span class="psi-pill psi-danger">Over 80 PSI</span></td>
+          <td>Too high — act now</td>
+          <td>Install a whole-home PRV if you don't have one, or have your existing PRV adjusted. High pressure damages valves, heads, and seals over time.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="prose">
+      <h2 id="tips">Pro Tips</h2>
+    </div>
+    <ul class="tip-list">
+      <li>Test early morning (6–8 AM) when municipal demand is lowest — that's your worst-case low pressure scenario.</li>
+      <li>Take readings at multiple points: front of house, back of house, and at the point farthest from the meter. Elevation changes of 2.3 PSI per foot of height will affect head performance.</li>
+      <li>Look for a PRV (pressure reducing valve) near your water meter. If you have one, note its setting — it limits maximum pressure to the house.</li>
+      <li>City minimum supply pressure is typically 20 PSI. If you're consistently reading under 30 PSI, contact your water utility before designing a system.</li>
+      <li>If your static pressure fluctuates significantly at different times of day, ask your utility about their pressure zone — some areas have wide swings between peak and off-peak hours.</li>
+    </ul>
+
+    <div class="prose">
+      <h2 id="next">Next Steps</h2>
+      <p>Now that you have your static and dynamic pressure readings, you're ready to design. Enter your pressure into the Drip Atlas design tool and it will automatically select appropriate heads, size your pipe, and flag any zones where pressure regulation is needed.</p>
+    </div>
+
+    <div class="post-cta">
+      <h3>Ready to design your system?</h3>
+      <p>Enter your address and pressure readings — Drip Atlas builds your complete parts list in minutes.</p>
+      <a href="design.html">Start Designing Free →</a>
+    </div>
+  </article>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="toc">
+      <div class="toc-title">In This Article</div>
+      <a href="#why">Why pressure matters</a>
+      <a href="#what-you-need">What you'll need</a>
+      <a href="#static">Measuring static pressure</a>
+      <a href="#dynamic">Dynamic pressure</a>
+      <a href="#reading">What your numbers mean</a>
+      <a href="#tips">Pro tips</a>
+      <a href="#next">Next steps</a>
+    </div>
+
+    <div class="sidebar-product">
+      <div class="sp-icon">
+        <svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="40" cy="42" r="30" fill="#f1ebe2" stroke="#253319" stroke-width="2.5"/>
+          <circle cx="40" cy="42" r="24" fill="white" stroke="rgba(37,51,25,.12)" stroke-width="1"/>
+          <text x="40" y="24" text-anchor="middle" font-family="Inter,sans-serif" font-size="8.5" fill="#253319" font-weight="700">100</text>
+          <text x="60" y="44" text-anchor="middle" font-family="Inter,sans-serif" font-size="7.5" fill="#7a7a72">60</text>
+          <text x="20" y="44" text-anchor="middle" font-family="Inter,sans-serif" font-size="7.5" fill="#7a7a72">40</text>
+          <text x="40" y="56" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#7a7a72" letter-spacing=".8">PSI</text>
+          <line x1="40" y1="42" x2="56" y2="32" stroke="#c8222a" stroke-width="2.2" stroke-linecap="round"/>
+          <circle cx="40" cy="42" r="4" fill="#253319"/>
+          <circle cx="40" cy="42" r="2" fill="white"/>
+          <rect x="33" y="70" width="14" height="7" rx="3" fill="#253319"/>
+          <line x1="40" y1="70" x2="40" y2="62" stroke="#253319" stroke-width="4"/>
+        </svg>
+      </div>
+      <div class="sp-label">Featured Product</div>
+      <div class="sp-name">Professional Water Pressure Gauge</div>
+      <div class="sp-price">$24.99</div>
+      <a class="sp-btn" href="product-pressure-gauge.html">View Product →</a>
+    </div>
+  </aside>
+</div>
+
+<footer>
+  <p>© 2026 Drip Atlas &nbsp;·&nbsp;
+    <a href="index.html">Home</a>
+    <a href="products.html">Products</a>
+    <a href="learn.html">Learn</a>
+    <a href="materials.html">Design Tool</a>
+  </p>
+</footer>
+</body>
+</html>

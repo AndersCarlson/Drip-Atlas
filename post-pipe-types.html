@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Choosing Between PVC, Poly, and PEX Pipe — Drip Atlas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="icon" type="image/png" href="assets/favicon.png"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--forest:#253319;--lime:#c8e670;--cream:#f1ebe2;--white:#fff;--charcoal:#1c1c1a;--gray:#7a7a72;--border:rgba(37,51,25,.12)}
+    body{font-family:'Inter',sans-serif;background:var(--cream);color:var(--charcoal);-webkit-font-smoothing:antialiased}
+
+    nav{position:sticky;top:0;z-index:100;background:var(--white);border-bottom:1px solid var(--border);height:64px;display:flex;align-items:center;padding:0 40px;gap:32px}
+    .nav-logo img{height:32px}
+    .nav-links{display:flex;gap:28px;list-style:none;margin-left:32px;align-items:center}
+    .nav-links a{font-size:14px;font-weight:500;color:var(--charcoal);text-decoration:none;transition:color .2s}
+    .nav-links a:hover{color:var(--forest)}
+    .nav-right{margin-left:auto}
+    .btn-quote{border:1.5px solid rgba(37,51,25,.12);background:transparent;color:#7a7a72;font-size:13px;font-weight:500;padding:6px 14px;border-radius:100px;cursor:pointer;text-decoration:none;transition:border-color .2s,color .2s}
+    .btn-quote:hover,.btn-quote.active{border-color:#253319;color:#253319}
+    .btn-cta{background:#253319;color:#c8e670;font-size:13.5px;font-weight:700;padding:8px 20px;border-radius:100px;cursor:pointer;text-decoration:none;transition:opacity .2s;border:none;white-space:nowrap}
+    .btn-cta:hover{opacity:.87}
+
+    .post-wrap{max-width:1080px;margin:0 auto;padding:48px 32px 80px;display:grid;grid-template-columns:1fr 260px;gap:56px;align-items:start}
+    @media(max-width:800px){.post-wrap{grid-template-columns:1fr}.sidebar{display:none}}
+
+    article{min-width:0}
+    .back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--gray);text-decoration:none;margin-bottom:28px;transition:color .2s}
+    .back-link:hover{color:var(--forest)}
+    .tag{display:inline-block;padding:4px 12px;border-radius:100px;font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;background:var(--forest);color:var(--lime);margin-bottom:16px}
+    .post-title{font-family:'Playfair Display',serif;font-size:40px;font-weight:700;line-height:1.15;color:var(--charcoal);margin-bottom:16px}
+    .post-subtitle{font-size:17px;color:var(--gray);line-height:1.6;margin-bottom:20px}
+    .post-meta{font-size:13px;color:var(--gray);padding-bottom:24px;border-bottom:1px solid var(--border);margin-bottom:36px}
+    .post-meta strong{color:var(--charcoal)}
+
+    .prose h2{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--charcoal);margin:40px 0 14px}
+    .prose h3{font-size:16px;font-weight:700;color:var(--charcoal);margin:24px 0 8px}
+    .prose p{font-size:15px;line-height:1.75;color:var(--charcoal);margin-bottom:16px}
+    .prose ul,.prose ol{padding-left:20px;margin-bottom:16px}
+    .prose li{font-size:15px;line-height:1.7;color:var(--charcoal);margin-bottom:6px}
+    .prose strong{font-weight:700}
+    .prose a{color:var(--forest);text-decoration:underline}
+
+    .pipe-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:28px 0 36px}
+    @media(max-width:700px){.pipe-cards{grid-template-columns:1fr}}
+    .pipe-card{background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:24px}
+    .pipe-card.recommended{border-color:var(--forest)}
+    .pipe-name{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--charcoal);margin-bottom:4px}
+    .pipe-tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:3px 9px;border-radius:100px;background:var(--forest);color:var(--lime);margin-bottom:12px}
+    .pipe-tag.neutral{background:rgba(37,51,25,.1);color:var(--forest)}
+    .pipe-pros{margin-bottom:10px}
+    .pipe-pros-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#166534;margin-bottom:6px}
+    .pipe-cons-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#991b1b;margin-bottom:6px}
+    .pipe-list{list-style:none;padding:0;margin:0 0 10px}
+    .pipe-list li{font-size:13px;line-height:1.6;color:var(--charcoal);padding:3px 0;display:flex;gap:8px}
+    .pipe-list.pros li::before{content:'✓';color:#166534;font-weight:700;flex-shrink:0}
+    .pipe-list.cons li::before{content:'✗';color:#991b1b;font-weight:700;flex-shrink:0}
+    .pipe-cost{font-size:12px;color:var(--gray);margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+
+    .data-table{width:100%;border-collapse:collapse;margin:20px 0 32px;border-radius:12px;overflow:hidden;border:1px solid var(--border)}
+    .data-table th{background:var(--forest);color:var(--lime);font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:10px 14px;text-align:left}
+    .data-table td{padding:12px 14px;font-size:14px;border-bottom:1px solid var(--border);line-height:1.5}
+    .data-table tr:last-child td{border:none}
+    .data-table tr:nth-child(even) td{background:rgba(37,51,25,.03)}
+    .check{color:#166534;font-weight:700}
+    .cross{color:#991b1b;font-weight:700}
+    .dash{color:var(--gray)}
+
+    .tip-list{background:rgba(37,51,25,.04);border-left:3px solid var(--forest);border-radius:0 10px 10px 0;padding:20px 24px;margin:24px 0 32px;list-style:none}
+    .tip-list li{font-size:14px;line-height:1.65;color:var(--charcoal);padding:5px 0;display:flex;gap:10px}
+    .tip-list li::before{content:'💡';flex-shrink:0}
+
+    .post-cta{background:var(--forest);border-radius:16px;padding:32px;text-align:center;margin-top:48px}
+    .post-cta h3{font-family:'Playfair Display',serif;font-size:24px;color:var(--lime);margin-bottom:10px}
+    .post-cta p{font-size:14px;color:rgba(255,255,255,.75);margin-bottom:20px}
+    .post-cta a{display:inline-block;padding:13px 28px;background:var(--lime);color:var(--forest);border-radius:100px;font-size:14px;font-weight:700;text-decoration:none}
+
+    .sidebar{position:sticky;top:84px}
+    .toc{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px}
+    .toc-title{font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--gray);margin-bottom:12px}
+    .toc a{display:block;font-size:13px;color:var(--gray);text-decoration:none;padding:5px 0;border-bottom:1px solid var(--border);transition:color .2s;line-height:1.4}
+    .toc a:last-child{border:none}
+    .toc a:hover{color:var(--forest)}
+    .sidebar-cta{background:var(--forest);border-radius:14px;padding:24px;text-align:center}
+    .sidebar-cta p{font-size:13px;color:rgba(255,255,255,.75);line-height:1.55;margin-bottom:14px}
+    .sidebar-cta a{display:block;padding:10px;background:var(--lime);color:var(--forest);border-radius:8px;font-size:13px;font-weight:700;text-decoration:none}
+    .sidebar-cta-title{font-family:'Playfair Display',serif;font-size:16px;color:var(--lime);font-weight:700;margin-bottom:8px}
+
+    footer{background:var(--forest);color:rgba(255,255,255,.7);text-align:center;padding:24px;font-size:13px}
+    footer a{color:rgba(255,255,255,.5);text-decoration:none;margin:0 12px}
+    footer a:hover{color:#fff}
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo"><a href="index.html"><img src="assets/logo-forest-green.png" alt="Drip Atlas"/></a></div>
+        <ul class="nav-links">
+    <li><a href="index.html#wyg">Irrigation Design</a></li>
+    <li><a href="products.html">Products</a></li>
+    <li><a href="learn.html" class="active">Learn</a></li>
+    <li><a href="quote.html" class="btn-quote">Get a Quote</a></li>
+  </ul>
+        <div class="nav-right">
+    <a href="materials.html" class="btn-cta">Start Designing</a>
+  </div>
+</nav>
+
+<div class="post-wrap">
+  <article>
+    <a class="back-link" href="learn.html">← Back to Learn</a>
+    <span class="tag">Installation</span>
+    <h1 id="top" class="post-title">Choosing Between PVC, Poly, and PEX Pipe</h1>
+    <p class="post-subtitle">Each pipe type has real tradeoffs. Learn when to use which — and how climate, soil type, and installation method should drive your decision.</p>
+    <div class="post-meta">
+      <strong>Drip Atlas Team</strong> &nbsp;·&nbsp; May 25, 2025 &nbsp;·&nbsp; 6 min read
+    </div>
+
+    <div class="prose">
+      <h2 id="overview">The Three Pipe Types at a Glance</h2>
+      <p>Residential irrigation systems use three pipe materials almost exclusively: rigid PVC (polyvinyl chloride), flexible poly (polyethylene), and PEX (cross-linked polyethylene). Each handles pressure differently, installs differently, connects differently, and behaves differently when the temperature swings. Choosing the wrong one doesn't mean your system won't work — it means you'll spend more time maintaining it than watering with it.</p>
+    </div>
+
+    <div class="pipe-cards">
+      <div class="pipe-card">
+        <div class="pipe-name">PVC</div>
+        <span class="pipe-tag neutral">Rigid</span>
+        <div class="pipe-pros-label">Strengths</div>
+        <ul class="pipe-list pros">
+          <li>Highest pressure rating (up to 200 PSI)</li>
+          <li>Smooth bore — least friction loss</li>
+          <li>Longest lifespan (50+ years)</li>
+          <li>Cheapest per foot</li>
+          <li>Works with solvent-weld fittings</li>
+        </ul>
+        <div class="pipe-cons-label">Weaknesses</div>
+        <ul class="pipe-list cons">
+          <li>Cracks in hard freezes if not blown out</li>
+          <li>Rigid — requires trenching on curves</li>
+          <li>Glue joints are permanent</li>
+          <li>UV-sensitive if left exposed</li>
+        </ul>
+        <div class="pipe-cost">Cost: ~$0.30–$0.60 / ft (¾")</div>
+      </div>
+
+      <div class="pipe-card recommended">
+        <div class="pipe-name">Poly</div>
+        <span class="pipe-tag">Most Popular</span>
+        <div class="pipe-pros-label">Strengths</div>
+        <ul class="pipe-list pros">
+          <li>Flexible — follows curves easily</li>
+          <li>Clamp fittings are reusable</li>
+          <li>More freeze-resistant than PVC</li>
+          <li>DIY-friendly installation</li>
+          <li>Sold in coils (less waste)</li>
+        </ul>
+        <div class="pipe-cons-label">Weaknesses</div>
+        <ul class="pipe-list cons">
+          <li>Lower pressure rating (~100 PSI)</li>
+          <li>More friction loss than PVC</li>
+          <li>Barbed fittings can pull free over time</li>
+          <li>Not ideal for long straight main lines</li>
+        </ul>
+        <div class="pipe-cost">Cost: ~$0.40–$0.80 / ft (¾")</div>
+      </div>
+
+      <div class="pipe-card">
+        <div class="pipe-name">PEX</div>
+        <span class="pipe-tag neutral">Flexible</span>
+        <div class="pipe-pros-label">Strengths</div>
+        <ul class="pipe-list pros">
+          <li>Excellent freeze resistance</li>
+          <li>Crimp and expansion fittings are secure</li>
+          <li>Flexible like poly, strong like PVC</li>
+          <li>Good in rocky or tight spaces</li>
+        </ul>
+        <div class="pipe-cons-label">Weaknesses</div>
+        <ul class="pipe-list cons">
+          <li>Higher cost than PVC or poly</li>
+          <li>Requires special crimp/expansion tool</li>
+          <li>Less common at irrigation suppliers</li>
+          <li>UV-sensitive if left exposed</li>
+        </ul>
+        <div class="pipe-cost">Cost: ~$0.60–$1.20 / ft (¾")</div>
+      </div>
+    </div>
+
+    <div class="prose">
+      <h2 id="when-to-use">When to Use Each</h2>
+
+      <h3>Use PVC when…</h3>
+      <p>You're running a long mainline — the underground pipe between your backflow preventer and your zone valves. PVC's smooth bore minimizes friction loss over distance, its high pressure rating handles the full static pressure of the supply, and its rigidity means it won't shift or heave over time. It's also the right call for any exposed above-ground runs inside a valve box or pump station (paint it to protect from UV).</p>
+      <p>PVC is the material of choice for professional contractors doing full-zone installs in the Sun Belt and Southeast, where freezing is rare and trenching straight runs is the norm. If you're not winterizing your system, PVC is almost always the lowest-cost, longest-lasting option.</p>
+
+      <h3>Use Poly when…</h3>
+      <p>You're in a climate that freezes, doing a DIY install, or working in a yard with a lot of curves, roots, and obstacles. Poly's flexibility lets you snake around obstacles without needing 45° or 90° fittings at every turn. Its barb-and-clamp fittings are repairable in the field with no glue and no special tools — just a clamp tool and a new barb.</p>
+      <p>Poly is the dominant material in the Mountain West and Midwest, where freeze-thaw cycles would crack PVC lateral lines. It's also the standard for drip systems: flexible ½" poly tubing is the distribution pipe for virtually every drip zone installed in the U.S.</p>
+
+      <h3>Use PEX when…</h3>
+      <p>You're in an extreme-freeze climate (think Minnesota or Colorado mountain towns) and you want a mainline material that won't crack during a surprise early freeze before you've blown out the system. PEX crimped with expansion fittings is mechanically very secure — significantly stronger than barbed poly — while retaining enough flexibility to handle soil movement.</p>
+      <p>PEX is overkill for most residential irrigation projects. Unless you're already comfortable with PEX from plumbing work and own the tooling, stick with PVC for mains and poly for laterals.</p>
+
+      <h2 id="climate">How Climate Changes the Equation</h2>
+    </div>
+
+    <table class="data-table">
+      <thead>
+        <tr><th>Climate</th><th>Mainline</th><th>Lateral Lines</th><th>Drip Tubing</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Southern US / No freeze</td>
+          <td><span class="check">PVC</span></td>
+          <td><span class="check">PVC or Poly</span></td>
+          <td><span class="check">Poly ½"</span></td>
+        </tr>
+        <tr>
+          <td>Mid-Atlantic / Light freeze</td>
+          <td><span class="check">PVC</span></td>
+          <td><span class="check">Poly</span></td>
+          <td><span class="check">Poly ½"</span></td>
+        </tr>
+        <tr>
+          <td>Mountain West / Hard freeze</td>
+          <td><span class="check">PVC or PEX</span></td>
+          <td><span class="check">Poly</span></td>
+          <td><span class="check">Poly ½"</span></td>
+        </tr>
+        <tr>
+          <td>Northern Plains / Extreme freeze</td>
+          <td><span class="check">PEX</span></td>
+          <td><span class="check">Poly</span></td>
+          <td><span class="check">Poly ½"</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="prose">
+      <h2 id="soil">How Soil Type Affects Your Choice</h2>
+      <p>Clay soil expands when wet and contracts when dry, creating movement that can shear rigid PVC joints over years. If you're in heavy clay, using flexible poly for laterals (even if you're in a warmer climate) gives the pipe room to move without cracking. Sandy or loam soil is stable and presents no issue for PVC.</p>
+      <p>Rocky soil is a different challenge. Driving a trencher through rocky ground produces jagged sidewalls that can abrade pipe over time. Wrapping pipe in sand or using flexible poly provides protection that rigid PVC can't offer. PEX's abrasion resistance makes it a good choice for rocky mountain installations.</p>
+
+      <h2 id="fittings">Fittings: The Part That Actually Leaks</h2>
+      <p>Most irrigation leaks don't happen in the pipe itself — they happen at fittings. Each pipe type uses fundamentally different connection methods, and mixing them requires the right adapters.</p>
+
+      <h3>PVC fittings</h3>
+      <p>Solvent-welded (glued) connections are permanent and virtually leak-proof when done correctly. Use primer before cement, give joints 15 minutes before flowing water, and 24 hours before pressure-testing. Threaded PVC fittings work for connecting to valves and risers — always wrap male threads with two layers of PTFE tape and never overtighten PVC threads (they will crack).</p>
+
+      <h3>Poly fittings</h3>
+      <p>Barbed fittings insert into the pipe and are secured with stainless steel clamps. Use two clamps on any fitting carrying more than 4 GPM or on any fitting that will be underground for years. The clamp (not the barb) is what holds the connection — don't skip or substitute with zip ties. Poly insert fittings are available at any home center and come apart easily for repairs, which is their biggest advantage in the field.</p>
+
+      <h3>PEX fittings</h3>
+      <p>Crimp fittings (secured with a copper crimp ring) are the most common and work with a $30 crimp tool. Expansion fittings (PEX-A only) create a stronger joint but require an expensive expansion tool. Avoid push-fit (SharkBite-style) fittings underground — they're designed for plumbing, not buried irrigation, and can fail under continuous soil pressure.</p>
+
+      <h2 id="sizing">Pipe Sizing 101</h2>
+      <p>Regardless of material, pipe size must match the GPM your zone demands. Undersized pipe creates velocity friction that drops pressure at the heads — the same problem as too many heads, but invisible from the surface until you start mapping dry spots.</p>
+    </div>
+
+    <table class="data-table">
+      <thead>
+        <tr><th>Pipe Size</th><th>Max Recommended GPM</th><th>Typical Use</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>½" poly / PVC</td><td>4 GPM</td><td>Drip laterals, short spray runs</td></tr>
+        <tr><td>¾" poly / PVC</td><td>8 GPM</td><td>Lateral lines, most residential zones</td></tr>
+        <tr><td>1" PVC</td><td>13 GPM</td><td>Mainlines, high-GPM zones</td></tr>
+        <tr><td>1¼" PVC</td><td>22 GPM</td><td>Commercial mainlines, large properties</td></tr>
+      </tbody>
+    </table>
+
+    <ul class="tip-list">
+      <li>Never use the same pipe size for your mainline and laterals — the main needs to handle the combined flow of all zones; laterals only handle one zone at a time.</li>
+      <li>In freeze climates, install all pipes with a slight slope toward a drain valve or blow-out port. Gravity helps winterization work. A pipe that drains itself is one that can't crack.</li>
+      <li>Poly tubing kinks at sharp bends. Use sweep elbows (not 90° elbows) whenever possible, or use PVC for tight turns and transition back to poly in open runs.</li>
+      <li>Buy 10–15% more pipe than your plan requires. Mistakes happen, and being one fitting short on a Saturday wastes the whole day.</li>
+      <li>Mark all pipe runs on a sketch before backfilling. You will forget exactly where you ran that lateral in two years when you need to dig for a head replacement.</li>
+    </ul>
+
+    <div class="post-cta">
+      <h3>Ready to build your parts list?</h3>
+      <p>Drip Atlas selects the right pipe type and size for each zone based on your property and design choices.</p>
+      <a href="design.html">Start Designing Free →</a>
+    </div>
+  </article>
+
+  <aside class="sidebar">
+    <div class="toc">
+      <div class="toc-title">In This Article</div>
+      <a href="#overview">Three pipe types at a glance</a>
+      <a href="#when-to-use">When to use each</a>
+      <a href="#climate">Climate considerations</a>
+      <a href="#soil">Soil type</a>
+      <a href="#fittings">Fittings</a>
+      <a href="#sizing">Pipe sizing</a>
+    </div>
+    <div class="sidebar-cta">
+      <div class="sidebar-cta-title">Get your pipe list</div>
+      <p>Drip Atlas generates a complete materials list — pipe, fittings, heads, and valves — sized for your specific design.</p>
+      <a href="design.html">Open Design Tool →</a>
+    </div>
+  </aside>
+</div>
+
+<footer>
+  <p>© 2026 Drip Atlas &nbsp;·&nbsp;
+    <a href="index.html">Home</a>
+    <a href="products.html">Products</a>
+    <a href="learn.html">Learn</a>
+    <a href="materials.html">Design Tool</a>
+  </p>
+</footer>
+</body>
+</html>

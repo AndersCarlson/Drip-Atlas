@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>How to Calculate Your Irrigation Zone GPM — Drip Atlas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="icon" type="image/png" href="assets/favicon.png"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--forest:#253319;--lime:#c8e670;--cream:#f1ebe2;--white:#fff;--charcoal:#1c1c1a;--gray:#7a7a72;--border:rgba(37,51,25,.12)}
+    body{font-family:'Inter',sans-serif;background:var(--cream);color:var(--charcoal);-webkit-font-smoothing:antialiased}
+
+    nav{position:sticky;top:0;z-index:100;background:var(--white);border-bottom:1px solid var(--border);height:64px;display:flex;align-items:center;padding:0 40px;gap:32px}
+    .nav-logo img{height:32px}
+    .nav-links{display:flex;gap:28px;list-style:none;margin-left:32px;align-items:center}
+    .nav-links a{font-size:14px;font-weight:500;color:var(--charcoal);text-decoration:none;transition:color .2s}
+    .nav-links a:hover{color:var(--forest)}
+    .nav-right{margin-left:auto}
+    .btn-quote{border:1.5px solid rgba(37,51,25,.12);background:transparent;color:#7a7a72;font-size:13px;font-weight:500;padding:6px 14px;border-radius:100px;cursor:pointer;text-decoration:none;transition:border-color .2s,color .2s}
+    .btn-quote:hover,.btn-quote.active{border-color:#253319;color:#253319}
+    .btn-cta{background:#253319;color:#c8e670;font-size:13.5px;font-weight:700;padding:8px 20px;border-radius:100px;cursor:pointer;text-decoration:none;transition:opacity .2s;border:none;white-space:nowrap}
+    .btn-cta:hover{opacity:.87}
+
+    .post-wrap{max-width:1080px;margin:0 auto;padding:48px 32px 80px;display:grid;grid-template-columns:1fr 260px;gap:56px;align-items:start}
+    @media(max-width:800px){.post-wrap{grid-template-columns:1fr}.sidebar{display:none}}
+
+    article{min-width:0}
+    .back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--gray);text-decoration:none;margin-bottom:28px;transition:color .2s}
+    .back-link:hover{color:var(--forest)}
+    .tag{display:inline-block;padding:4px 12px;border-radius:100px;font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;background:var(--forest);color:var(--lime);margin-bottom:16px}
+    .post-title{font-family:'Playfair Display',serif;font-size:40px;font-weight:700;line-height:1.15;color:var(--charcoal);margin-bottom:16px}
+    .post-subtitle{font-size:17px;color:var(--gray);line-height:1.6;margin-bottom:20px}
+    .post-meta{font-size:13px;color:var(--gray);padding-bottom:24px;border-bottom:1px solid var(--border);margin-bottom:36px}
+    .post-meta strong{color:var(--charcoal)}
+
+    .prose h2{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--charcoal);margin:40px 0 14px}
+    .prose h3{font-size:16px;font-weight:700;color:var(--charcoal);margin:24px 0 8px}
+    .prose p{font-size:15px;line-height:1.75;color:var(--charcoal);margin-bottom:16px}
+    .prose ul,.prose ol{padding-left:20px;margin-bottom:16px}
+    .prose li{font-size:15px;line-height:1.7;color:var(--charcoal);margin-bottom:6px}
+    .prose strong{font-weight:700}
+    .prose a{color:var(--forest);text-decoration:underline}
+
+    .steps{counter-reset:step;margin:24px 0 32px;display:flex;flex-direction:column;gap:16px}
+    .step{display:flex;gap:16px;align-items:flex-start}
+    .step-num{counter-increment:step;width:36px;height:36px;border-radius:50%;background:var(--forest);color:var(--lime);font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+    .step-num::before{content:counter(step)}
+    .step-body h3{font-size:15px;font-weight:700;color:var(--charcoal);margin-bottom:4px}
+    .step-body p{font-size:14px;line-height:1.65;color:var(--gray);margin:0}
+
+    .data-table{width:100%;border-collapse:collapse;margin:20px 0 32px;border-radius:12px;overflow:hidden;border:1px solid var(--border)}
+    .data-table th{background:var(--forest);color:var(--lime);font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:10px 14px;text-align:left}
+    .data-table td{padding:12px 14px;font-size:14px;border-bottom:1px solid var(--border);line-height:1.5}
+    .data-table tr:last-child td{border:none}
+    .data-table tr:nth-child(even) td{background:rgba(37,51,25,.03)}
+
+    .formula-box{background:var(--white);border:1.5px solid var(--forest);border-radius:14px;padding:24px;margin:28px 0;text-align:center}
+    .formula-label{font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--gray);margin-bottom:8px}
+    .formula{font-family:'Playfair Display',serif;font-size:22px;color:var(--forest);font-weight:700;margin-bottom:8px}
+    .formula-note{font-size:13px;color:var(--gray)}
+
+    .tip-list{background:rgba(37,51,25,.04);border-left:3px solid var(--forest);border-radius:0 10px 10px 0;padding:20px 24px;margin:24px 0 32px;list-style:none}
+    .tip-list li{font-size:14px;line-height:1.65;color:var(--charcoal);padding:5px 0;display:flex;gap:10px}
+    .tip-list li::before{content:'💡';flex-shrink:0}
+
+    .post-cta{background:var(--forest);border-radius:16px;padding:32px;text-align:center;margin-top:48px}
+    .post-cta h3{font-family:'Playfair Display',serif;font-size:24px;color:var(--lime);margin-bottom:10px}
+    .post-cta p{font-size:14px;color:rgba(255,255,255,.75);margin-bottom:20px}
+    .post-cta a{display:inline-block;padding:13px 28px;background:var(--lime);color:var(--forest);border-radius:100px;font-size:14px;font-weight:700;text-decoration:none}
+
+    .sidebar{position:sticky;top:84px}
+    .toc{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px}
+    .toc-title{font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--gray);margin-bottom:12px}
+    .toc a{display:block;font-size:13px;color:var(--gray);text-decoration:none;padding:5px 0;border-bottom:1px solid var(--border);transition:color .2s;line-height:1.4}
+    .toc a:last-child{border:none}
+    .toc a:hover{color:var(--forest)}
+    .sidebar-cta{background:var(--forest);border-radius:14px;padding:24px;text-align:center}
+    .sidebar-cta p{font-size:13px;color:rgba(255,255,255,.75);line-height:1.55;margin-bottom:14px}
+    .sidebar-cta a{display:block;padding:10px;background:var(--lime);color:var(--forest);border-radius:8px;font-size:13px;font-weight:700;text-decoration:none}
+    .sidebar-cta-title{font-family:'Playfair Display',serif;font-size:16px;color:var(--lime);font-weight:700;margin-bottom:8px}
+
+    footer{background:var(--forest);color:rgba(255,255,255,.7);text-align:center;padding:24px;font-size:13px}
+    footer a{color:rgba(255,255,255,.5);text-decoration:none;margin:0 12px}
+    footer a:hover{color:#fff}
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo"><a href="index.html"><img src="assets/logo-forest-green.png" alt="Drip Atlas"/></a></div>
+        <ul class="nav-links">
+    <li><a href="index.html#wyg">Irrigation Design</a></li>
+    <li><a href="products.html">Products</a></li>
+    <li><a href="learn.html" class="active">Learn</a></li>
+    <li><a href="quote.html" class="btn-quote">Get a Quote</a></li>
+  </ul>
+        <div class="nav-right">
+    <a href="materials.html" class="btn-cta">Start Designing</a>
+  </div>
+</nav>
+
+<div class="post-wrap">
+  <article>
+    <a class="back-link" href="learn.html">← Back to Learn</a>
+    <span class="tag">Design</span>
+    <h1 id="top" class="post-title">How to Calculate Your Irrigation Zone GPM</h1>
+    <p class="post-subtitle">Getting your gallons-per-minute right is the single most important step to prevent dry spots and overwatering. Here's the math — and why it matters more than you think.</p>
+    <div class="post-meta">
+      <strong>Drip Atlas Team</strong> &nbsp;·&nbsp; May 18, 2025 &nbsp;·&nbsp; 7 min read
+    </div>
+
+    <div class="prose">
+
+      <h2 id="what-is-gpm">What Is GPM and Why Does It Matter?</h2>
+      <p>GPM — gallons per minute — is the flow rate your system can sustain through a zone valve at your current water pressure. Every head, emitter, and nozzle has a rated GPM at a given pressure. Add them up zone by zone, and you'll know instantly whether your supply line can keep up.</p>
+      <p>Get it wrong in either direction and you pay for it. <strong>Too many heads on one zone</strong> means the pressure drops below each head's minimum, your rotors stop rotating, and you get brown arcs. <strong>Too few heads per zone</strong> means you're running more valve cycles to water the same area — wasting time and wear on your controller and valves.</p>
+      <p>The goal is to design each zone so that the total GPM of all heads running simultaneously stays <em>under</em> the maximum flow capacity of your supply — with room to spare.</p>
+
+      <h2 id="your-supply">Step 1 — Know Your Supply Capacity</h2>
+      <p>Before you can balance zones, you need to know how many gallons per minute your water supply can deliver. There are two ways to measure it.</p>
+
+      <h3>The Bucket Test (easiest)</h3>
+      <p>Turn off all water in the house. Take a 5-gallon bucket to the outdoor spigot closest to your water meter. Open the spigot fully and time how many seconds it takes to fill the bucket. Then:</p>
+    </div>
+
+    <div class="formula-box">
+      <div class="formula-label">Bucket Test Formula</div>
+      <div class="formula">GPM = (Bucket size in gallons × 60) ÷ Seconds to fill</div>
+      <div class="formula-note">Example: 5 gallons fills in 24 seconds → (5 × 60) ÷ 24 = <strong>12.5 GPM</strong></div>
+    </div>
+
+    <div class="prose">
+      <h3>Read Your Water Meter</h3>
+      <p>Locate your water meter near the street. Note the reading, open the same outdoor spigot fully, let it run for exactly 1 minute, then close it and take a second meter reading. The difference in cubic feet multiplied by 7.48 gives you GPM. Most residential meters in the U.S. will show between 8 and 20 GPM for a 1" service line.</p>
+      <p>Once you have your supply GPM, apply a <strong>20% safety margin</strong> — never design zones that consume your full supply capacity, because supply pressure isn't constant and other household demands share the line.</p>
+    </div>
+
+    <div class="formula-box">
+      <div class="formula-label">Usable Zone Capacity</div>
+      <div class="formula">Usable GPM = Supply GPM × 0.75</div>
+      <div class="formula-note">Example: 12.5 GPM supply → design each zone for no more than <strong>9.4 GPM</strong></div>
+    </div>
+
+    <div class="prose">
+      <h2 id="head-gpm">Step 2 — Find the GPM of Each Head</h2>
+      <p>Every sprinkler head and emitter has a published flow rate at its rated pressure. Here are typical values for common head types:</p>
+    </div>
+
+    <table class="data-table">
+      <thead>
+        <tr><th>Head Type</th><th>Typical GPM</th><th>Operating Pressure</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Hunter PGP Ultra Rotor (full circle)</td><td>1.2 – 3.4 GPM</td><td>25–65 PSI</td></tr>
+        <tr><td>Rain Bird 5000 Rotor (full circle)</td><td>1.1 – 3.6 GPM</td><td>25–65 PSI</td></tr>
+        <tr><td>Pop-up Spray, 10 ft radius (full circle)</td><td>1.6 – 1.9 GPM</td><td>15–30 PSI</td></tr>
+        <tr><td>Pop-up Spray, 10 ft radius (half circle)</td><td>0.8 – 0.95 GPM</td><td>15–30 PSI</td></tr>
+        <tr><td>Pop-up Spray, 10 ft radius (quarter circle)</td><td>0.4 – 0.48 GPM</td><td>15–30 PSI</td></tr>
+        <tr><td>Drip Emitter (pressure-compensating)</td><td>0.25 – 2 GPH ÷ 60</td><td>10–50 PSI</td></tr>
+        <tr><td>Drip Line (per 100 ft, 0.5 GPH emitters at 18")</td><td>≈ 3.3 GPM</td><td>15–30 PSI</td></tr>
+      </tbody>
+    </table>
+
+    <div class="prose">
+      <p>For rotors, the GPM varies with arc setting. A half-circle head uses half the water of a full-circle head at the same pressure. Always use the arc-adjusted number from the manufacturer's spec sheet — look for the column that matches your system's operating pressure.</p>
+      <p>For drip, convert GPH (gallons per hour) to GPM by dividing by 60. A 1 GPH emitter = 0.017 GPM. A zone of 40 such emitters = 0.67 GPM — far less than a spray zone, which is why drip zones can run many more emitters than spray zones can run heads.</p>
+
+      <h2 id="zone-math">Step 3 — Calculate Total Zone GPM</h2>
+      <p>For each zone, add up the GPM of every head that will run simultaneously. This is straightforward for uniform zones. Mixed zones (e.g., a combination of full- and part-circle heads) require adding each head individually.</p>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h3>List every head in the zone</h3>
+          <p>Draw or mark out the zone on your plan. Count each head and note its arc setting — full, half, quarter, or custom arc in degrees.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h3>Look up each head's GPM at your operating pressure</h3>
+          <p>Use the manufacturer's spec sheet (available on the product page or their website). Find the row for your nozzle size and pressure, then the column for the arc. Record the GPM for each head.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h3>Sum all heads in the zone</h3>
+          <p>Add every head's GPM together. This total is your zone demand. Compare it to your usable supply GPM (supply × 0.75). If the zone demand is higher, split the zone or remove heads.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h3>Check pipe capacity</h3>
+          <p>Your zone GPM also determines the minimum pipe size needed. Use the rule of thumb: 1" poly pipe handles up to 13 GPM, ¾" handles up to 8 GPM, ½" handles up to 4 GPM. Size up if you're close to the limit.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="prose">
+      <h2 id="common-mistakes">Common GPM Mistakes</h2>
+      <p>Even experienced installers make these errors. Knowing them in advance saves a lot of re-digging.</p>
+
+      <h3>Mixing head types in a zone</h3>
+      <p>Rotors and spray heads have completely different precipitation rates. A rotor might apply 0.5 inches per hour while a spray head in the same zone applies 1.5 inches per hour. They'll never water evenly together. Keep rotors with rotors and sprays with sprays — always.</p>
+
+      <h3>Ignoring part-circle arcs</h3>
+      <p>A corner head set to 90° uses one quarter the water of the same head at 360°. If your plan assumes full-circle GPM for part-circle heads, every zone will be overloaded on paper but actually underperforming in the field.</p>
+
+      <h3>Not accounting for elevation</h3>
+      <p>Water loses 0.43 PSI for every 1 foot it climbs. A zone at the top of a slope sees meaningfully less pressure than the gauge reading at the meter — and lower pressure means lower GPM at each head. For sloped sites, do your calculations at the uphill end's expected pressure, not the meter reading.</p>
+
+      <h2 id="precipitation">Matching Precipitation Rates Across Zones</h2>
+      <p>GPM by itself doesn't tell the whole story. Two zones can have identical GPM totals but apply water at completely different rates. Precipitation rate — measured in inches per hour — tells you how fast water is being applied to the soil.</p>
+    </div>
+
+    <div class="formula-box">
+      <div class="formula-label">Precipitation Rate Formula</div>
+      <div class="formula">PR (in/hr) = (96.25 × GPM) ÷ Area (sq ft)</div>
+      <div class="formula-note">Target 0.5–1.5 in/hr for most turf. Slopes need lower rates to prevent runoff.</div>
+    </div>
+
+    <div class="prose">
+      <p>Zones with mismatched precipitation rates create watering imbalances even when both zones run the same number of minutes. If your lawn zone runs at 1.2 in/hr and your garden zone runs at 0.6 in/hr, the garden needs to run twice as long to get the same application depth. Your controller handles this — but only if you've calculated and entered the right runtime for each zone.</p>
+    </div>
+
+    <ul class="tip-list">
+      <li>Do your GPM math before you buy anything. Changing zone boundaries on paper costs nothing. Changing them after trenching costs a lot.</li>
+      <li>When in doubt, under-load zones by 10–15%. It's far easier to add a head later than to deal with dry spots caused by pressure starvation.</li>
+      <li>Keep a running zone sheet: head type, arc, GPM, and area for every zone. You'll thank yourself during startup and service calls years from now.</li>
+      <li>Pressure-compensating drip emitters give you consistent GPM across elevation changes. Worth the slight cost premium on any sloped property.</li>
+      <li>If your supply GPM is under 8, plan on more zones with fewer heads each. A 6 GPM supply can still run a full ½-acre system — it just takes more zones and valve cycles.</li>
+    </ul>
+
+    <div class="post-cta">
+      <h3>Let Drip Atlas do the GPM math for you.</h3>
+      <p>Draw your property, pick your heads, and the design tool calculates zone GPM, pipe sizing, and runtime automatically.</p>
+      <a href="design.html">Start Designing Free →</a>
+    </div>
+  </article>
+
+  <aside class="sidebar">
+    <div class="toc">
+      <div class="toc-title">In This Article</div>
+      <a href="#what-is-gpm">What is GPM?</a>
+      <a href="#your-supply">Measure your supply</a>
+      <a href="#head-gpm">GPM per head type</a>
+      <a href="#zone-math">Calculate zone GPM</a>
+      <a href="#common-mistakes">Common mistakes</a>
+      <a href="#precipitation">Precipitation rates</a>
+    </div>
+    <div class="sidebar-cta">
+      <div class="sidebar-cta-title">Skip the math</div>
+      <p>Drip Atlas calculates zone GPM, pipe size, and precipitation rate automatically based on your property layout.</p>
+      <a href="design.html">Open Design Tool →</a>
+    </div>
+  </aside>
+</div>
+
+<footer>
+  <p>© 2026 Drip Atlas &nbsp;·&nbsp;
+    <a href="index.html">Home</a>
+    <a href="products.html">Products</a>
+    <a href="learn.html">Learn</a>
+    <a href="materials.html">Design Tool</a>
+  </p>
+</footer>
+</body>
+</html>
